@@ -2891,6 +2891,14 @@ def render_team_shoutout_bar():
         unsafe_allow_html=True
     )
 
+
+def display_value(value, fallback="—"):
+    """Return a clean display value instead of None / empty strings."""
+    if value is None:
+        return fallback
+    value = str(value).strip()
+    return value if value else fallback
+
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -4184,31 +4192,16 @@ elif page in [
 
         for task in platform_tasks:
 
-            st.markdown(
-                f"""
-                <div class="task-card">
-
-                    <div class="task-card-title">
-                        {task.get("title", "")}
-                    </div>
-
-                    <div class="task-meta">
-                        {task.get("task_type", "")}
-                        &nbsp; • &nbsp;
-                        {task.get("priority", "")}
-                    </div>
-
-                    <div class="task-meta">
-                        Status:
-                        <b>
-                            {task.get("status", "")}
-                        </b>
-                    </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            card_html = (
+                '<div class="task-card">'
+                f'<div class="task-card-title">{display_value(task.get("title"))}</div>'
+                f'<div class="task-meta">{display_value(task.get("task_type"))}'
+                f' &nbsp; • &nbsp; {display_value(task.get("priority"))}</div>'
+                f'<div class="task-meta">Status: '
+                f'<b>{display_value(task.get("status"))}</b></div>'
+                '</div>'
             )
+            st.markdown(card_html, unsafe_allow_html=True)
 
 
 # ============================================================
@@ -4247,24 +4240,14 @@ elif page == "📦 Listing Uploads":
 
         for task in listing_tasks:
 
-            st.markdown(
-                f"""
-                <div class="task-card">
-
-                    <div class="task-card-title">
-                        {task.get("title", "")}
-                    </div>
-
-                    <div class="task-meta">
-                        {task.get("platform", "")}
-                        &nbsp; • &nbsp;
-                        {task.get("status", "")}
-                    </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            card_html = (
+                '<div class="task-card">'
+                f'<div class="task-card-title">{display_value(task.get("title"))}</div>'
+                f'<div class="task-meta">{display_value(task.get("platform"))}'
+                f' &nbsp; • &nbsp; {display_value(task.get("status"))}</div>'
+                '</div>'
             )
+            st.markdown(card_html, unsafe_allow_html=True)
 
 
 # ============================================================
@@ -4351,28 +4334,14 @@ elif page == "📨 Appeals":
 
         for task in appeal_tasks:
 
-            st.markdown(
-                f"""
-                <div class="task-card">
-
-                    <div class="task-card-title">
-                        {task.get("title", "")}
-                    </div>
-
-                    <div class="task-meta">
-                        Goods ID:
-                        {task.get("goods_id", "")}
-                    </div>
-
-                    <div class="task-meta">
-                        Status:
-                        {task.get("status", "")}
-                    </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            card_html = (
+                '<div class="task-card">'
+                f'<div class="task-card-title">{display_value(task.get("title"))}</div>'
+                f'<div class="task-meta">Goods ID: {display_value(task.get("goods_id"))}</div>'
+                f'<div class="task-meta">Status: {display_value(task.get("status"))}</div>'
+                '</div>'
             )
+            st.markdown(card_html, unsafe_allow_html=True)
 
 
 # ============================================================
@@ -4407,28 +4376,14 @@ elif page == "💬 Seller Support":
 
         for task in support_tasks:
 
-            st.markdown(
-                f"""
-                <div class="task-card">
-
-                    <div class="task-card-title">
-                        {task.get("title", "")}
-                    </div>
-
-                    <div class="task-meta">
-                        Case ID:
-                        {task.get("case_id", "")}
-                    </div>
-
-                    <div class="task-meta">
-                        Status:
-                        {task.get("status", "")}
-                    </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            card_html = (
+                '<div class="task-card">'
+                f'<div class="task-card-title">{display_value(task.get("title"))}</div>'
+                f'<div class="task-meta">Case ID: {display_value(task.get("case_id"))}</div>'
+                f'<div class="task-meta">Status: {display_value(task.get("status"))}</div>'
+                '</div>'
             )
+            st.markdown(card_html, unsafe_allow_html=True)
 
 
 # ============================================================
@@ -5420,37 +5375,12 @@ elif page == "📜 Activity":
 
         for activity in activities:
 
-            st.markdown(
-                f"""
-                <div class="task-card">
-
-                    <div class="task-card-title">
-                        {activity.get(
-                            "user_name",
-                            "User"
-                        )}
-                        —
-                        {activity.get(
-                            "action",
-                            ""
-                        )}
-                    </div>
-
-                    <div class="task-meta">
-                        {activity.get(
-                            "details",
-                            ""
-                        )}
-                    </div>
-
-                    <div class="task-meta">
-                        {activity.get(
-                            "created_at",
-                            ""
-                        )}
-                    </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            card_html = (
+                '<div class="task-card">'
+                f'<div class="task-card-title">{display_value(activity.get("user_name"), "User")}'
+                f' — {display_value(activity.get("action"))}</div>'
+                f'<div class="task-meta">{display_value(activity.get("details"))}</div>'
+                f'<div class="task-meta">{display_value(activity.get("created_at"))}</div>'
+                '</div>'
             )
+            st.markdown(card_html, unsafe_allow_html=True)
