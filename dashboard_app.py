@@ -2620,6 +2620,104 @@ def render_task_detail_panel(task):
         st.session_state.selected_task_id = None
         st.rerun()
 
+
+def get_attendance_scope_rows(start_date, end_date):
+    """
+    Build a complete attendance matrix for all active team members.
+    Missing attendance = Absent for that date.
+    """
+    profiles = [p for p in load_team_profiles() if p.get("name")]
+    try:
+        attendance_rows = (
+            supabase.table("attendance")
+            .select("*")
+            .gte("attendance_date", start_date.isoformat())
+            .lte("attendance_date", end_date.isoformat())
+            .order("attendance_date")
+            .execute()
+        ).data or []
+    except Exception:
+        attendance_rows = []
+
+    by_key = {
+        (str(r.get("user_id")), str(r.get("attendance_date"))): r
+        for r in attendance_rows
+    }
+
+    results = []
+    current = start_date
+    while current <= end_date:
+        for person in profiles:
+            user_id = person.get("id")
+            row = by_key.get((str(user_id), current.isoformat()))
+            if row:
+                status = row.get("status") or "Present"
+                check_in = row.get("check_in")
+                check_out = row.get("check_out")
+                arrival = late_status(check_in)
+                departure = early_departure_status(check_out)
+            else:
+                status = "Absent"
+                check_in = None
+                check_out = None
+                arrival = "--"
+                departure = "--"
+
+            results.append({
+                "Date": current.isoformat(),
+                "Employee": person.get("name"),
+                "Department": person.get("department", ""),
+                "Role": person.get("role", ""),
+                "Status": status,
+                "Check In": format_pk_time(check_in) if check_in else "--",
+                "Check Out": format_pk_time(check_out) if check_out else "--",
+                "Arrival": arrival,
+                "Departure": departure
+            })
+        current += timedelta(days=1)
+
+    return results
+
+
+def attendance_period_dates(period_type, anchor_date):
+    if period_type == "Weekly":
+        start = anchor_date - timedelta(days=anchor_date.weekday())
+        end = start + timedelta(days=6)
+    else:
+        start = anchor_date.replace(day=1)
+        end = anchor_date.replace(
+            day=calendar.monthrange(anchor_date.year, anchor_date.month)[1]
+        )
+    return start, end
+
+
+def attendance_summary_dataframe(rows):
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return pd.DataFrame()
+
+    summary = []
+    for employee, group in df.groupby("Employee"):
+        present = int((group["Status"].str.lower() == "present").sum())
+        absent = int((group["Status"].str.lower() == "absent").sum())
+        late = int((group["Arrival"] == "Late").sum())
+        summary.append({
+            "Employee": employee,
+            "Present Days": present,
+            "Absent Days": absent,
+            "Late Days": late,
+            "Total Days": len(group)
+        })
+    return pd.DataFrame(summary)
+
+
+def attendance_excel_bytes(detail_df, summary_df, title):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        summary_df.to_excel(writer, sheet_name="Summary", index=False)
+        detail_df.to_excel(writer, sheet_name="Attendance", index=False)
+    return output.getvalue()
+
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -2661,6 +2759,7 @@ with st.sidebar:
     common_tools = [
         "🔎 Global Search",
         "🧰 Task Workspace",
+        "👥 Team Attendance",
         "💬 Direct Messages",
         "📆 Calendar",
         "📣 Announcements",
@@ -4630,6 +4729,117 @@ elif page == "📚 Knowledge Base":
                 if url:
                     st.link_button(f"📎 {item.get('file_name','Document')}", url)
 
+
+
+# ============================================================
+# TEAM ATTENDANCE — EVERYONE CAN VIEW + EXPORT
+# ============================================================
+
+elif page == "👥 Team Attendance":
+    st.markdown('<div class="tech-title">Team Attendance</div>', unsafe_allow_html=True)
+    st.caption(
+        "Everyone can view team attendance. If a member has not marked attendance "
+        "for a date, that date is shown as Absent."
+    )
+
+    period_col, date_col, scope_col = st.columns(3)
+
+    with period_col:
+        period_type = st.selectbox(
+            "Period",
+            ["Weekly", "Monthly"],
+            key="team_att_period"
+        )
+
+    with date_col:
+        anchor_date = st.date_input(
+            "Choose date",
+            value=datetime.now(PK_TZ).date(),
+            key="team_att_anchor"
+        )
+
+    with scope_col:
+        team_names = [p.get("name") for p in load_team_profiles() if p.get("name")]
+        scope = st.selectbox(
+            "View",
+            ["All Members", "My Attendance"] + team_names,
+            key="team_att_scope"
+        )
+
+    start_date, end_date = attendance_period_dates(period_type, anchor_date)
+    all_rows = get_attendance_scope_rows(start_date, end_date)
+
+    if scope == "My Attendance":
+        visible_rows = [r for r in all_rows if r["Employee"] == name]
+    elif scope == "All Members":
+        visible_rows = all_rows
+    else:
+        visible_rows = [r for r in all_rows if r["Employee"] == scope]
+
+    detail_df = pd.DataFrame(visible_rows)
+    summary_df = attendance_summary_dataframe(visible_rows)
+
+    st.markdown(
+        f"**Period:** {start_date.strftime('%d %b %Y')} — "
+        f"{end_date.strftime('%d %b %Y')}"
+    )
+
+    if not summary_df.empty:
+        s1, s2, s3 = st.columns(3)
+        s1.metric("Present", int(summary_df["Present Days"].sum()))
+        s2.metric("Absent", int(summary_df["Absent Days"].sum()))
+        s3.metric("Late", int(summary_df["Late Days"].sum()))
+
+        st.subheader("Summary")
+        st.dataframe(
+            summary_df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    st.subheader("Attendance Sheet")
+    if not detail_df.empty:
+        st.dataframe(
+            detail_df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        excel_bytes = attendance_excel_bytes(
+            detail_df,
+            summary_df,
+            f"{period_type} Attendance"
+        )
+
+        file_label = (
+            "all_members"
+            if scope == "All Members"
+            else scope.lower().replace(" ", "_")
+        )
+
+        st.download_button(
+            f"⬇️ Download {period_type} Attendance Excel",
+            data=excel_bytes,
+            file_name=(
+                f"techloom_{period_type.lower()}_attendance_"
+                f"{file_label}_{start_date.isoformat()}_to_{end_date.isoformat()}.xlsx"
+            ),
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+
+        st.download_button(
+            f"⬇️ Download {period_type} Attendance CSV",
+            data=detail_df.to_csv(index=False).encode("utf-8"),
+            file_name=(
+                f"techloom_{period_type.lower()}_attendance_"
+                f"{file_label}_{start_date.isoformat()}_to_{end_date.isoformat()}.csv"
+            ),
+            mime="text/csv",
+            use_container_width=True
+        )
+    else:
+        st.info("No attendance records for this period.")
 
 # ============================================================
 # TEAM STATUS
