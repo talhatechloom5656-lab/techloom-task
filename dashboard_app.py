@@ -505,6 +505,80 @@ hr {
 
 /* Hide Streamlit footer */
 footer { visibility: hidden; }
+
+/* ------------------------------------------------------------
+   TASK EXPERIENCE 2.0
+   ------------------------------------------------------------ */
+.task-board-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:18px 20px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:linear-gradient(135deg,#ffffff 0%,#f7fbfa 100%);
+    margin-bottom:14px;
+}
+.task-board-title {
+    font-size:20px;
+    font-weight:800;
+    color:var(--ink);
+}
+.task-board-copy {
+    color:var(--muted);
+    font-size:13px;
+    margin-top:3px;
+}
+.work-card {
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#fff;
+    padding:14px;
+    margin-bottom:10px;
+    box-shadow:0 1px 3px rgba(30,35,51,.04);
+}
+.work-card:hover {
+    box-shadow:0 7px 20px rgba(30,35,51,.08);
+}
+.work-card-title {
+    font-weight:750;
+    font-size:14px;
+    color:var(--ink);
+    margin-bottom:6px;
+}
+.work-meta {
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.6;
+}
+.status-chip {
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    border:1px solid #e1e5ea;
+    background:#f8fafc;
+    color:#334155;
+    margin-right:5px;
+}
+.priority-urgent { background:#fff1f2; color:#be123c; border-color:#fecdd3; }
+.priority-high { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }
+.priority-normal { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.priority-low { background:#f8fafc; color:#64748b; border-color:#e2e8f0; }
+.kanban-column-title {
+    font-size:13px;
+    font-weight:800;
+    color:#334155;
+    margin-bottom:8px;
+}
+.kanban-count {
+    float:right;
+    font-weight:700;
+    color:var(--muted);
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -2294,6 +2368,258 @@ process_due_recurring_tasks()
 escalate_unopened_urgent_tasks()
 
 
+
+def task_due_bucket(task):
+    due = parse_timestamp(task.get("due_date")) if task.get("due_date") else None
+    if not due:
+        return "No Due Date"
+    local_due = due.astimezone(PK_TZ)
+    today = datetime.now(PK_TZ).date()
+    if local_due.date() < today and task.get("status") not in ["Completed","Approved"]:
+        return "Overdue"
+    if local_due.date() == today:
+        return "Due Today"
+    if local_due.date() == today + timedelta(days=1):
+        return "Due Tomorrow"
+    return local_due.strftime("%d %b")
+
+
+def task_priority_class(priority):
+    return {
+        "Urgent": "priority-urgent",
+        "High": "priority-high",
+        "Normal": "priority-normal",
+        "Low": "priority-low"
+    }.get(priority, "priority-normal")
+
+
+def open_task_detail(task):
+    st.session_state.selected_task_id = task["id"]
+    st.session_state.selected_task_title = task.get("title", "Task")
+
+
+def find_task_by_id(task_id, source_tasks):
+    for row in source_tasks:
+        if str(row.get("id")) == str(task_id):
+            return row
+    return None
+
+
+def render_task_card(task, key_prefix):
+    task_id = task["id"]
+    title = task.get("title", "Untitled Task")
+    platform = task.get("platform", "N/A")
+    task_type = task.get("task_type", "Task")
+    priority = task.get("priority", "Normal")
+    status = task.get("status", "New")
+    due_text = task_due_bucket(task)
+    assigned_by = task.get("assigned_by", "")
+    goods_id = task.get("goods_id", "")
+
+    st.markdown(
+        (
+            '<div class="work-card">'
+            f'<div class="work-card-title">{title}</div>'
+            f'<span class="status-chip">{platform}</span>'
+            f'<span class="status-chip {task_priority_class(priority)}">{priority}</span>'
+            f'<span class="status-chip">{status}</span>'
+            f'<div class="work-meta">Due: {due_text} • Type: {task_type}</div>'
+            f'<div class="work-meta">Assigned by: {assigned_by}'
+            + (f' • ID: {goods_id}' if goods_id else '') +
+            '</div></div>'
+        ),
+        unsafe_allow_html=True
+    )
+
+    c1, c2 = st.columns(2)
+    with c1:
+        if status == "New" and not is_manager():
+            if st.button("▶ Start", key=f"{key_prefix}_start_{task_id}", use_container_width=True):
+                if update_task_status(task_id, "In Progress"):
+                    st.rerun()
+        else:
+            if st.button("Open", key=f"{key_prefix}_open_{task_id}", use_container_width=True):
+                open_task_detail(task)
+                st.rerun()
+    with c2:
+        if not is_manager() and status in ["In Progress","Changes Requested","Waiting on Information","Waiting on Platform","New"]:
+            if st.button("📤 Review", key=f"{key_prefix}_review_{task_id}", use_container_width=True):
+                open_task_detail(task)
+                st.session_state.task_detail_tab = "Submission"
+                st.rerun()
+        else:
+            if st.button("Details", key=f"{key_prefix}_details_{task_id}", use_container_width=True):
+                open_task_detail(task)
+                st.rerun()
+
+
+def render_task_detail_panel(task):
+    task_id = task["id"]
+    register_task_view(task_id)
+
+    st.markdown("---")
+    st.markdown(f"## {task.get('title','Untitled Task')}")
+    st.caption(
+        f"{task.get('platform','')} • {task.get('task_type','')} • "
+        f"{priority_badge(task.get('priority','Normal'))} • "
+        f"{task_status_badge(task.get('status','New'))}"
+    )
+
+    top1, top2, top3, top4 = st.columns(4)
+    top1.metric("Owner", task.get("assigned_to",""))
+    top2.metric("Assigned By", task.get("assigned_by",""))
+    top3.metric("Due", task_due_bucket(task))
+    top4.metric("Goods / ASIN / SKU", task.get("goods_id","") or "—")
+
+    tabs = st.tabs(["Overview","Checklist","Comments","Files","Activity","Submission","History"])
+
+    with tabs[0]:
+        st.write("### Instructions")
+        st.write(task.get("description","") or "No instructions provided.")
+
+        l1, l2 = st.columns(2)
+        with l1:
+            if task.get("supplier_link"):
+                st.link_button("🔗 Supplier Link", task.get("supplier_link"))
+            if task.get("listing_url"):
+                st.link_button("🛍 Listing URL", task.get("listing_url"))
+        with l2:
+            if task.get("submission_link"):
+                st.link_button("📤 Submitted Work", task.get("submission_link"))
+            if task.get("review_reference_link"):
+                st.link_button("🧭 Reviewer Reference", task.get("review_reference_link"))
+
+        if task.get("review_notes"):
+            st.warning(f"Review Notes: {task.get('review_notes')}")
+
+    with tabs[1]:
+        subtasks = task_subtasks(task_id)
+        completed = sum(1 for s in subtasks if s.get("completed"))
+        total = len(subtasks)
+        st.caption(f"{completed}/{total} checklist items completed")
+        for sub in subtasks:
+            checked = st.checkbox(
+                sub.get("title","Subtask"),
+                value=bool(sub.get("completed")),
+                key=f"detail_sub_{sub['id']}"
+            )
+            if checked != bool(sub.get("completed")):
+                if toggle_subtask(sub["id"], checked):
+                    st.rerun()
+        new_sub = st.text_input("New checklist item", key=f"detail_new_sub_{task_id}")
+        if st.button("Add item", key=f"detail_add_sub_{task_id}"):
+            if add_subtask(task_id, new_sub):
+                st.rerun()
+
+    with tabs[2]:
+        for row in task_comments(task_id):
+            with st.container(border=True):
+                st.markdown(f"**{row.get('user_name','User')}**")
+                st.write(row.get("comment",""))
+                st.caption(row.get("created_at",""))
+        new_comment = st.text_area("Comment", key=f"detail_comment_{task_id}")
+        if st.button("Post comment", key=f"detail_post_comment_{task_id}"):
+            if add_task_comment(task_id, new_comment):
+                st.rerun()
+
+    with tabs[3]:
+        task_file = st.file_uploader(
+            "Attach file",
+            type=["png","jpg","jpeg","webp","pdf","doc","docx","xls","xlsx","csv","txt","zip"],
+            key=f"detail_file_{task_id}"
+        )
+        if task_file and st.button("Upload", key=f"detail_upload_{task_id}"):
+            if attach_file_to_task(task_id, task_file):
+                st.rerun()
+        for att in load_task_attachments(task_id):
+            url = signed_file_url("task-files", att.get("file_path"))
+            if url:
+                st.link_button(
+                    f"📎 {att.get('file_name','Attachment')} ({human_file_size(att.get('file_size'))})",
+                    url
+                )
+
+    with tabs[4]:
+        try:
+            timeline = (
+                supabase.table("task_activity")
+                .select("*")
+                .eq("task_id", task_id)
+                .order("created_at", desc=True)
+                .execute()
+            ).data or []
+        except Exception:
+            timeline = []
+        for event in timeline:
+            with st.container(border=True):
+                st.markdown(f"**{event.get('action','Activity')}**")
+                st.write(event.get("details",""))
+                st.caption(f"{event.get('user_name','')} • {event.get('created_at','')}")
+
+    with tabs[5]:
+        if is_manager():
+            st.info("Review employee submission from the Approvals page.")
+            if task.get("submission_link"):
+                st.link_button("Open submitted link", task.get("submission_link"))
+        else:
+            st.write("### Send Back for Review")
+            submission_link = st.text_input(
+                "Work / listing / case link",
+                value=task.get("submission_link","") or "",
+                key=f"detail_submission_link_{task_id}"
+            )
+            submission_note = st.text_area(
+                "Submission note",
+                value=task.get("submission_note","") or "",
+                key=f"detail_submission_note_{task_id}"
+            )
+            if st.button("📤 Send to AIFA for Review", type="primary", key=f"detail_submit_{task_id}", use_container_width=True):
+                try:
+                    supabase.table("tasks").update({
+                        "status":"Submitted for Review",
+                        "submission_link":submission_link.strip(),
+                        "submission_note":submission_note.strip(),
+                        "submitted_at":datetime.now(timezone.utc).isoformat(),
+                        "updated_at":datetime.now(timezone.utc).isoformat()
+                    }).eq("id",task_id).execute()
+                    for person in load_team_profiles():
+                        if person.get("role") in ["Admin","Team Lead"]:
+                            create_notification(
+                                person.get("id"),
+                                f"{name} submitted a task",
+                                task.get("title","Task"),
+                                "review",
+                                task_id
+                            )
+                    add_activity(task_id,"Submitted for Review",submission_note[:180])
+                    st.success("Task sent for review.")
+                    st.rerun()
+                except Exception as error:
+                    st.error(error)
+
+    with tabs[6]:
+        try:
+            history = (
+                supabase.table("task_activity")
+                .select("*")
+                .eq("task_id", task_id)
+                .order("created_at")
+                .execute()
+            ).data or []
+        except Exception:
+            history = []
+        for event in history:
+            st.write(
+                f"**{event.get('created_at','')}** — "
+                f"{event.get('user_name','')} — "
+                f"{event.get('action','')} — "
+                f"{event.get('details','')}"
+            )
+
+    if st.button("✕ Close Task", key=f"close_task_{task_id}"):
+        st.session_state.selected_task_id = None
+        st.rerun()
+
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -2680,380 +3006,146 @@ if page == "🏠 Dashboard":
 
 
 # ============================================================
-# MY TASKS / TEAM TASKS
+# MY TASKS / TEAM TASKS — WORK INBOX + KANBAN
 # ============================================================
 
-elif page in [
-    "📋 My Tasks",
-    "📋 Team Tasks"
-]:
+elif page in ["📋 My Tasks","📋 Team Tasks"]:
 
-    if page == "📋 Team Tasks":
-
-        st.markdown(
-            '<div class="tech-title">'
-            'Team Tasks'
-            '</div>',
-            unsafe_allow_html=True
-        )
-
-        tasks = load_all_tasks()
-
-    else:
-
-        st.markdown(
-            '<div class="tech-title">'
-            'My Tasks'
-            '</div>',
-            unsafe_allow_html=True
-        )
-
-        tasks = load_my_tasks()
+    is_team_view = page == "📋 Team Tasks"
+    tasks = load_all_tasks() if is_team_view else load_my_tasks()
 
     st.markdown(
-        '<div class="tech-subtitle">'
-        'Search, review and update assigned work.'
+        '<div class="task-board-header">'
+        '<div>'
+        f'<div class="task-board-title">{"Team Control Board" if is_team_view else "My Work Inbox"}</div>'
+        f'<div class="task-board-copy">{"See team workload by status and owner." if is_team_view else "Focus on what needs attention first, then move work through the workflow."}</div>'
+        '</div>'
         '</div>',
         unsafe_allow_html=True
     )
 
     if not tasks:
-
-        st.info("No tasks found.")
+        st.info("No active tasks.")
         st.stop()
 
-    # --------------------------------------------------------
-    # FILTERS
-    # --------------------------------------------------------
+    # Work Inbox
+    today = datetime.now(PK_TZ).date()
 
-    f1, f2, f3, f4 = st.columns(4)
+    def due_date_local(task):
+        due = parse_timestamp(task.get("due_date")) if task.get("due_date") else None
+        return due.astimezone(PK_TZ).date() if due else None
 
-    with f1:
+    new_today = [
+        t for t in tasks
+        if parse_timestamp(t.get("created_at")) and
+        parse_timestamp(t.get("created_at")).astimezone(PK_TZ).date() == today
+    ]
+    due_today = [t for t in tasks if due_date_local(t) == today and t.get("status") not in ["Completed","Approved"]]
+    urgent = [t for t in tasks if t.get("priority") == "Urgent" and t.get("status") not in ["Completed","Approved"]]
+    review = [t for t in tasks if t.get("status") == "Submitted for Review"]
+    changes = [t for t in tasks if t.get("status") == "Changes Requested"]
 
-        search = st.text_input(
-            "Search",
-            placeholder="Title, SKU, Goods ID..."
-        )
+    a,b,c,d,e = st.columns(5)
+    a.metric("New Today", len(new_today))
+    b.metric("Due Today", len(due_today))
+    c.metric("Urgent", len(urgent))
+    d.metric("For Review", len(review))
+    e.metric("Changes", len(changes))
 
-    with f2:
+    st.write("")
 
-        status_filter = st.selectbox(
-            "Status",
-            [
-                "All",
-                "New",
-                "In Progress",
-                "Waiting on Information",
-                "Waiting on Platform",
-                "Submitted for Review",
-                "Changes Requested",
-                "Approved",
-                "Completed"
-            ]
-        )
+    search_col, status_col, priority_col, platform_col = st.columns(4)
+    with search_col:
+        search = st.text_input("Search", placeholder="Title, Goods ID, ASIN...")
+    with status_col:
+        status_filter = st.selectbox("Status", ["All","New","In Progress","Waiting on Information","Waiting on Platform","Submitted for Review","Changes Requested","Approved","Completed"])
+    with priority_col:
+        priority_filter = st.selectbox("Priority", ["All","Urgent","High","Normal","Low"])
+    with platform_col:
+        platform_filter = st.selectbox("Platform", ["All","Temu","Amazon","eBay","TikTok","Multiple"])
 
-    with f3:
-
-        platform_filter = st.selectbox(
-            "Platform",
-            [
-                "All",
-                "Temu",
-                "Amazon",
-                "eBay",
-                "TikTok",
-                "Multiple"
-            ]
-        )
-
-    with f4:
-
-        priority_filter = st.selectbox(
-            "Priority",
-            [
-                "All",
-                "Low",
-                "Normal",
-                "High",
-                "Urgent"
-            ]
-        )
-
-    # --------------------------------------------------------
-    # TASK CARDS
-    # --------------------------------------------------------
-
-    visible_tasks = []
-
+    filtered = []
     for task in tasks:
-
-        searchable = " ".join([
-            str(task.get("title", "")),
-            str(task.get("goods_id", "")),
-            str(task.get("platform", "")),
-            str(task.get("task_type", "")),
-            str(task.get("assigned_to", ""))
-        ]).lower()
-
-        if (
-            search
-            and search.lower() not in searchable
-        ):
+        haystack = " ".join(str(task.get(k,"")) for k in ["title","goods_id","platform","task_type","assigned_to"]).lower()
+        if search and search.lower() not in haystack:
             continue
-
-        if (
-            status_filter != "All"
-            and task.get("status")
-            != status_filter
-        ):
+        if status_filter != "All" and task.get("status") != status_filter:
             continue
-
-        if (
-            platform_filter != "All"
-            and task.get("platform")
-            != platform_filter
-        ):
+        if priority_filter != "All" and task.get("priority") != priority_filter:
             continue
-
-        if (
-            priority_filter != "All"
-            and task.get("priority")
-            != priority_filter
-        ):
+        if platform_filter != "All" and task.get("platform") != platform_filter:
             continue
+        filtered.append(task)
 
-        visible_tasks.append(task)
+    tabs = st.tabs(["📥 Work Inbox","🧱 Kanban","👤 By Owner"] if is_team_view else ["📥 Work Inbox","🧱 Kanban"])
 
-    st.caption(
-        f"{len(visible_tasks)} task(s) shown"
-    )
+    with tabs[0]:
+        inbox_groups = [
+            ("🔴 Urgent", urgent),
+            ("📅 Due Today", due_today),
+            ("🔄 Changes Requested", changes),
+            ("🆕 New", [t for t in filtered if t.get("status")=="New"]),
+            ("🟡 In Progress", [t for t in filtered if t.get("status")=="In Progress"]),
+        ]
 
-    for task in visible_tasks:
+        for heading, group in inbox_groups:
+            matching = [t for t in group if t in filtered]
+            if not matching:
+                continue
+            st.markdown(f"### {heading}")
+            cols = st.columns(2)
+            for i, task in enumerate(matching):
+                with cols[i % 2]:
+                    render_task_card(task, f"inbox_{heading}_{i}")
 
-        task_id = task["id"]
+    with tabs[1]:
+        columns = [
+            ("New","New"),
+            ("In Progress","In Progress"),
+            ("Waiting","Waiting on Information"),
+            ("For Review","Submitted for Review"),
+            ("Changes","Changes Requested"),
+            ("Done","Completed"),
+        ]
 
-        title = task.get(
-            "title",
-            "Untitled Task"
-        )
-
-        status = task.get(
-            "status",
-            "New"
-        )
-
-        priority = task.get(
-            "priority",
-            "Normal"
-        )
-
-        with st.expander(
-            f"{title}  •  {status}  •  {priority}"
-        ):
-
-            left, right = st.columns(
-                [2, 1]
-            )
-
-            with left:
-
-                st.write(
-                    "**Platform:**",
-                    task.get(
-                        "platform",
-                        ""
+        kanban_cols = st.columns(len(columns))
+        for col_index, (label, status_value) in enumerate(columns):
+            with kanban_cols[col_index]:
+                group = [
+                    t for t in filtered
+                    if (
+                        t.get("status") == status_value
+                        or (
+                            label == "Waiting"
+                            and t.get("status") in ["Waiting on Information","Waiting on Platform"]
+                        )
+                        or (
+                            label == "Done"
+                            and t.get("status") in ["Completed","Approved"]
+                        )
                     )
-                )
-
-                st.write(
-                    "**Task Type:**",
-                    task.get(
-                        "task_type",
-                        ""
-                    )
-                )
-
-                st.write(
-                    "**Assigned To:**",
-                    task.get(
-                        "assigned_to",
-                        ""
-                    )
-                )
-
-                st.write(
-                    "**Assigned By:**",
-                    task.get(
-                        "assigned_by",
-                        ""
-                    )
-                )
-
-                st.write(
-                    "**Priority:**",
-                    priority
-                )
-
-                st.write(
-                    "**Goods ID / ASIN / SKU:**",
-                    task.get(
-                        "goods_id",
-                        ""
-                    )
-                )
-
-                supplier_link = task.get(
-                    "supplier_link",
-                    ""
-                )
-
-                if supplier_link:
-
-                    st.write(
-                        "**Supplier Link:**"
-                    )
-
-                    st.write(
-                        supplier_link
-                    )
-
-                listing_url = task.get(
-                    "listing_url",
-                    ""
-                )
-
-                if listing_url:
-
-                    st.write(
-                        "**Listing URL:**"
-                    )
-
-                    st.write(
-                        listing_url
-                    )
-
-                st.write(
-                    "**Instructions:**"
-                )
-
-                st.write(
-                    task.get(
-                        "description",
-                        ""
-                    )
-                )
-
-                review_notes = task.get(
-                    "review_notes",
-                    ""
-                )
-
-                if review_notes:
-
-                    st.warning(
-                        f"Review Notes: "
-                        f"{review_notes}"
-                    )
-
-            # ------------------------------------------------
-            # STATUS CONTROLS
-            # ------------------------------------------------
-
-            with right:
-
-                st.write(
-                    f"**Current Status:** "
-                    f"{status}"
-                )
-
-                allowed_statuses = [
-                    "New",
-                    "In Progress",
-                    "Waiting on Information",
-                    "Waiting on Platform",
-                    "Submitted for Review",
-                    "Completed"
                 ]
-
-                if is_manager():
-
-                    allowed_statuses.extend([
-                        "Changes Requested",
-                        "Approved"
-                    ])
-
-                if (
-                    status in allowed_statuses
-                ):
-
-                    status_index = (
-                        allowed_statuses.index(
-                            status
-                        )
-                    )
-
-                else:
-
-                    status_index = 0
-
-                new_status = st.selectbox(
-                    "Update Status",
-                    allowed_statuses,
-                    index=status_index,
-                    key=f"status_{task_id}"
+                st.markdown(
+                    f'<div class="kanban-column-title">{label}<span class="kanban-count">{len(group)}</span></div>',
+                    unsafe_allow_html=True
                 )
+                for i, task in enumerate(group):
+                    render_task_card(task, f"kanban_{col_index}_{i}")
 
-                if st.button(
-                    "Save Status",
-                    key=f"save_{task_id}",
-                    use_container_width=True
-                ):
+    if is_team_view:
+        with tabs[2]:
+            owners = sorted(set(t.get("assigned_to","Unassigned") for t in filtered))
+            for owner in owners:
+                owner_tasks = [t for t in filtered if t.get("assigned_to","Unassigned")==owner]
+                with st.expander(f"{owner} • {len(owner_tasks)} tasks"):
+                    for i, task in enumerate(owner_tasks):
+                        render_task_card(task, f"owner_{owner}_{i}")
 
-                    if update_task_status(
-                        task_id,
-                        new_status
-                    ):
-
-                        st.success(
-                            "Task status updated."
-                        )
-
-                        st.rerun()
-
-                if (
-                    not is_manager()
-                    and status != "Submitted for Review"
-                ):
-                    st.divider()
-                    submission_link = st.text_input(
-                        "Return / submission link",
-                        value=task.get("submission_link", "") or "",
-                        placeholder="Paste listing, case, document or work link",
-                        key=f"submission_link_{task_id}"
-                    )
-
-                    submission_notes = st.text_area(
-                        "Submission note",
-                        value=task.get("submission_notes", "") or "",
-                        placeholder="Briefly tell AIFA what was completed.",
-                        height=90,
-                        key=f"submission_notes_{task_id}"
-                    )
-
-                    if st.button(
-                        "📤 Send Back for Review",
-                        key=f"submit_{task_id}",
-                        use_container_width=True,
-                        type="primary"
-                    ):
-                        if submit_task_for_review(
-                            task_id,
-                            submission_link,
-                            submission_notes
-                        ):
-                            st.success("Task sent back for review.")
-                            st.rerun()
-
+    selected_id = st.session_state.get("selected_task_id")
+    if selected_id:
+        selected_task = find_task_by_id(selected_id, tasks)
+        if selected_task:
+            render_task_detail_panel(selected_task)
 
 # ============================================================
 # CREATE TASK
