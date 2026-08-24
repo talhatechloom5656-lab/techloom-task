@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, timezone
+from zoneinfo import ZoneInfo
 from supabase import create_client
 
 
@@ -268,6 +269,8 @@ department = profile["department"]
 
 current_user_id = st.session_state.user.id
 
+PK_TZ = ZoneInfo("Asia/Karachi")
+
 
 # ============================================================
 # HELPERS
@@ -418,6 +421,190 @@ def update_task_status(
 
 
 # ============================================================
+# ATTENDANCE HELPERS
+# ============================================================
+
+def pakistan_today():
+    return datetime.now(PK_TZ).date().isoformat()
+
+
+def parse_timestamp(value):
+    if not value:
+        return None
+
+    try:
+        parsed = datetime.fromisoformat(
+            str(value).replace("Z", "+00:00")
+        )
+
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+
+        return parsed
+
+    except Exception:
+        return None
+
+
+def format_pk_time(value):
+    parsed = parse_timestamp(value)
+
+    if parsed is None:
+        return "--"
+
+    return parsed.astimezone(PK_TZ).strftime("%I:%M %p")
+
+
+def working_time(check_in, check_out=None):
+    start = parse_timestamp(check_in)
+
+    if start is None:
+        return "--"
+
+    if check_out:
+        end = parse_timestamp(check_out)
+    else:
+        end = datetime.now(timezone.utc)
+
+    if end is None:
+        return "--"
+
+    total_seconds = max(
+        0,
+        int((end - start).total_seconds())
+    )
+
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+
+    return f"{hours}h {minutes}m"
+
+
+def get_today_attendance():
+    try:
+        result = (
+            supabase
+            .table("attendance")
+            .select("*")
+            .eq("user_id", current_user_id)
+            .eq("attendance_date", pakistan_today())
+            .limit(1)
+            .execute()
+        )
+
+        if result.data:
+            return result.data[0]
+
+        return None
+
+    except Exception as error:
+        st.error("Could not load today's attendance.")
+        st.write(error)
+        return None
+
+
+def check_in_employee():
+    try:
+        existing = get_today_attendance()
+
+        if existing:
+            return True
+
+        supabase.table("attendance").insert({
+            "user_id": current_user_id,
+            "employee_name": name,
+            "attendance_date": pakistan_today(),
+            "check_in": datetime.now(timezone.utc).isoformat(),
+            "status": "Present"
+        }).execute()
+
+        return True
+
+    except Exception as error:
+        st.error("Check-in failed.")
+        st.write(error)
+        return False
+
+
+def check_out_employee():
+    try:
+        existing = get_today_attendance()
+
+        if not existing:
+            st.warning("Please check in first.")
+            return False
+
+        if existing.get("check_out"):
+            return True
+
+        supabase.table("attendance").update({
+            "check_out": datetime.now(timezone.utc).isoformat()
+        }).eq(
+            "id",
+            existing["id"]
+        ).execute()
+
+        return True
+
+    except Exception as error:
+        st.error("Check-out failed.")
+        st.write(error)
+        return False
+
+
+def render_today_attendance():
+    attendance = get_today_attendance()
+
+    if attendance is None:
+        st.info("You have not checked in today.")
+
+        if st.button(
+            "🟢 Check In Now",
+            type="primary",
+            use_container_width=True,
+            key="dashboard_attendance_checkin"
+        ):
+            if check_in_employee():
+                st.success("Check-in recorded successfully.")
+                st.rerun()
+
+        return
+
+    c1, c2, c3 = st.columns(3)
+
+    c1.metric(
+        "Check In",
+        format_pk_time(attendance.get("check_in"))
+    )
+
+    c2.metric(
+        "Check Out",
+        format_pk_time(attendance.get("check_out"))
+    )
+
+    c3.metric(
+        "Working Time",
+        working_time(
+            attendance.get("check_in"),
+            attendance.get("check_out")
+        )
+    )
+
+    if not attendance.get("check_out"):
+        if st.button(
+            "🚪 Check Out",
+            type="primary",
+            use_container_width=True,
+            key="dashboard_attendance_checkout"
+        ):
+            if check_out_employee():
+                st.success("Check-out recorded successfully.")
+                st.rerun()
+    else:
+        st.success("Attendance completed for today.")
+
+
+# ============================================================
 # SIDEBAR
 # ============================================================
 
@@ -456,6 +643,8 @@ with st.sidebar:
             "➕ Create Task",
             "✅ Approvals",
             "👥 Team Overview",
+            "⏱ Attendance",
+            "📅 Attendance Report",
             "🛡 Compliance",
             "📜 Activity"
         ]
@@ -469,6 +658,7 @@ with st.sidebar:
         menu_options = [
             "🏠 Dashboard",
             "📋 My Tasks",
+            "⏱ Attendance",
             "🟠 Temu",
             "🛡 Compliance",
             "📨 Appeals",
@@ -485,6 +675,7 @@ with st.sidebar:
         menu_options = [
             "🏠 Dashboard",
             "📋 My Tasks",
+            "⏱ Attendance",
             "🛒 Amazon",
             "🛍 eBay",
             "📦 Listing Uploads",
@@ -500,6 +691,7 @@ with st.sidebar:
         menu_options = [
             "🏠 Dashboard",
             "📋 My Tasks",
+            "⏱ Attendance",
             "📜 Activity"
         ]
 
@@ -507,7 +699,8 @@ with st.sidebar:
 
         menu_options = [
             "🏠 Dashboard",
-            "📋 My Tasks"
+            "📋 My Tasks",
+            "⏱ Attendance"
         ]
 
     page = st.radio(
@@ -615,6 +808,17 @@ if page == "🏠 Dashboard":
 
     st.write("")
 
+    st.markdown(
+        '<div class="section-title">'
+        'Today\'s Attendance'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    render_today_attendance()
+
+    st.write("")
+
     left, right = st.columns(
         [2.7, 1]
     )
@@ -672,33 +876,18 @@ if page == "🏠 Dashboard":
                     "New"
                 )
 
+                task_html = (
+                    '<div class="task-card">'
+                    f'<div class="task-card-title">{title}</div>'
+                    f'<div class="task-meta">{platform} &nbsp; • &nbsp; '
+                    f'{task_type} &nbsp; • &nbsp; Assigned to: {assigned_to}</div>'
+                    f'<div class="task-meta">Priority: <b>{priority}</b> '
+                    f'&nbsp; • &nbsp; Status: <b>{status}</b></div>'
+                    '</div>'
+                )
+
                 st.markdown(
-                    f"""
-                    <div class="task-card">
-
-                        <div class="task-card-title">
-                            {title}
-                        </div>
-
-                        <div class="task-meta">
-                            {platform}
-                            &nbsp; • &nbsp;
-                            {task_type}
-                            &nbsp; • &nbsp;
-                            Assigned to:
-                            {assigned_to}
-                        </div>
-
-                        <div class="task-meta">
-                            Priority:
-                            <b>{priority}</b>
-                            &nbsp; • &nbsp;
-                            Status:
-                            <b>{status}</b>
-                        </div>
-
-                    </div>
-                    """,
+                    task_html,
                     unsafe_allow_html=True
                 )
 
@@ -1492,6 +1681,300 @@ elif page == "✅ Approvals":
                     except Exception as error:
 
                         st.error(error)
+
+
+# ============================================================
+# ATTENDANCE
+# ============================================================
+
+elif page == "⏱ Attendance":
+
+    st.markdown(
+        '<div class="tech-title">'
+        'Attendance'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="tech-subtitle">'
+        'Check in when you arrive and check out when you leave.'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    attendance = get_today_attendance()
+
+    if attendance is None:
+
+        st.info("You have not checked in today.")
+
+        if st.button(
+            "🟢 CHECK IN",
+            type="primary",
+            use_container_width=True,
+            key="attendance_page_checkin"
+        ):
+
+            if check_in_employee():
+                st.success("Check-in recorded successfully.")
+                st.rerun()
+
+    else:
+
+        a1, a2, a3 = st.columns(3)
+
+        a1.metric(
+            "🟢 Check In",
+            format_pk_time(
+                attendance.get("check_in")
+            )
+        )
+
+        a2.metric(
+            "🔴 Check Out",
+            format_pk_time(
+                attendance.get("check_out")
+            )
+        )
+
+        a3.metric(
+            "⏱ Working Time",
+            working_time(
+                attendance.get("check_in"),
+                attendance.get("check_out")
+            )
+        )
+
+        if not attendance.get("check_out"):
+
+            if st.button(
+                "🚪 CHECK OUT",
+                type="primary",
+                use_container_width=True,
+                key="attendance_page_checkout"
+            ):
+
+                if check_out_employee():
+                    st.success("Check-out recorded successfully.")
+                    st.rerun()
+
+        else:
+
+            st.success(
+                "Today's attendance is complete."
+            )
+
+    st.write("")
+    st.subheader("My Attendance History")
+
+    try:
+
+        history_result = (
+            supabase
+            .table("attendance")
+            .select("*")
+            .eq("user_id", current_user_id)
+            .order(
+                "attendance_date",
+                desc=True
+            )
+            .limit(60)
+            .execute()
+        )
+
+        history = history_result.data or []
+
+        history_rows = []
+
+        for record in history:
+
+            history_rows.append({
+                "Date":
+                    record.get("attendance_date"),
+
+                "Check In":
+                    format_pk_time(
+                        record.get("check_in")
+                    ),
+
+                "Check Out":
+                    format_pk_time(
+                        record.get("check_out")
+                    ),
+
+                "Working Time":
+                    working_time(
+                        record.get("check_in"),
+                        record.get("check_out")
+                    ),
+
+                "Status":
+                    record.get(
+                        "status",
+                        "Present"
+                    )
+            })
+
+        if history_rows:
+
+            st.dataframe(
+                pd.DataFrame(history_rows),
+                use_container_width=True,
+                hide_index=True
+            )
+
+        else:
+
+            st.info(
+                "No attendance history yet."
+            )
+
+    except Exception as error:
+
+        st.error(
+            "Could not load attendance history."
+        )
+
+        st.write(error)
+
+
+# ============================================================
+# ATTENDANCE REPORT
+# ============================================================
+
+elif page == "📅 Attendance Report":
+
+    if not is_manager():
+
+        st.error(
+            "Management access only."
+        )
+
+        st.stop()
+
+    st.markdown(
+        '<div class="tech-title">'
+        'Attendance Report'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="tech-subtitle">'
+        'View daily attendance for the Techloom team.'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    selected_date = st.date_input(
+        "Attendance Date",
+        value=datetime.now(PK_TZ).date()
+    )
+
+    try:
+
+        result = (
+            supabase
+            .table("attendance")
+            .select("*")
+            .eq(
+                "attendance_date",
+                selected_date.isoformat()
+            )
+            .order("employee_name")
+            .execute()
+        )
+
+        records = result.data or []
+
+        present_count = len(records)
+
+        working_now_count = sum(
+            1
+            for record in records
+            if record.get("check_in")
+            and not record.get("check_out")
+        )
+
+        checked_out_count = sum(
+            1
+            for record in records
+            if record.get("check_out")
+        )
+
+        r1, r2, r3 = st.columns(3)
+
+        r1.metric(
+            "🟢 Present",
+            present_count
+        )
+
+        r2.metric(
+            "🕒 Working Now",
+            working_now_count
+        )
+
+        r3.metric(
+            "🚪 Checked Out",
+            checked_out_count
+        )
+
+        report_rows = []
+
+        for record in records:
+
+            report_rows.append({
+                "Employee":
+                    record.get("employee_name"),
+
+                "Date":
+                    record.get("attendance_date"),
+
+                "Check In":
+                    format_pk_time(
+                        record.get("check_in")
+                    ),
+
+                "Check Out":
+                    format_pk_time(
+                        record.get("check_out")
+                    ),
+
+                "Working Time":
+                    working_time(
+                        record.get("check_in"),
+                        record.get("check_out")
+                    ),
+
+                "Status":
+                    record.get(
+                        "status",
+                        "Present"
+                    )
+            })
+
+        if report_rows:
+
+            st.dataframe(
+                pd.DataFrame(report_rows),
+                use_container_width=True,
+                hide_index=True
+            )
+
+        else:
+
+            st.info(
+                "No attendance records for this date."
+            )
+
+    except Exception as error:
+
+        st.error(
+            "Could not load attendance report."
+        )
+
+        st.write(error)
 
 
 # ============================================================
