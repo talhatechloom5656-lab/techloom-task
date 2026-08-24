@@ -22,108 +22,165 @@ st.set_page_config(
 # PREMIUM UI / STYLING
 # ============================================================
 
+
+# ============================================================
+# PREMIUM UI / STYLING  (light theme throughout — no dark mode)
+# ============================================================
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --navy: #071a33;
-    --navy-2: #0c2b50;
     --blue: #2563eb;
-    --blue-soft: #eaf2ff;
+    --blue-dark: #1d4ed8;
     --cyan: #0ea5e9;
+    --blue-soft: #eaf2ff;
     --green: #10b981;
     --red: #ef4444;
     --amber: #f59e0b;
     --ink: #0f172a;
     --muted: #64748b;
     --line: #e5eaf1;
-    --panel: rgba(255,255,255,.92);
+    --panel: #ffffff;
+    --sidebar-bg: #f6f8fc;
 }
 
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
 }
 
+/* ------------------------------------------------------------
+   APP BACKGROUND
+   ------------------------------------------------------------ */
 .stApp {
     background:
-      radial-gradient(circle at 8% 5%, rgba(37,99,235,.08), transparent 28%),
-      radial-gradient(circle at 92% 12%, rgba(14,165,233,.08), transparent 24%),
+      radial-gradient(circle at 8% 5%, rgba(37,99,235,.06), transparent 28%),
+      radial-gradient(circle at 92% 12%, rgba(14,165,233,.06), transparent 24%),
       #f7f9fc;
     color: var(--ink);
 }
 
-/* Keep content nicely centred */
 .block-container {
     max-width: 1500px;
     padding-top: 2.2rem;
     padding-bottom: 3rem;
 }
 
-/* Sidebar */
+/* ------------------------------------------------------------
+   SIDEBAR — light, clean, never dark
+   ------------------------------------------------------------ */
 [data-testid="stSidebar"] {
-    background:
-      radial-gradient(circle at 15% 0%, rgba(37,99,235,.30), transparent 28%),
-      linear-gradient(180deg, #07162f 0%, #081f3e 58%, #06162d 100%);
-    border-right: 1px solid rgba(255,255,255,.08);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--line);
+    min-width: 300px;
 }
 
 [data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    padding: 1.15rem .85rem 1rem .85rem;
+    padding: 1.25rem .9rem 1rem .9rem;
 }
 
-[data-testid="stSidebar"] * {
-    color: #eef5ff;
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] div {
+    color: var(--ink);
+}
+
+[data-testid="stSidebar"] .stCaption,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+    color: var(--muted) !important;
 }
 
 .sidebar-logo {
-    font-size: 23px;
+    font-size: 22px;
     line-height: 1.2;
     font-weight: 800;
     letter-spacing: -.4px;
+    color: var(--ink);
     margin-top: .35rem;
 }
 
 .sidebar-subtitle {
-    font-size: 11px;
-    color: #9fb4cf !important;
+    font-size: 11.5px;
+    color: var(--muted) !important;
     letter-spacing: .15px;
     margin-top: 5px;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
-/* Turn radio into navigation pills */
+/* Turn radio into clean navigation pills */
 [data-testid="stSidebar"] [role="radiogroup"] {
     gap: 4px;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
     border-radius: 11px;
-    padding: 8px 10px;
-    transition: all .16s ease;
+    padding: 9px 12px !important;
+    margin: 2px 0;
+    background: transparent;
+    transition: all .15s ease;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
-    background: rgba(255,255,255,.075);
-    transform: translateX(2px);
+    background: rgba(37,99,235,.08);
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label p {
+    color: var(--ink) !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    line-height: 1.25 !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
-    background: linear-gradient(90deg, rgba(37,99,235,.95), rgba(14,165,233,.78));
-    box-shadow: 0 8px 22px rgba(0,0,0,.15);
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    box-shadow: 0 8px 20px rgba(37,99,235,.25);
 }
 
-[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child {
-    display: none;
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
+    color: #ffffff !important;
 }
 
-/* Titles */
+/* Hide the native radio-circle indicator across Streamlit DOM variants */
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
+[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
+[data-testid="stSidebar"] input[type="radio"] {
+    display: none !important;
+}
+
+/* Sidebar buttons (Logout) — light, bordered, never white-on-white */
+[data-testid="stSidebar"] .stButton > button {
+    width: 100%;
+    background: #ffffff !important;
+    color: var(--ink) !important;
+    border: 1px solid var(--line) !important;
+    box-shadow: 0 2px 8px rgba(15,23,42,.04) !important;
+}
+
+[data-testid="stSidebar"] .stButton > button p,
+[data-testid="stSidebar"] .stButton > button span {
+    color: var(--ink) !important;
+    font-weight: 650 !important;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: #fbeeee !important;
+    border-color: #f3caca !important;
+}
+
+/* ------------------------------------------------------------
+   TITLES & TEXT
+   ------------------------------------------------------------ */
 .tech-title {
-    font-size: clamp(30px, 3vw, 44px);
-    line-height: 1.08;
+    font-size: clamp(28px, 3vw, 42px);
+    line-height: 1.1;
     font-weight: 800;
-    letter-spacing: -1.2px;
+    letter-spacing: -1.1px;
     color: var(--ink);
     margin-bottom: 6px;
 }
@@ -135,57 +192,80 @@ html, body, [class*="css"] {
 }
 
 .section-title {
-    font-size: 20px;
+    font-size: 19px;
     line-height: 1.2;
-    font-weight: 750;
+    font-weight: 700;
     color: var(--ink);
     letter-spacing: -.3px;
     margin-top: 12px;
     margin-bottom: 14px;
 }
 
-/* Metric cards */
+.stApp p,
+.stApp label,
+.stApp li {
+    color: #334155;
+}
+
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp h4 {
+    color: var(--ink);
+}
+
+/* ------------------------------------------------------------
+   METRIC CARDS
+   ------------------------------------------------------------ */
 div[data-testid="stMetric"] {
     background: var(--panel);
-    border: 1px solid rgba(226,232,240,.95);
+    border: 1px solid var(--line);
     padding: 18px 18px 16px 18px;
-    border-radius: 18px;
-    box-shadow: 0 10px 28px rgba(15,23,42,.055);
-    min-height: 118px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(15,23,42,.05);
+    min-height: 112px;
     transition: transform .15s ease, box-shadow .15s ease;
 }
 
 div[data-testid="stMetric"]:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 34px rgba(15,23,42,.085);
+    box-shadow: 0 12px 26px rgba(15,23,42,.08);
 }
 
-div[data-testid="stMetric"] [data-testid="stMetricLabel"] {
-    color: #64748b;
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
+    color: var(--muted) !important;
     font-weight: 600;
 }
 
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: #0f172a;
+    color: var(--ink) !important;
     font-weight: 780;
     letter-spacing: -.8px;
 }
 
-/* Task cards */
+/* ------------------------------------------------------------
+   TASK CARDS
+   ------------------------------------------------------------ */
 .task-card {
     background: var(--panel);
-    padding: 18px 19px;
-    border-radius: 16px;
+    padding: 16px 18px;
+    border-radius: 14px;
     border: 1px solid var(--line);
-    margin-bottom: 11px;
-    box-shadow: 0 7px 22px rgba(15,23,42,.045);
+    margin-bottom: 10px;
+    box-shadow: 0 4px 14px rgba(15,23,42,.04);
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.task-card:hover {
+    box-shadow: 0 8px 20px rgba(15,23,42,.07);
+    transform: translateY(-1px);
 }
 
 .task-card-title {
-    font-size: 16px;
-    font-weight: 750;
+    font-size: 15.5px;
+    font-weight: 700;
     color: var(--ink);
-    margin-bottom: 7px;
+    margin-bottom: 6px;
 }
 
 .task-meta {
@@ -194,9 +274,11 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     margin-top: 4px;
 }
 
-/* Buttons */
+/* ------------------------------------------------------------
+   BUTTONS
+   ------------------------------------------------------------ */
 .stButton > button, .stFormSubmitButton > button {
-    border-radius: 11px !important;
+    border-radius: 10px !important;
     min-height: 42px;
     font-weight: 650;
     border: 1px solid #dfe6ef;
@@ -210,44 +292,71 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 
 button[kind="primary"] {
-    background: linear-gradient(90deg, #2563eb, #0ea5e9) !important;
+    background: linear-gradient(90deg, var(--blue), var(--cyan)) !important;
     border: none !important;
 }
 
-/* Inputs */
+/* ------------------------------------------------------------
+   INPUTS
+   ------------------------------------------------------------ */
 [data-baseweb="input"] > div,
 [data-baseweb="textarea"] > div,
 [data-baseweb="select"] > div {
-    border-radius: 11px !important;
+    border-radius: 10px !important;
     border-color: #dce3ec !important;
-    background: rgba(255,255,255,.96) !important;
+    background: #ffffff !important;
 }
 
-/* Expanders */
+[data-baseweb="input"] input,
+[data-baseweb="textarea"] textarea,
+[data-baseweb="select"] input,
+[data-baseweb="select"] div {
+    color: var(--ink) !important;
+}
+
+/* ------------------------------------------------------------
+   EXPANDERS
+   ------------------------------------------------------------ */
 [data-testid="stExpander"] {
-    background: rgba(255,255,255,.92);
+    background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: 15px;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 6px 20px rgba(15,23,42,.035);
+    box-shadow: 0 4px 14px rgba(15,23,42,.03);
     margin-bottom: 10px;
 }
 
-/* Tables */
+/* ------------------------------------------------------------
+   TABLES
+   ------------------------------------------------------------ */
 [data-testid="stDataFrame"], [data-testid="stTable"] {
-    background: white;
+    background: #ffffff;
     border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--line);
 }
 
-/* Alerts */
-[data-testid="stAlert"] {
-    border-radius: 13px;
-    border-width: 1px;
+[data-testid="stDataFrame"] * {
+    color: #24364b;
 }
 
-/* Divider */
+/* ------------------------------------------------------------
+   ALERTS
+   ------------------------------------------------------------ */
+[data-testid="stAlert"] {
+    border-radius: 12px;
+    border-width: 1px;
+    box-shadow: 0 4px 14px rgba(15,23,42,.03);
+}
+
+[data-testid="stAlert"] p {
+    color: #16324f !important;
+    font-weight: 500;
+}
+
+/* ------------------------------------------------------------
+   MISC
+   ------------------------------------------------------------ */
 hr {
     border-color: rgba(226,232,240,.85) !important;
 }
@@ -268,18 +377,18 @@ hr {
     display: inline-block;
     padding: 7px 11px;
     border-radius: 999px;
-    background: #eaf2ff;
-    color: #1d4ed8;
+    background: var(--blue-soft);
+    color: var(--blue-dark);
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 14px;
 }
 
 .login-heading {
-    font-size: clamp(36px, 4.8vw, 64px);
-    line-height: 1.02;
+    font-size: clamp(34px, 4.6vw, 60px);
+    line-height: 1.05;
     font-weight: 850;
-    letter-spacing: -2.5px;
+    letter-spacing: -2.2px;
     color: #0b1930;
     max-width: 720px;
 }
@@ -293,131 +402,16 @@ hr {
 }
 
 .login-card-title {
-    font-size: 24px;
+    font-size: 23px;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--ink);
     margin-bottom: 3px;
 }
 
 .login-card-copy {
-    color: #64748b;
+    color: var(--muted);
     font-size: 13px;
     margin-bottom: 10px;
-}
-
-/* ------------------------------------------------------------
-   READABILITY + SIDEBAR FIXES
-   ------------------------------------------------------------ */
-
-/* Strong, predictable sidebar contrast across Streamlit versions */
-[data-testid="stSidebar"] {
-    min-width: 300px;
-}
-
-[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] span,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] div {
-    color: #f8fbff;
-}
-
-[data-testid="stSidebar"] .stCaption,
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-    color: #aebfd5 !important;
-}
-
-/* Navigation labels */
-[data-testid="stSidebar"] [data-testid="stRadio"] label {
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    padding: 9px 12px !important;
-    margin: 2px 0;
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label p {
-    color: #f8fbff !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    line-height: 1.25 !important;
-}
-
-/* Hide the native radio-circle indicator in multiple Streamlit DOM variants */
-[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
-[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
-[data-testid="stSidebar"] input[type="radio"] {
-    display: none !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
-    color: #ffffff !important;
-}
-
-/* Logout must never become white-on-white */
-[data-testid="stSidebar"] .stButton > button {
-    width: 100%;
-    background: rgba(255,255,255,.075) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255,255,255,.18) !important;
-    box-shadow: none !important;
-}
-
-[data-testid="stSidebar"] .stButton > button p,
-[data-testid="stSidebar"] .stButton > button span {
-    color: #ffffff !important;
-    font-weight: 650 !important;
-}
-
-[data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(255,255,255,.14) !important;
-    border-color: rgba(255,255,255,.30) !important;
-}
-
-/* Better text contrast everywhere */
-.stApp p,
-.stApp label,
-.stApp li {
-    color: #334155;
-}
-
-.stApp h1,
-.stApp h2,
-.stApp h3,
-.stApp h4 {
-    color: #0f172a;
-}
-
-/* Inputs: dark typed text on white background */
-[data-baseweb="input"] input,
-[data-baseweb="textarea"] textarea,
-[data-baseweb="select"] input,
-[data-baseweb="select"] div {
-    color: #0f172a !important;
-}
-
-/* Ensure metric labels and values stay readable */
-div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
-    color: #53657a !important;
-}
-
-div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: #0b1930 !important;
-}
-
-/* Cleaner alerts with stronger text */
-[data-testid="stAlert"] p {
-    color: #16324f !important;
-    font-weight: 500;
-}
-
-/* Quick-overview info panels */
-[data-testid="stAlert"] {
-    box-shadow: 0 4px 16px rgba(15,23,42,.03);
-}
-
-/* Tables */
-[data-testid="stDataFrame"] * {
-    color: #24364b;
 }
 
 /* Small-screen refinement */
@@ -429,7 +423,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     }
 
     .tech-title {
-        font-size: 30px;
+        font-size: 28px;
     }
 }
 
