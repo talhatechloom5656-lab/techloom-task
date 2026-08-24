@@ -900,6 +900,7 @@ if not ensure_supabase_auth():
     )
 
 PK_TZ = ZoneInfo("Asia/Karachi")
+ATTENDANCE_START_DATE = datetime(2026, 8, 25).date()  # Official first attendance day
 
 
 # ============================================================
@@ -2639,8 +2640,12 @@ def render_task_detail_panel(task):
 def get_attendance_scope_rows(start_date, end_date):
     """
     Build a complete attendance matrix for all active team members.
-    Missing attendance = Absent for that date.
+    Missing attendance = Absent, but only from the official first attendance day.
     """
+    start_date = max(start_date, ATTENDANCE_START_DATE)
+    if end_date < ATTENDANCE_START_DATE:
+        return []
+
     profiles = [p for p in load_team_profiles() if p.get("name")]
     try:
         attendance_rows = (
@@ -4873,6 +4878,7 @@ elif page == "📚 Knowledge Base":
 
 elif page == "👥 Team Attendance":
     st.markdown('<div class="tech-title">Team Attendance</div>', unsafe_allow_html=True)
+    st.info("Official attendance tracking starts on 25 Aug 2026. Earlier dates are not counted as absent.")
     st.caption(
         "Everyone can view team attendance. If a member has not marked attendance "
         "for a date, that date is shown as Absent."
