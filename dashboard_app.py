@@ -561,17 +561,25 @@ def load_profile_for_user(user):
 
 
 def remember_session(auth_result):
-    """Store Supabase tokens in browser cookies so refresh does not log the user out."""
+    """Store Supabase tokens in session_state and browser cookies."""
     try:
         if auth_result.session:
+            access_token = auth_result.session.access_token
+            refresh_token = auth_result.session.refresh_token
+
+            # Keep tokens in this Streamlit session so every rerun can
+            # re-attach the authenticated JWT to the Supabase client.
+            st.session_state.techloom_access_token = access_token
+            st.session_state.techloom_refresh_token = refresh_token
+
             cookie_manager.set(
                 "techloom_access_token",
-                auth_result.session.access_token,
+                access_token,
                 key="techloom_set_access"
             )
             cookie_manager.set(
                 "techloom_refresh_token",
-                auth_result.session.refresh_token,
+                refresh_token,
                 key="techloom_set_refresh"
             )
     except Exception:
@@ -608,6 +616,63 @@ def restore_login_from_cookie():
         st.session_state.profile = profile
 
         # Supabase may rotate the refresh token.
+        remember_session(auth_result)
+        return True
+
+    except Exception:
+        return False
+
+
+def ensure_supabase_auth():
+    """
+    Make sure the Supabase/PostgREST client is actually authenticated as
+    the same employee shown in Streamlit session_state.
+
+    This fixes cases where Streamlit keeps the visible login state across a
+    rerun/redeploy but the Supabase client's JWT was lost, causing RLS
+    errors such as 42501 on chat_messages.
+    """
+    expected_user = st.session_state.get("user")
+    if expected_user is None:
+        return False
+
+    expected_id = str(expected_user.id)
+
+    # First check whether the client already has the correct authenticated user.
+    try:
+        auth_user_result = supabase.auth.get_user()
+        auth_user = getattr(auth_user_result, "user", None)
+        if auth_user and str(auth_user.id) == expected_id:
+            return True
+    except Exception:
+        pass
+
+    # Re-attach tokens from Streamlit session state first.
+    access_token = st.session_state.get("techloom_access_token")
+    refresh_token = st.session_state.get("techloom_refresh_token")
+
+    # Fall back to browser cookies after a full page refresh.
+    if not access_token or not refresh_token:
+        try:
+            access_token = cookie_manager.get("techloom_access_token")
+            refresh_token = cookie_manager.get("techloom_refresh_token")
+        except Exception:
+            access_token = None
+            refresh_token = None
+
+    if not access_token or not refresh_token:
+        return False
+
+    try:
+        auth_result = supabase.auth.set_session(
+            access_token,
+            refresh_token
+        )
+
+        auth_user = auth_result.user
+        if not auth_user or str(auth_user.id) != expected_id:
+            return False
+
         remember_session(auth_result)
         return True
 
@@ -680,6 +745,8 @@ def logout():
 
     st.session_state.user = None
     st.session_state.profile = None
+    st.session_state.pop("techloom_access_token", None)
+    st.session_state.pop("techloom_refresh_token", None)
 
     st.rerun()
 
@@ -744,6 +811,13 @@ role = profile["role"]
 department = profile["department"]
 
 current_user_id = st.session_state.user.id
+
+# Re-sync the JWT before any RLS-protected table operations.
+if not ensure_supabase_auth():
+    st.warning(
+        "Your secure session needs to be refreshed. "
+        "Please log out and sign in again once."
+    )
 
 PK_TZ = ZoneInfo("Asia/Karachi")
 
@@ -1113,6 +1187,14 @@ def send_chat_message(message):
     message = (message or "").strip()
     if not message:
         return False
+
+    if not ensure_supabase_auth():
+        st.error(
+            "Your Supabase login token is not attached to this browser session. "
+            "Please log out and sign in again."
+        )
+        return False
+
     try:
         supabase.table("chat_messages").insert({
             "user_id": current_user_id,
