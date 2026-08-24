@@ -32,18 +32,20 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --blue: #2563eb;
-    --blue-dark: #1d4ed8;
-    --cyan: #0ea5e9;
-    --blue-soft: #eaf2ff;
-    --green: #10b981;
-    --red: #ef4444;
-    --amber: #f59e0b;
-    --ink: #0f172a;
-    --muted: #64748b;
-    --line: #e5eaf1;
+    --indigo: #4f46e5;
+    --indigo-dark: #4338ca;
+    --teal: #0d9488;
+    --indigo-soft: #eef2ff;
+    --teal-soft: #ecfdf5;
+    --green: #059669;
+    --red: #dc2626;
+    --amber: #d97706;
+    --ink: #1e2333;
+    --muted: #6b7280;
+    --line: #e6e8ee;
     --panel: #ffffff;
-    --sidebar-bg: #f6f8fc;
+    --page-bg: #f8f9fb;
+    --sidebar-bg: #ffffff;
 }
 
 html, body, [class*="css"] {
@@ -54,30 +56,27 @@ html, body, [class*="css"] {
    APP BACKGROUND
    ------------------------------------------------------------ */
 .stApp {
-    background:
-      radial-gradient(circle at 8% 5%, rgba(37,99,235,.06), transparent 28%),
-      radial-gradient(circle at 92% 12%, rgba(14,165,233,.06), transparent 24%),
-      #f7f9fc;
+    background: var(--page-bg);
     color: var(--ink);
 }
 
 .block-container {
-    max-width: 1500px;
-    padding-top: 2.2rem;
+    max-width: 1460px;
+    padding-top: 2.1rem;
     padding-bottom: 3rem;
 }
 
 /* ------------------------------------------------------------
-   SIDEBAR — light, clean, never dark
+   SIDEBAR — crisp white, indigo accent, easy to scan
    ------------------------------------------------------------ */
 [data-testid="stSidebar"] {
     background: var(--sidebar-bg);
     border-right: 1px solid var(--line);
-    min-width: 300px;
+    min-width: 296px;
 }
 
 [data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    padding: 1.25rem .9rem 1rem .9rem;
+    padding: 1.3rem .95rem 1rem .95rem;
 }
 
 [data-testid="stSidebar"] p,
@@ -93,57 +92,61 @@ html, body, [class*="css"] {
 }
 
 .sidebar-logo {
-    font-size: 22px;
+    font-size: 21px;
     line-height: 1.2;
     font-weight: 800;
-    letter-spacing: -.4px;
-    color: var(--ink);
-    margin-top: .35rem;
+    letter-spacing: -.3px;
+    color: var(--indigo-dark);
+    margin-top: .3rem;
 }
 
 .sidebar-subtitle {
     font-size: 11.5px;
     color: var(--muted) !important;
     letter-spacing: .15px;
-    margin-top: 5px;
-    margin-bottom: 20px;
+    margin-top: 4px;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
 }
 
-/* Turn radio into clean navigation pills */
+/* Turn radio into clean, tappable navigation rows */
 [data-testid="stSidebar"] [role="radiogroup"] {
-    gap: 4px;
+    gap: 2px;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     width: 100%;
-    min-height: 42px;
+    min-height: 44px;
     display: flex;
     align-items: center;
-    border-radius: 11px;
-    padding: 9px 12px !important;
-    margin: 2px 0;
+    border-radius: 10px;
+    padding: 10px 12px !important;
+    margin: 1px 0;
     background: transparent;
-    transition: all .15s ease;
+    border-left: 3px solid transparent;
+    transition: all .14s ease;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
-    background: rgba(37,99,235,.08);
+    background: #f4f5fb;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label p {
-    color: var(--ink) !important;
+    color: #3d4356 !important;
     font-weight: 600 !important;
     font-size: 14px !important;
     line-height: 1.25 !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
-    background: linear-gradient(90deg, var(--blue), var(--cyan));
-    box-shadow: 0 8px 20px rgba(37,99,235,.25);
+    background: var(--indigo-soft);
+    border-left: 3px solid var(--indigo);
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
-    color: #ffffff !important;
+    color: var(--indigo-dark) !important;
+    font-weight: 700 !important;
 }
 
 /* Hide the native radio-circle indicator across Streamlit DOM variants */
@@ -153,58 +156,59 @@ html, body, [class*="css"] {
     display: none !important;
 }
 
-/* Sidebar buttons (Logout) — light, bordered, never white-on-white */
+/* Sidebar buttons (Logout) */
 [data-testid="stSidebar"] .stButton > button {
     width: 100%;
     background: #ffffff !important;
-    color: var(--ink) !important;
-    border: 1px solid var(--line) !important;
-    box-shadow: 0 2px 8px rgba(15,23,42,.04) !important;
+    color: #b91c1c !important;
+    border: 1px solid #f3d2d2 !important;
+    box-shadow: none !important;
+    margin-top: 6px;
 }
 
 [data-testid="stSidebar"] .stButton > button p,
 [data-testid="stSidebar"] .stButton > button span {
-    color: var(--ink) !important;
+    color: #b91c1c !important;
     font-weight: 650 !important;
 }
 
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: #fbeeee !important;
-    border-color: #f3caca !important;
+    background: #fef2f2 !important;
+    border-color: #f2b8b8 !important;
 }
 
 /* ------------------------------------------------------------
    TITLES & TEXT
    ------------------------------------------------------------ */
 .tech-title {
-    font-size: clamp(28px, 3vw, 42px);
-    line-height: 1.1;
+    font-size: clamp(26px, 2.6vw, 36px);
+    line-height: 1.15;
     font-weight: 800;
-    letter-spacing: -1.1px;
+    letter-spacing: -.8px;
     color: var(--ink);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .tech-subtitle {
     font-size: 14px;
     color: var(--muted);
-    margin-bottom: 24px;
+    margin-bottom: 22px;
 }
 
 .section-title {
-    font-size: 19px;
+    font-size: 17px;
     line-height: 1.2;
     font-weight: 700;
     color: var(--ink);
-    letter-spacing: -.3px;
-    margin-top: 12px;
-    margin-bottom: 14px;
+    letter-spacing: -.2px;
+    margin-top: 10px;
+    margin-bottom: 12px;
 }
 
 .stApp p,
 .stApp label,
 .stApp li {
-    color: #334155;
+    color: #3d4356;
 }
 
 .stApp h1,
@@ -215,85 +219,92 @@ html, body, [class*="css"] {
 }
 
 /* ------------------------------------------------------------
-   METRIC CARDS
+   METRIC CARDS — subtle top accent, generous spacing
    ------------------------------------------------------------ */
 div[data-testid="stMetric"] {
     background: var(--panel);
     border: 1px solid var(--line);
-    padding: 18px 18px 16px 18px;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(15,23,42,.05);
-    min-height: 112px;
-    transition: transform .15s ease, box-shadow .15s ease;
+    border-top: 3px solid var(--indigo);
+    padding: 16px 18px 14px 18px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(30,35,51,.05);
+    min-height: 104px;
+    transition: box-shadow .15s ease;
 }
 
 div[data-testid="stMetric"]:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 26px rgba(15,23,42,.08);
+    box-shadow: 0 6px 16px rgba(30,35,51,.08);
 }
 
 div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
     color: var(--muted) !important;
     font-weight: 600;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
 }
 
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     color: var(--ink) !important;
     font-weight: 780;
-    letter-spacing: -.8px;
+    letter-spacing: -.6px;
 }
 
 /* ------------------------------------------------------------
-   TASK CARDS
+   TASK CARDS — left accent bar for quick scanning
    ------------------------------------------------------------ */
 .task-card {
     background: var(--panel);
-    padding: 16px 18px;
-    border-radius: 14px;
+    padding: 14px 18px 14px 16px;
+    border-radius: 10px;
     border: 1px solid var(--line);
-    margin-bottom: 10px;
-    box-shadow: 0 4px 14px rgba(15,23,42,.04);
-    transition: box-shadow .15s ease, transform .15s ease;
+    border-left: 4px solid var(--teal);
+    margin-bottom: 9px;
+    box-shadow: 0 1px 3px rgba(30,35,51,.04);
+    transition: box-shadow .15s ease;
 }
 
 .task-card:hover {
-    box-shadow: 0 8px 20px rgba(15,23,42,.07);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(30,35,51,.07);
 }
 
 .task-card-title {
-    font-size: 15.5px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--ink);
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .task-meta {
     color: var(--muted);
     font-size: 12.5px;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
 /* ------------------------------------------------------------
    BUTTONS
    ------------------------------------------------------------ */
 .stButton > button, .stFormSubmitButton > button {
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     min-height: 42px;
     font-weight: 650;
-    border: 1px solid #dfe6ef;
+    border: 1px solid #dfe2ea;
     box-shadow: none;
-    transition: all .15s ease;
+    transition: all .14s ease;
 }
 
 .stButton > button:hover, .stFormSubmitButton > button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(15,23,42,.08);
+    border-color: #c7cbdb;
+    box-shadow: 0 4px 12px rgba(30,35,51,.06);
 }
 
 button[kind="primary"] {
-    background: linear-gradient(90deg, var(--blue), var(--cyan)) !important;
+    background: var(--indigo) !important;
     border: none !important;
+}
+
+button[kind="primary"]:hover {
+    background: var(--indigo-dark) !important;
 }
 
 /* ------------------------------------------------------------
@@ -302,8 +313,8 @@ button[kind="primary"] {
 [data-baseweb="input"] > div,
 [data-baseweb="textarea"] > div,
 [data-baseweb="select"] > div {
-    border-radius: 10px !important;
-    border-color: #dce3ec !important;
+    border-radius: 8px !important;
+    border-color: #dde0e8 !important;
     background: #ffffff !important;
 }
 
@@ -314,15 +325,22 @@ button[kind="primary"] {
     color: var(--ink) !important;
 }
 
+[data-baseweb="input"] > div:focus-within,
+[data-baseweb="textarea"] > div:focus-within,
+[data-baseweb="select"] > div:focus-within {
+    border-color: var(--indigo) !important;
+    box-shadow: 0 0 0 3px var(--indigo-soft) !important;
+}
+
 /* ------------------------------------------------------------
    EXPANDERS
    ------------------------------------------------------------ */
 [data-testid="stExpander"] {
     background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 14px rgba(15,23,42,.03);
+    box-shadow: 0 1px 3px rgba(30,35,51,.03);
     margin-bottom: 10px;
 }
 
@@ -331,34 +349,50 @@ button[kind="primary"] {
    ------------------------------------------------------------ */
 [data-testid="stDataFrame"], [data-testid="stTable"] {
     background: #ffffff;
-    border-radius: 14px;
+    border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--line);
 }
 
 [data-testid="stDataFrame"] * {
-    color: #24364b;
+    color: #2c3142;
 }
 
 /* ------------------------------------------------------------
    ALERTS
    ------------------------------------------------------------ */
 [data-testid="stAlert"] {
-    border-radius: 12px;
+    border-radius: 10px;
     border-width: 1px;
-    box-shadow: 0 4px 14px rgba(15,23,42,.03);
+    box-shadow: 0 1px 3px rgba(30,35,51,.03);
 }
 
 [data-testid="stAlert"] p {
-    color: #16324f !important;
+    color: #1e2333 !important;
     font-weight: 500;
+}
+
+/* ------------------------------------------------------------
+   TABS (if used)
+   ------------------------------------------------------------ */
+button[data-baseweb="tab"] {
+    font-weight: 600;
+    color: var(--muted);
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: var(--indigo-dark) !important;
+}
+
+[data-baseweb="tab-highlight"] {
+    background-color: var(--indigo) !important;
 }
 
 /* ------------------------------------------------------------
    MISC
    ------------------------------------------------------------ */
 hr {
-    border-color: rgba(226,232,240,.85) !important;
+    border-color: var(--line) !important;
 }
 
 /* Login */
@@ -370,39 +404,40 @@ hr {
 }
 
 .login-hero {
-    padding: 34px 6px 20px 6px;
+    padding: 30px 6px 20px 6px;
 }
 
 .login-kicker {
     display: inline-block;
-    padding: 7px 11px;
+    padding: 6px 12px;
     border-radius: 999px;
-    background: var(--blue-soft);
-    color: var(--blue-dark);
+    background: var(--indigo-soft);
+    color: var(--indigo-dark);
     font-size: 12px;
     font-weight: 700;
+    letter-spacing: .3px;
     margin-bottom: 14px;
 }
 
 .login-heading {
-    font-size: clamp(34px, 4.6vw, 60px);
-    line-height: 1.05;
-    font-weight: 850;
-    letter-spacing: -2.2px;
-    color: #0b1930;
+    font-size: clamp(32px, 4.2vw, 54px);
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: -1.6px;
+    color: var(--ink);
     max-width: 720px;
 }
 
 .login-copy {
     font-size: 15px;
     line-height: 1.7;
-    color: #667085;
+    color: var(--muted);
     max-width: 590px;
-    margin-top: 18px;
+    margin-top: 16px;
 }
 
 .login-card-title {
-    font-size: 23px;
+    font-size: 21px;
     font-weight: 800;
     color: var(--ink);
     margin-bottom: 3px;
@@ -417,13 +452,13 @@ hr {
 /* Small-screen refinement */
 @media (max-width: 900px) {
     .block-container {
-        padding-top: 1.25rem;
+        padding-top: 1.2rem;
         padding-left: 1rem;
         padding-right: 1rem;
     }
 
     .tech-title {
-        font-size: 28px;
+        font-size: 26px;
     }
 }
 
