@@ -12,106 +12,303 @@ from supabase import create_client
 
 st.set_page_config(
     page_title="Techloom Task",
-    page_icon="📋",
+    page_icon="◈",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 
 # ============================================================
-# STYLING
+# PREMIUM UI / STYLING
 # ============================================================
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* Main background */
+:root {
+    --navy: #071a33;
+    --navy-2: #0c2b50;
+    --blue: #2563eb;
+    --blue-soft: #eaf2ff;
+    --cyan: #0ea5e9;
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --line: #e5eaf1;
+    --panel: rgba(255,255,255,.92);
+}
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
 .stApp {
-    background-color: #f6f8fc;
+    background:
+      radial-gradient(circle at 8% 5%, rgba(37,99,235,.08), transparent 28%),
+      radial-gradient(circle at 92% 12%, rgba(14,165,233,.08), transparent 24%),
+      #f7f9fc;
+    color: var(--ink);
+}
+
+/* Keep content nicely centred */
+.block-container {
+    max-width: 1500px;
+    padding-top: 2.2rem;
+    padding-bottom: 3rem;
 }
 
 /* Sidebar */
 [data-testid="stSidebar"] {
-    background: linear-gradient(
-        180deg,
-        #07152d 0%,
-        #0a1d3d 100%
-    );
+    background:
+      radial-gradient(circle at 15% 0%, rgba(37,99,235,.30), transparent 28%),
+      linear-gradient(180deg, #07162f 0%, #081f3e 58%, #06162d 100%);
+    border-right: 1px solid rgba(255,255,255,.08);
+}
+
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    padding: 1.15rem .85rem 1rem .85rem;
 }
 
 [data-testid="stSidebar"] * {
-    color: white;
+    color: #eef5ff;
+}
+
+.sidebar-logo {
+    font-size: 23px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -.4px;
+    margin-top: .35rem;
+}
+
+.sidebar-subtitle {
+    font-size: 11px;
+    color: #9fb4cf !important;
+    letter-spacing: .15px;
+    margin-top: 5px;
+    margin-bottom: 22px;
+}
+
+/* Turn radio into navigation pills */
+[data-testid="stSidebar"] [role="radiogroup"] {
+    gap: 4px;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    width: 100%;
+    border-radius: 11px;
+    padding: 8px 10px;
+    transition: all .16s ease;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+    background: rgba(255,255,255,.075);
+    transform: translateX(2px);
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+    background: linear-gradient(90deg, rgba(37,99,235,.95), rgba(14,165,233,.78));
+    box-shadow: 0 8px 22px rgba(0,0,0,.15);
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child {
+    display: none;
 }
 
 /* Titles */
 .tech-title {
-    font-size: 36px;
+    font-size: clamp(30px, 3vw, 44px);
+    line-height: 1.08;
     font-weight: 800;
-    color: #111827;
-    margin-bottom: 2px;
+    letter-spacing: -1.2px;
+    color: var(--ink);
+    margin-bottom: 6px;
 }
 
 .tech-subtitle {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--muted);
     margin-bottom: 24px;
 }
 
-.sidebar-logo {
-    font-size: 25px;
-    font-weight: 800;
-    margin-bottom: 0px;
-}
-
-.sidebar-subtitle {
-    font-size: 12px;
-    color: #cbd5e1 !important;
-    margin-bottom: 22px;
-}
-
-/* Cards */
-.task-card {
-    background: white;
-    padding: 18px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    margin-bottom: 12px;
-    box-shadow: 0px 2px 8px rgba(0,0,0,0.035);
-}
-
-.task-card-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 7px;
-}
-
-.task-meta {
-    color: #6b7280;
-    font-size: 13px;
-    margin-top: 4px;
-}
-
 .section-title {
-    font-size: 21px;
-    font-weight: 700;
-    color: #111827;
-    margin-top: 10px;
-    margin-bottom: 13px;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 750;
+    color: var(--ink);
+    letter-spacing: -.3px;
+    margin-top: 12px;
+    margin-bottom: 14px;
 }
 
 /* Metric cards */
 div[data-testid="stMetric"] {
-    background-color: white;
-    border: 1px solid #e5e7eb;
-    padding: 17px;
-    border-radius: 14px;
-    box-shadow: 0px 2px 8px rgba(0,0,0,0.03);
+    background: var(--panel);
+    border: 1px solid rgba(226,232,240,.95);
+    padding: 18px 18px 16px 18px;
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(15,23,42,.055);
+    min-height: 118px;
+    transition: transform .15s ease, box-shadow .15s ease;
 }
 
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(15,23,42,.085);
+}
+
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] {
+    color: #64748b;
+    font-weight: 600;
+}
+
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: #0f172a;
+    font-weight: 780;
+    letter-spacing: -.8px;
+}
+
+/* Task cards */
+.task-card {
+    background: var(--panel);
+    padding: 18px 19px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    margin-bottom: 11px;
+    box-shadow: 0 7px 22px rgba(15,23,42,.045);
+}
+
+.task-card-title {
+    font-size: 16px;
+    font-weight: 750;
+    color: var(--ink);
+    margin-bottom: 7px;
+}
+
+.task-meta {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-top: 4px;
+}
+
+/* Buttons */
+.stButton > button, .stFormSubmitButton > button {
+    border-radius: 11px !important;
+    min-height: 42px;
+    font-weight: 650;
+    border: 1px solid #dfe6ef;
+    box-shadow: none;
+    transition: all .15s ease;
+}
+
+.stButton > button:hover, .stFormSubmitButton > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(15,23,42,.08);
+}
+
+button[kind="primary"] {
+    background: linear-gradient(90deg, #2563eb, #0ea5e9) !important;
+    border: none !important;
+}
+
+/* Inputs */
+[data-baseweb="input"] > div,
+[data-baseweb="textarea"] > div,
+[data-baseweb="select"] > div {
+    border-radius: 11px !important;
+    border-color: #dce3ec !important;
+    background: rgba(255,255,255,.96) !important;
+}
+
+/* Expanders */
+[data-testid="stExpander"] {
+    background: rgba(255,255,255,.92);
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(15,23,42,.035);
+    margin-bottom: 10px;
+}
+
+/* Tables */
+[data-testid="stDataFrame"], [data-testid="stTable"] {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+}
+
+/* Alerts */
+[data-testid="stAlert"] {
+    border-radius: 13px;
+    border-width: 1px;
+}
+
+/* Divider */
+hr {
+    border-color: rgba(226,232,240,.85) !important;
+}
+
+/* Login */
+.login-shell {
+    min-height: 77vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-hero {
+    padding: 34px 6px 20px 6px;
+}
+
+.login-kicker {
+    display: inline-block;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: #eaf2ff;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.login-heading {
+    font-size: clamp(36px, 4.8vw, 64px);
+    line-height: 1.02;
+    font-weight: 850;
+    letter-spacing: -2.5px;
+    color: #0b1930;
+    max-width: 720px;
+}
+
+.login-copy {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #667085;
+    max-width: 590px;
+    margin-top: 18px;
+}
+
+.login-card-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 3px;
+}
+
+.login-card-copy {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+/* Hide Streamlit footer */
+footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
-
 
 # ============================================================
 # SUPABASE
@@ -210,50 +407,46 @@ def logout():
 
 if st.session_state.user is None:
 
-    st.markdown(
-        '<div class="tech-title">📋 TECHLOOM TASK</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown('<div class="login-shell">', unsafe_allow_html=True)
+    hero, form_col = st.columns([1.55, 0.9], gap="large")
 
-    st.markdown(
-        '<div class="tech-subtitle">'
-        'Office Task Management System'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    left, center, right = st.columns([1, 1.1, 1])
-
-    with center:
-
-        st.subheader("Sign In")
-
-        email = st.text_input(
-            "Email"
+    with hero:
+        st.markdown(
+            """
+            <div class="login-hero">
+                <div class="login-kicker">TECHLOOM WORKSPACE</div>
+                <div class="login-heading">One place to run the workday.</div>
+                <div class="login-copy">
+                    Manage tasks, approvals, marketplace operations and attendance
+                    from one focused workspace built for the Techloom team.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
-        password = st.text_input(
-            "Password",
-            type="password"
-        )
+        b1, b2, b3 = st.columns(3)
+        b1.metric("Workspace", "Centralised")
+        b2.metric("Team", "Connected")
+        b3.metric("Access", "Secure")
 
-        if st.button(
-            "Sign In",
-            type="primary",
-            use_container_width=True
-        ):
+    with form_col:
+        st.markdown('<div class="login-card-title">Welcome back</div>', unsafe_allow_html=True)
+        st.markdown('<div class="login-card-copy">Sign in with your Techloom account.</div>', unsafe_allow_html=True)
 
+        email = st.text_input("Email", placeholder="name@company.com")
+        password = st.text_input("Password", type="password", placeholder="Enter your password")
+
+        if st.button("Sign In →", type="primary", use_container_width=True):
             if not email or not password:
-
-                st.warning(
-                    "Please enter your email and password."
-                )
-
+                st.warning("Please enter your email and password.")
             else:
-
                 if login(email, password):
                     st.rerun()
 
+        st.caption("🔒 Internal Techloom workspace")
+
+    st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 
