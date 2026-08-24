@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import uuid
+import re
 import json
 import streamlit.components.v1 as components
 import extra_streamlit_components as stx
@@ -1175,9 +1177,154 @@ def submit_task_for_review(task_id, submission_link="", submission_notes=""):
         return False
 
 
-def send_chat_message(message):
+
+def get_unread_chat_count():
+    """Return unread chat-notification count for the current employee."""
+    try:
+        result = (
+            supabase
+            .table("notifications")
+            .select("id")
+            .eq("user_id", current_user_id)
+            .eq("is_read", False)
+            .eq("notification_type", "chat")
+            .execute()
+        )
+        return len(result.data or [])
+    except Exception:
+        return 0
+
+
+def mark_chat_notifications_read():
+    """Clear only chat notifications when the employee opens Group Chat."""
+    try:
+        (
+            supabase
+            .table("notifications")
+            .update({"is_read": True})
+            .eq("user_id", current_user_id)
+            .eq("is_read", False)
+            .eq("notification_type", "chat")
+            .execute()
+        )
+        return True
+    except Exception:
+        return False
+
+
+def safe_chat_filename(filename):
+    filename = filename or "attachment"
+    filename = re.sub(r"[^A-Za-z0-9._-]+", "_", filename)
+    return filename[:120] or "attachment"
+
+
+def upload_chat_attachment(uploaded_file):
+    """
+    Upload an image/document to the private Supabase chat-files bucket.
+    Returns attachment metadata for chat_messages.
+    """
+    if uploaded_file is None:
+        return None
+
+    if not ensure_supabase_auth():
+        st.error("Your secure login session needs to be refreshed.")
+        return None
+
+    try:
+        file_bytes = uploaded_file.getvalue()
+        if len(file_bytes) > 10 * 1024 * 1024:
+            st.error("File is too large. Maximum chat upload size is 10 MB.")
+            return None
+
+        original_name = safe_chat_filename(uploaded_file.name)
+        mime_type = uploaded_file.type or "application/octet-stream"
+        object_path = (
+            f"{current_user_id}/"
+            f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_"
+            f"{uuid.uuid4().hex[:10]}_{original_name}"
+        )
+
+        supabase.storage.from_("chat-files").upload(
+            object_path,
+            file_bytes,
+            {
+                "content-type": mime_type,
+                "upsert": "false"
+            }
+        )
+
+        return {
+            "attachment_path": object_path,
+            "attachment_name": original_name,
+            "attachment_type": mime_type,
+            "attachment_size": len(file_bytes)
+        }
+
+    except Exception as error:
+        st.error("Attachment could not be uploaded.")
+        st.write(error)
+        return None
+
+
+def get_chat_attachment_url(path):
+    """Create a temporary signed URL for a private chat attachment."""
+    if not path:
+        return None
+
+    try:
+        result = (
+            supabase
+            .storage
+            .from_("chat-files")
+            .create_signed_url(path, 3600)
+        )
+
+        if isinstance(result, str):
+            return result
+
+        if isinstance(result, dict):
+            return (
+                result.get("signedURL")
+                or result.get("signedUrl")
+                or result.get("signed_url")
+            )
+
+        return None
+
+    except Exception:
+        return None
+
+
+def human_file_size(size):
+    try:
+        size = int(size or 0)
+    except Exception:
+        size = 0
+
+    if size >= 1024 * 1024:
+        return f"{size / (1024 * 1024):.1f} MB"
+    if size >= 1024:
+        return f"{size / 1024:.0f} KB"
+    return f"{size} B"
+
+
+def send_chat_attachment(uploaded_file, caption=""):
+    """Upload an attachment and create a group-chat message for it."""
+    attachment = upload_chat_attachment(uploaded_file)
+    if not attachment:
+        return False
+
+    caption = (caption or "").strip()
+    message_text = caption or f"📎 {attachment['attachment_name']}"
+
+    return send_chat_message(
+        message_text,
+        attachment=attachment
+    )
+
+def send_chat_message(message, attachment=None):
     message = (message or "").strip()
-    if not message:
+    if not message and not attachment:
         return False
 
     if not ensure_supabase_auth():
@@ -1188,30 +1335,43 @@ def send_chat_message(message):
         return False
 
     try:
-        supabase.table("chat_messages").insert({
+        row = {
             "user_id": current_user_id,
             "user_name": name,
-            "message": message
-        }).execute()
+            "message": message or "Attachment"
+        }
+
+        if attachment:
+            row.update({
+                "attachment_path": attachment.get("attachment_path"),
+                "attachment_name": attachment.get("attachment_name"),
+                "attachment_type": attachment.get("attachment_type"),
+                "attachment_size": attachment.get("attachment_size")
+            })
+
+        supabase.table("chat_messages").insert(row).execute()
+
+        preview = message[:180] if message else "Sent an attachment"
 
         # Notify every other visible teammate.
         for teammate in load_team_profiles():
             teammate_id = teammate.get("id")
-            if teammate_id and teammate_id != current_user_id:
+            if teammate_id and str(teammate_id) != str(current_user_id):
                 create_notification(
                     teammate_id,
                     f"New message from {name}",
-                    message[:180],
+                    preview,
                     "chat"
                 )
         return True
+
     except Exception as error:
         st.error("Message could not be sent.")
         st.write(error)
         return False
 
 
-@st.fragment(run_every=3)
+@st.fragment(run_every=2)
 def render_group_chat_messages():
     try:
         result = (
@@ -1259,7 +1419,38 @@ def render_group_chat_messages():
 
         with st.chat_message("user" if sender == name else "assistant"):
             st.markdown(f"**{sender}**")
-            st.write(message.get("message", ""))
+
+            body = message.get("message", "")
+            if body:
+                st.write(body)
+
+            attachment_path = message.get("attachment_path")
+            attachment_name = message.get("attachment_name")
+            attachment_type = message.get("attachment_type") or ""
+            attachment_size = message.get("attachment_size")
+
+            if attachment_path:
+                attachment_url = get_chat_attachment_url(attachment_path)
+
+                if attachment_url:
+                    if attachment_type.startswith("image/"):
+                        st.image(
+                            attachment_url,
+                            caption=attachment_name or "Image",
+                            width="stretch"
+                        )
+                    else:
+                        st.link_button(
+                            f"📎 {attachment_name or 'Open attachment'} "
+                            f"({human_file_size(attachment_size)})",
+                            attachment_url
+                        )
+                else:
+                    st.caption(
+                        f"📎 {attachment_name or 'Attachment'} "
+                        "(temporary link unavailable)"
+                    )
+
             if display_stamp:
                 st.caption(display_stamp)
 
@@ -1475,6 +1666,13 @@ with st.sidebar:
 
     st.divider()
 
+    chat_unread_count = get_unread_chat_count()
+    group_chat_label = (
+        f"💬 Group Chat  🔴 {chat_unread_count}"
+        if chat_unread_count > 0
+        else "💬 Group Chat"
+    )
+
     # ----------------------------
     # AIFA / MANAGEMENT
     # ----------------------------
@@ -1490,7 +1688,7 @@ with st.sidebar:
             "⏱ Attendance",
             "📅 Attendance Report",
             "🛡 Compliance",
-            "💬 Group Chat",
+            group_chat_label,
             "🔔 Notifications",
             "📜 Activity"
         ]
@@ -1509,7 +1707,7 @@ with st.sidebar:
             "🛡 Compliance",
             "📨 Appeals",
             "💬 Seller Support",
-            "💬 Group Chat",
+            group_chat_label,
             "🔔 Notifications",
             "📜 Activity"
         ]
@@ -1527,7 +1725,7 @@ with st.sidebar:
             "🛒 Amazon",
             "🛍 eBay",
             "📦 Listing Uploads",
-            "💬 Group Chat",
+            group_chat_label,
             "🔔 Notifications",
             "📜 Activity"
         ]
@@ -1542,7 +1740,7 @@ with st.sidebar:
             "🏠 Dashboard",
             "📋 My Tasks",
             "⏱ Attendance",
-            "💬 Group Chat",
+            group_chat_label,
             "🔔 Notifications",
             "📜 Activity"
         ]
@@ -1553,7 +1751,7 @@ with st.sidebar:
             "🏠 Dashboard",
             "📋 My Tasks",
             "⏱ Attendance",
-            "💬 Group Chat",
+            group_chat_label,
             "🔔 Notifications"
         ]
 
@@ -3194,25 +3392,75 @@ elif page == "💬 Seller Support":
 # GROUP CHAT
 # ============================================================
 
-elif page == "💬 Group Chat":
+elif page.startswith("💬 Group Chat"):
+
+    # Opening the chat clears the red unread-chat badge.
+    mark_chat_notifications_read()
 
     st.markdown('<div class="tech-title">Techloom Group Chat</div>', unsafe_allow_html=True)
     st.markdown(
         '<div class="tech-subtitle">'
-        'Shared team conversation for quick updates, questions and coordination.'
+        'Shared team conversation for quick updates, files, images and coordination.'
         '</div>',
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="workspace-hero">'
-        '<div class="workspace-hero-title">💬 Team channel</div>'
-        '<div class="workspace-hero-copy">'
-        'Messages refresh automatically. New messages also create an unread notification '
-        'for the rest of the team.'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
+    top_a, top_b, top_c = st.columns([2, 1, 1])
+
+    with top_a:
+        st.markdown(
+            '<div class="workspace-hero">'
+            '<div class="workspace-hero-title">💬 Team channel</div>'
+            '<div class="workspace-hero-copy">'
+            'Chat refreshes automatically every 2 seconds. '
+            'New messages create an unread badge and notification for teammates.'
+            '</div></div>',
+            unsafe_allow_html=True
+        )
+
+    with top_b:
+        st.metric("Unread Chat", get_unread_chat_count())
+
+    with top_c:
+        st.metric("Refresh", "2 sec")
+
+    upload_col, caption_col = st.columns([1, 2])
+
+    with upload_col:
+        chat_file = st.file_uploader(
+            "📎 Attach image or file",
+            type=[
+                "png", "jpg", "jpeg", "webp", "gif",
+                "pdf", "doc", "docx", "xls", "xlsx",
+                "csv", "txt", "zip"
+            ],
+            key="chat_attachment"
+        )
+
+    with caption_col:
+        chat_caption = st.text_input(
+            "Caption (optional)",
+            placeholder="Add a short note about the attachment...",
+            key="chat_attachment_caption"
+        )
+
+        if chat_file is not None:
+            st.caption(
+                f"Selected: {chat_file.name} • "
+                f"{human_file_size(chat_file.size)}"
+            )
+
+            if st.button(
+                "📤 Send Attachment",
+                type="primary",
+                use_container_width=True,
+                key="send_chat_attachment"
+            ):
+                if send_chat_attachment(chat_file, chat_caption):
+                    st.success("Attachment sent.")
+                    st.rerun()
+
+    st.divider()
 
     render_group_chat_messages()
 
