@@ -1,3 +1,8 @@
+Library
+/
+dashboard_app_polished.py
+
+
 import streamlit as st
 import pandas as pd
 
@@ -303,6 +308,134 @@ hr {
     color: #64748b;
     font-size: 13px;
     margin-bottom: 10px;
+}
+
+/* ------------------------------------------------------------
+   READABILITY + SIDEBAR FIXES
+   ------------------------------------------------------------ */
+
+/* Strong, predictable sidebar contrast across Streamlit versions */
+[data-testid="stSidebar"] {
+    min-width: 300px;
+}
+
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] div {
+    color: #f8fbff;
+}
+
+[data-testid="stSidebar"] .stCaption,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+    color: #aebfd5 !important;
+}
+
+/* Navigation labels */
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    padding: 9px 12px !important;
+    margin: 2px 0;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label p {
+    color: #f8fbff !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    line-height: 1.25 !important;
+}
+
+/* Hide the native radio-circle indicator in multiple Streamlit DOM variants */
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
+[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
+[data-testid="stSidebar"] input[type="radio"] {
+    display: none !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
+    color: #ffffff !important;
+}
+
+/* Logout must never become white-on-white */
+[data-testid="stSidebar"] .stButton > button {
+    width: 100%;
+    background: rgba(255,255,255,.075) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stSidebar"] .stButton > button p,
+[data-testid="stSidebar"] .stButton > button span {
+    color: #ffffff !important;
+    font-weight: 650 !important;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(255,255,255,.14) !important;
+    border-color: rgba(255,255,255,.30) !important;
+}
+
+/* Better text contrast everywhere */
+.stApp p,
+.stApp label,
+.stApp li {
+    color: #334155;
+}
+
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp h4 {
+    color: #0f172a;
+}
+
+/* Inputs: dark typed text on white background */
+[data-baseweb="input"] input,
+[data-baseweb="textarea"] textarea,
+[data-baseweb="select"] input,
+[data-baseweb="select"] div {
+    color: #0f172a !important;
+}
+
+/* Ensure metric labels and values stay readable */
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
+    color: #53657a !important;
+}
+
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: #0b1930 !important;
+}
+
+/* Cleaner alerts with stronger text */
+[data-testid="stAlert"] p {
+    color: #16324f !important;
+    font-weight: 500;
+}
+
+/* Quick-overview info panels */
+[data-testid="stAlert"] {
+    box-shadow: 0 4px 16px rgba(15,23,42,.03);
+}
+
+/* Tables */
+[data-testid="stDataFrame"] * {
+    color: #24364b;
+}
+
+/* Small-screen refinement */
+@media (max-width: 900px) {
+    .block-container {
+        padding-top: 1.25rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .tech-title {
+        font-size: 30px;
+    }
 }
 
 /* Hide Streamlit footer */
