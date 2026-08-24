@@ -22,374 +22,234 @@ st.set_page_config(
 # PREMIUM UI / STYLING
 # ============================================================
 
-
-# ============================================================
-# PREMIUM UI / STYLING  (colored sidebar + white content area)
-# ============================================================
-
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --teal: #0f766e;
-    --teal-light: #14b8a6;
-    --amber: #d97706;
-    --amber-soft: #fef3e2;
-    --green: #059669;
-    --red: #dc2626;
-    --ink: #1e2333;
-    --muted: #6b7280;
-    --line: #e6e8ee;
-    --panel: #ffffff;
-    --page-bg: #ffffff;
-    --sidebar-bg: #0f766e;
+    --navy: #071a33;
+    --navy-2: #0c2b50;
+    --blue: #2563eb;
+    --blue-soft: #eaf2ff;
+    --cyan: #0ea5e9;
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --line: #e5eaf1;
+    --panel: rgba(255,255,255,.92);
 }
 
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
 }
 
-/* ------------------------------------------------------------
-   APP BACKGROUND — clean white content area
-   ------------------------------------------------------------ */
 .stApp {
-    background: var(--page-bg);
+    background:
+      radial-gradient(circle at 8% 5%, rgba(37,99,235,.08), transparent 28%),
+      radial-gradient(circle at 92% 12%, rgba(14,165,233,.08), transparent 24%),
+      #f7f9fc;
     color: var(--ink);
 }
 
+/* Keep content nicely centred */
 .block-container {
-    max-width: 1460px;
-    padding-top: 2.1rem;
+    max-width: 1500px;
+    padding-top: 2.2rem;
     padding-bottom: 3rem;
 }
 
-/* ------------------------------------------------------------
-   SIDEBAR — solid teal, white text, the colorful anchor of the UI
-   ------------------------------------------------------------ */
+/* Sidebar */
 [data-testid="stSidebar"] {
-    background: var(--sidebar-bg);
-    border-right: none;
-    min-width: 296px;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(37,99,235,.30), transparent 28%),
+      linear-gradient(180deg, #07162f 0%, #081f3e 58%, #06162d 100%);
+    border-right: 1px solid rgba(255,255,255,.08);
 }
 
 [data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    padding: 1.3rem .95rem 1rem .95rem;
+    padding: 1.15rem .85rem 1rem .85rem;
 }
 
-[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] span,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] div {
-    color: #ffffff;
-}
-
-[data-testid="stSidebar"] .stCaption,
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-    color: rgba(255,255,255,.72) !important;
+[data-testid="stSidebar"] * {
+    color: #eef5ff;
 }
 
 .sidebar-logo {
-    font-size: 21px;
+    font-size: 23px;
     line-height: 1.2;
     font-weight: 800;
-    letter-spacing: -.3px;
-    color: #ffffff;
-    margin-top: .3rem;
+    letter-spacing: -.4px;
+    margin-top: .35rem;
 }
 
 .sidebar-subtitle {
-    font-size: 11.5px;
-    color: rgba(255,255,255,.72) !important;
+    font-size: 11px;
+    color: #9fb4cf !important;
     letter-spacing: .15px;
-    margin-top: 4px;
-    margin-bottom: 18px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255,255,255,.18);
+    margin-top: 5px;
+    margin-bottom: 22px;
 }
 
-/* Turn radio into clean, tappable navigation rows */
+/* Turn radio into navigation pills */
 [data-testid="stSidebar"] [role="radiogroup"] {
-    gap: 2px;
+    gap: 4px;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     width: 100%;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    border-radius: 9px;
-    padding: 10px 12px !important;
-    margin: 1px 0;
-    background: transparent;
-    transition: all .14s ease;
+    border-radius: 11px;
+    padding: 8px 10px;
+    transition: all .16s ease;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
-    background: rgba(255,255,255,.10);
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label p {
-    color: rgba(255,255,255,.88) !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    line-height: 1.25 !important;
+    background: rgba(255,255,255,.075);
+    transform: translateX(2px);
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    background: linear-gradient(90deg, rgba(37,99,235,.95), rgba(14,165,233,.78));
+    box-shadow: 0 8px 22px rgba(0,0,0,.15);
 }
 
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
-    color: var(--teal) !important;
-    font-weight: 700 !important;
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child {
+    display: none;
 }
 
-/* Hide the native radio-circle indicator across Streamlit DOM variants */
-[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
-[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
-[data-testid="stSidebar"] input[type="radio"] {
-    display: none !important;
-}
-
-/* Sidebar buttons (Logout) */
-[data-testid="stSidebar"] .stButton > button {
-    width: 100%;
-    background: rgba(255,255,255,.10) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255,255,255,.28) !important;
-    box-shadow: none !important;
-    margin-top: 6px;
-}
-
-[data-testid="stSidebar"] .stButton > button p,
-[data-testid="stSidebar"] .stButton > button span {
-    color: #ffffff !important;
-    font-weight: 650 !important;
-}
-
-[data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(255,255,255,.18) !important;
-    border-color: rgba(255,255,255,.42) !important;
-}
-
-/* ------------------------------------------------------------
-   TITLES & TEXT (main content — white background)
-   ------------------------------------------------------------ */
+/* Titles */
 .tech-title {
-    font-size: clamp(26px, 2.6vw, 36px);
-    line-height: 1.15;
+    font-size: clamp(30px, 3vw, 44px);
+    line-height: 1.08;
     font-weight: 800;
-    letter-spacing: -.8px;
+    letter-spacing: -1.2px;
     color: var(--ink);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .tech-subtitle {
     font-size: 14px;
     color: var(--muted);
-    margin-bottom: 22px;
+    margin-bottom: 24px;
 }
 
 .section-title {
-    font-size: 17px;
+    font-size: 20px;
     line-height: 1.2;
-    font-weight: 700;
+    font-weight: 750;
     color: var(--ink);
-    letter-spacing: -.2px;
-    margin-top: 10px;
-    margin-bottom: 12px;
+    letter-spacing: -.3px;
+    margin-top: 12px;
+    margin-bottom: 14px;
 }
 
-.stApp p,
-.stApp label,
-.stApp li {
-    color: #3d4356;
-}
-
-.stApp h1,
-.stApp h2,
-.stApp h3,
-.stApp h4 {
-    color: var(--ink);
-}
-
-/* ------------------------------------------------------------
-   METRIC CARDS
-   ------------------------------------------------------------ */
+/* Metric cards */
 div[data-testid="stMetric"] {
     background: var(--panel);
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--teal);
-    padding: 16px 18px 14px 18px;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(30,35,51,.05);
-    min-height: 104px;
-    transition: box-shadow .15s ease;
+    border: 1px solid rgba(226,232,240,.95);
+    padding: 18px 18px 16px 18px;
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(15,23,42,.055);
+    min-height: 118px;
+    transition: transform .15s ease, box-shadow .15s ease;
 }
 
 div[data-testid="stMetric"]:hover {
-    box-shadow: 0 6px 16px rgba(30,35,51,.08);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(15,23,42,.085);
 }
 
-div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
-    color: var(--muted) !important;
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] {
+    color: #64748b;
     font-weight: 600;
-    font-size: 12.5px;
-    text-transform: uppercase;
-    letter-spacing: .3px;
 }
 
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: var(--ink) !important;
+    color: #0f172a;
     font-weight: 780;
-    letter-spacing: -.6px;
+    letter-spacing: -.8px;
 }
 
-/* ------------------------------------------------------------
-   TASK CARDS — left accent bar in amber for contrast against teal nav
-   ------------------------------------------------------------ */
+/* Task cards */
 .task-card {
     background: var(--panel);
-    padding: 14px 18px 14px 16px;
-    border-radius: 10px;
+    padding: 18px 19px;
+    border-radius: 16px;
     border: 1px solid var(--line);
-    border-left: 4px solid var(--amber);
-    margin-bottom: 9px;
-    box-shadow: 0 1px 3px rgba(30,35,51,.04);
-    transition: box-shadow .15s ease;
-}
-
-.task-card:hover {
-    box-shadow: 0 6px 16px rgba(30,35,51,.07);
+    margin-bottom: 11px;
+    box-shadow: 0 7px 22px rgba(15,23,42,.045);
 }
 
 .task-card-title {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 750;
     color: var(--ink);
-    margin-bottom: 5px;
+    margin-bottom: 7px;
 }
 
 .task-meta {
     color: var(--muted);
     font-size: 12.5px;
-    margin-top: 3px;
+    margin-top: 4px;
 }
 
-/* ------------------------------------------------------------
-   BUTTONS
-   ------------------------------------------------------------ */
+/* Buttons */
 .stButton > button, .stFormSubmitButton > button {
-    border-radius: 8px !important;
+    border-radius: 11px !important;
     min-height: 42px;
     font-weight: 650;
-    border: 1px solid #dfe2ea;
+    border: 1px solid #dfe6ef;
     box-shadow: none;
-    transition: all .14s ease;
+    transition: all .15s ease;
 }
 
 .stButton > button:hover, .stFormSubmitButton > button:hover {
-    border-color: #c7cbdb;
-    box-shadow: 0 4px 12px rgba(30,35,51,.06);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(15,23,42,.08);
 }
 
 button[kind="primary"] {
-    background: var(--teal) !important;
+    background: linear-gradient(90deg, #2563eb, #0ea5e9) !important;
     border: none !important;
 }
 
-button[kind="primary"]:hover {
-    background: #0c5f58 !important;
-}
-
-/* ------------------------------------------------------------
-   INPUTS
-   ------------------------------------------------------------ */
+/* Inputs */
 [data-baseweb="input"] > div,
 [data-baseweb="textarea"] > div,
 [data-baseweb="select"] > div {
-    border-radius: 8px !important;
-    border-color: #dde0e8 !important;
-    background: #ffffff !important;
+    border-radius: 11px !important;
+    border-color: #dce3ec !important;
+    background: rgba(255,255,255,.96) !important;
 }
 
-[data-baseweb="input"] input,
-[data-baseweb="textarea"] textarea,
-[data-baseweb="select"] input,
-[data-baseweb="select"] div {
-    color: var(--ink) !important;
-}
-
-[data-baseweb="input"] > div:focus-within,
-[data-baseweb="textarea"] > div:focus-within,
-[data-baseweb="select"] > div:focus-within {
-    border-color: var(--teal) !important;
-    box-shadow: 0 0 0 3px rgba(15,118,110,.14) !important;
-}
-
-/* ------------------------------------------------------------
-   EXPANDERS
-   ------------------------------------------------------------ */
+/* Expanders */
 [data-testid="stExpander"] {
-    background: var(--panel);
+    background: rgba(255,255,255,.92);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(30,35,51,.03);
+    box-shadow: 0 6px 20px rgba(15,23,42,.035);
     margin-bottom: 10px;
 }
 
-/* ------------------------------------------------------------
-   TABLES
-   ------------------------------------------------------------ */
+/* Tables */
 [data-testid="stDataFrame"], [data-testid="stTable"] {
-    background: #ffffff;
-    border-radius: 12px;
+    background: white;
+    border-radius: 14px;
     overflow: hidden;
     border: 1px solid var(--line);
 }
 
-[data-testid="stDataFrame"] * {
-    color: #2c3142;
-}
-
-/* ------------------------------------------------------------
-   ALERTS
-   ------------------------------------------------------------ */
+/* Alerts */
 [data-testid="stAlert"] {
-    border-radius: 10px;
+    border-radius: 13px;
     border-width: 1px;
-    box-shadow: 0 1px 3px rgba(30,35,51,.03);
 }
 
-[data-testid="stAlert"] p {
-    color: #1e2333 !important;
-    font-weight: 500;
-}
-
-/* ------------------------------------------------------------
-   TABS (if used)
-   ------------------------------------------------------------ */
-button[data-baseweb="tab"] {
-    font-weight: 600;
-    color: var(--muted);
-}
-
-button[data-baseweb="tab"][aria-selected="true"] {
-    color: var(--teal) !important;
-}
-
-[data-baseweb="tab-highlight"] {
-    background-color: var(--teal) !important;
-}
-
-/* ------------------------------------------------------------
-   MISC
-   ------------------------------------------------------------ */
+/* Divider */
 hr {
-    border-color: var(--line) !important;
+    border-color: rgba(226,232,240,.85) !important;
 }
 
 /* Login */
@@ -401,62 +261,48 @@ hr {
 }
 
 .login-hero {
-    padding: 30px 6px 20px 6px;
+    padding: 34px 6px 20px 6px;
 }
 
 .login-kicker {
     display: inline-block;
-    padding: 6px 12px;
+    padding: 7px 11px;
     border-radius: 999px;
-    background: var(--amber-soft);
-    color: var(--amber);
+    background: #eaf2ff;
+    color: #1d4ed8;
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: .3px;
     margin-bottom: 14px;
 }
 
 .login-heading {
-    font-size: clamp(32px, 4.2vw, 54px);
-    line-height: 1.08;
-    font-weight: 800;
-    letter-spacing: -1.6px;
-    color: var(--ink);
+    font-size: clamp(36px, 4.8vw, 64px);
+    line-height: 1.02;
+    font-weight: 850;
+    letter-spacing: -2.5px;
+    color: #0b1930;
     max-width: 720px;
 }
 
 .login-copy {
     font-size: 15px;
     line-height: 1.7;
-    color: var(--muted);
+    color: #667085;
     max-width: 590px;
-    margin-top: 16px;
+    margin-top: 18px;
 }
 
 .login-card-title {
-    font-size: 21px;
+    font-size: 24px;
     font-weight: 800;
-    color: var(--ink);
+    color: #0f172a;
     margin-bottom: 3px;
 }
 
 .login-card-copy {
-    color: var(--muted);
+    color: #64748b;
     font-size: 13px;
     margin-bottom: 10px;
-}
-
-/* Small-screen refinement */
-@media (max-width: 900px) {
-    .block-container {
-        padding-top: 1.2rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .tech-title {
-        font-size: 26px;
-    }
 }
 
 /* Hide Streamlit footer */
