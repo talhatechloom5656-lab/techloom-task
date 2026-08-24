@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import uuid
 import re
+import io
+import json
+import calendar
+import streamlit.components.v1 as components
 import json
 import streamlit.components.v1 as components
 import extra_streamlit_components as stx
@@ -844,6 +848,7 @@ def load_all_tasks():
             supabase
             .table("tasks")
             .select("*")
+            .eq("archived", False)
             .order(
                 "created_at",
                 desc=True
@@ -869,6 +874,7 @@ def load_my_tasks():
             supabase
             .table("tasks")
             .select("*")
+            .eq("archived", False)
             .eq(
                 "assigned_to",
                 name
@@ -1639,6 +1645,655 @@ def render_today_attendance():
         st.success("Attendance completed for today.")
 
 
+
+# ============================================================
+# ADVANCED WORKSPACE HELPERS
+# ============================================================
+
+def audit(action, entity_type="", entity_id=None, details=""):
+    try:
+        supabase.table("audit_logs").insert({
+            "user_id": current_user_id,
+            "user_name": name,
+            "action": action,
+            "entity_type": entity_type,
+            "entity_id": str(entity_id) if entity_id is not None else None,
+            "details": details
+        }).execute()
+    except Exception:
+        pass
+
+
+def get_profile_by_name(person_name):
+    for person in load_team_profiles():
+        if person.get("name") == person_name:
+            return person
+    return None
+
+
+def get_profile_id_by_name(person_name):
+    profile_row = get_profile_by_name(person_name)
+    return profile_row.get("id") if profile_row else None
+
+
+def update_presence():
+    status = st.session_state.get("presence_status", "Working")
+    try:
+        supabase.table("presence").upsert({
+            "user_id": current_user_id,
+            "user_name": name,
+            "status": status,
+            "last_seen": datetime.now(timezone.utc).isoformat()
+        }, on_conflict="user_id").execute()
+    except Exception:
+        pass
+
+
+def load_presence():
+    try:
+        result = (
+            supabase.table("presence")
+            .select("*")
+            .order("user_name")
+            .execute()
+        )
+        return result.data or []
+    except Exception:
+        return []
+
+
+def process_due_recurring_tasks():
+    """Materialize recurring tasks that are due. Safe to call on normal app visits."""
+    if not is_manager():
+        return
+    try:
+        result = (
+            supabase.table("recurring_tasks")
+            .select("*")
+            .eq("active", True)
+            .lte("next_run", datetime.now(timezone.utc).isoformat())
+            .execute()
+        )
+        rows = result.data or []
+        for row in rows:
+            task_data = {
+                "title": row.get("title"),
+                "description": row.get("description", ""),
+                "task_type": row.get("task_type", "Other"),
+                "platform": row.get("platform", "Multiple"),
+                "priority": row.get("priority", "Normal"),
+                "status": "New",
+                "assigned_to": row.get("assigned_to"),
+                "assigned_by": name,
+                "supplier_link": row.get("supplier_link", ""),
+                "goods_id": row.get("goods_id", ""),
+                "due_date": (
+                    datetime.now(PK_TZ)
+                    + timedelta(hours=int(row.get("due_after_hours") or 24))
+                ).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "archived": False
+            }
+            created = supabase.table("tasks").insert(task_data).execute()
+            task_id = created.data[0]["id"] if created.data else None
+            if task_id:
+                target_id = get_profile_id_by_name(row.get("assigned_to"))
+                create_notification(
+                    target_id,
+                    "Recurring task assigned",
+                    row.get("title", "New recurring task"),
+                    "task",
+                    task_id
+                )
+                add_activity(task_id, "Recurring Task Created", row.get("title", ""))
+
+            cadence = row.get("cadence", "Daily")
+            now_utc = datetime.now(timezone.utc)
+            if cadence == "Weekly":
+                next_run = now_utc + timedelta(days=7)
+            elif cadence == "Monthly":
+                next_run = now_utc + timedelta(days=30)
+            else:
+                next_run = now_utc + timedelta(days=1)
+
+            supabase.table("recurring_tasks").update({
+                "last_run": now_utc.isoformat(),
+                "next_run": next_run.isoformat()
+            }).eq("id", row.get("id")).execute()
+    except Exception:
+        pass
+
+
+def escalate_unopened_urgent_tasks():
+    """Notify management when an urgent task has not been opened within 60 minutes."""
+    if not is_manager():
+        return
+    try:
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=60)
+        urgent = (
+            supabase.table("tasks")
+            .select("*")
+            .eq("priority", "Urgent")
+            .eq("archived", False)
+            .in_("status", ["New", "In Progress"])
+            .lt("created_at", cutoff.isoformat())
+            .execute()
+        ).data or []
+
+        for task in urgent:
+            views = (
+                supabase.table("task_views")
+                .select("id")
+                .eq("task_id", task["id"])
+                .limit(1)
+                .execute()
+            ).data or []
+            if not views:
+                existing = (
+                    supabase.table("notifications")
+                    .select("id")
+                    .eq("related_task_id", task["id"])
+                    .eq("notification_type", "escalation")
+                    .limit(1)
+                    .execute()
+                ).data or []
+                if not existing:
+                    for person in load_team_profiles():
+                        if person.get("role") in ["Admin", "Team Lead"]:
+                            create_notification(
+                                person.get("id"),
+                                "Urgent task not opened",
+                                f'{task.get("title", "Urgent task")} has not been opened within 60 minutes.',
+                                "escalation",
+                                task["id"]
+                            )
+    except Exception:
+        pass
+
+
+def register_task_view(task_id):
+    try:
+        supabase.table("task_views").upsert({
+            "task_id": task_id,
+            "user_id": current_user_id,
+            "user_name": name,
+            "viewed_at": datetime.now(timezone.utc).isoformat()
+        }, on_conflict="task_id,user_id").execute()
+    except Exception:
+        pass
+
+
+def task_comments(task_id):
+    try:
+        result = (
+            supabase.table("task_comments")
+            .select("*")
+            .eq("task_id", task_id)
+            .order("created_at")
+            .execute()
+        )
+        return result.data or []
+    except Exception:
+        return []
+
+
+def add_task_comment(task_id, comment):
+    comment = (comment or "").strip()
+    if not comment:
+        return False
+    try:
+        supabase.table("task_comments").insert({
+            "task_id": task_id,
+            "user_id": current_user_id,
+            "user_name": name,
+            "comment": comment
+        }).execute()
+        add_activity(task_id, "Comment Added", comment[:180])
+        audit("Task comment added", "task", task_id, comment[:180])
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def task_subtasks(task_id):
+    try:
+        return (
+            supabase.table("task_subtasks")
+            .select("*")
+            .eq("task_id", task_id)
+            .order("created_at")
+            .execute()
+        ).data or []
+    except Exception:
+        return []
+
+
+def add_subtask(task_id, title):
+    title = (title or "").strip()
+    if not title:
+        return False
+    try:
+        supabase.table("task_subtasks").insert({
+            "task_id": task_id,
+            "title": title,
+            "created_by": current_user_id
+        }).execute()
+        audit("Subtask created", "task", task_id, title)
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def toggle_subtask(subtask_id, completed):
+    try:
+        supabase.table("task_subtasks").update({
+            "completed": completed,
+            "completed_by": current_user_id if completed else None,
+            "completed_at": datetime.now(timezone.utc).isoformat() if completed else None
+        }).eq("id", subtask_id).execute()
+        return True
+    except Exception:
+        return False
+
+
+def upload_private_file(bucket, uploaded_file, prefix):
+    if uploaded_file is None:
+        return None
+    try:
+        data = uploaded_file.getvalue()
+        if len(data) > 15 * 1024 * 1024:
+            st.error("Maximum file size is 15 MB.")
+            return None
+        filename = safe_chat_filename(uploaded_file.name)
+        object_path = (
+            f"{current_user_id}/{prefix}/"
+            f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_"
+            f"{uuid.uuid4().hex[:10]}_{filename}"
+        )
+        supabase.storage.from_(bucket).upload(
+            object_path,
+            data,
+            {"content-type": uploaded_file.type or "application/octet-stream", "upsert": "false"}
+        )
+        return {
+            "path": object_path,
+            "name": filename,
+            "type": uploaded_file.type or "application/octet-stream",
+            "size": len(data)
+        }
+    except Exception as error:
+        st.error("Upload failed.")
+        st.write(error)
+        return None
+
+
+def signed_file_url(bucket, path, seconds=3600):
+    if not path:
+        return None
+    try:
+        result = supabase.storage.from_(bucket).create_signed_url(path, seconds)
+        if isinstance(result, str):
+            return result
+        if isinstance(result, dict):
+            return result.get("signedURL") or result.get("signedUrl") or result.get("signed_url")
+    except Exception:
+        return None
+    return None
+
+
+def attach_file_to_task(task_id, uploaded_file):
+    meta = upload_private_file("task-files", uploaded_file, f"task_{task_id}")
+    if not meta:
+        return False
+    try:
+        supabase.table("task_attachments").insert({
+            "task_id": task_id,
+            "user_id": current_user_id,
+            "user_name": name,
+            "file_path": meta["path"],
+            "file_name": meta["name"],
+            "file_type": meta["type"],
+            "file_size": meta["size"]
+        }).execute()
+        add_activity(task_id, "Attachment Added", meta["name"])
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def load_task_attachments(task_id):
+    try:
+        return (
+            supabase.table("task_attachments")
+            .select("*")
+            .eq("task_id", task_id)
+            .order("created_at")
+            .execute()
+        ).data or []
+    except Exception:
+        return []
+
+
+def load_task_templates():
+    try:
+        return (
+            supabase.table("task_templates")
+            .select("*")
+            .eq("active", True)
+            .order("name")
+            .execute()
+        ).data or []
+    except Exception:
+        return []
+
+
+def create_task_from_template(template, assigned_to, due_date):
+    try:
+        due_dt = datetime.combine(due_date, time(hour=17))
+        result = supabase.table("tasks").insert({
+            "title": template.get("title_template") or template.get("name"),
+            "description": template.get("description_template", ""),
+            "task_type": template.get("task_type", "Other"),
+            "platform": template.get("platform", "Multiple"),
+            "priority": template.get("priority", "Normal"),
+            "status": "New",
+            "assigned_to": assigned_to,
+            "assigned_by": name,
+            "due_date": due_dt.isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "archived": False
+        }).execute()
+        task_id = result.data[0]["id"] if result.data else None
+        if task_id:
+            target_id = get_profile_id_by_name(assigned_to)
+            create_notification(target_id, "New task assigned", template.get("name", "Task"), "task", task_id)
+            audit("Task created from template", "task", task_id, template.get("name", ""))
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def send_direct_message(target_user_id, target_name, message):
+    message = (message or "").strip()
+    if not message:
+        return False
+    try:
+        supabase.table("direct_messages").insert({
+            "sender_id": current_user_id,
+            "sender_name": name,
+            "recipient_id": target_user_id,
+            "recipient_name": target_name,
+            "message": message
+        }).execute()
+        create_notification(
+            target_user_id,
+            f"Private message from {name}",
+            message[:160],
+            "direct_message"
+        )
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def load_direct_messages(other_user_id):
+    try:
+        result = supabase.rpc(
+            "get_direct_conversation",
+            {"other_user": str(other_user_id)}
+        ).execute()
+        return result.data or []
+    except Exception:
+        return []
+
+
+def browser_notification(title, body):
+    """Best-effort desktop notification. Browser permission is required."""
+    safe_title = json.dumps(str(title))
+    safe_body = json.dumps(str(body))
+    components.html(
+        f"""
+        <script>
+        if ("Notification" in window) {{
+            if (Notification.permission === "granted") {{
+                new Notification({safe_title}, {{body: {safe_body}}});
+            }}
+        }}
+        </script>
+        """,
+        height=0,
+    )
+
+
+def request_browser_notification_permission():
+    components.html(
+        """
+        <button onclick="
+            if ('Notification' in window) {
+                Notification.requestPermission().then(function(permission) {
+                    document.getElementById('result').innerText =
+                        'Browser notification permission: ' + permission;
+                });
+            }
+        ">Enable browser desktop notifications</button>
+        <div id="result" style="font-family:Arial;font-size:12px;margin-top:8px"></div>
+        """,
+        height=70,
+    )
+
+
+def to_excel_bytes(sheets):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        for sheet_name, dataframe in sheets.items():
+            dataframe.to_excel(writer, sheet_name=sheet_name[:31], index=False)
+    return output.getvalue()
+
+
+def load_announcements(active_only=True):
+    try:
+        q = supabase.table("announcements").select("*")
+        if active_only:
+            q = q.eq("active", True)
+        return q.order("pinned", desc=True).order("created_at", desc=True).execute().data or []
+    except Exception:
+        return []
+
+
+def load_knowledge_items():
+    try:
+        return (
+            supabase.table("knowledge_items")
+            .select("*")
+            .eq("active", True)
+            .order("category")
+            .order("title")
+            .execute()
+        ).data or []
+    except Exception:
+        return []
+
+
+def get_user_preferences():
+    try:
+        rows = (
+            supabase.table("user_preferences")
+            .select("*")
+            .eq("user_id", current_user_id)
+            .limit(1)
+            .execute()
+        ).data or []
+        return rows[0] if rows else {}
+    except Exception:
+        return {}
+
+
+def save_user_preferences(values):
+    try:
+        values = dict(values)
+        values["user_id"] = current_user_id
+        values["updated_at"] = datetime.now(timezone.utc).isoformat()
+        supabase.table("user_preferences").upsert(values, on_conflict="user_id").execute()
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def mark_break_start():
+    try:
+        open_break = (
+            supabase.table("attendance_breaks")
+            .select("*")
+            .eq("user_id", current_user_id)
+            .is_("break_end", "null")
+            .limit(1)
+            .execute()
+        ).data or []
+        if open_break:
+            return True
+        supabase.table("attendance_breaks").insert({
+            "user_id": current_user_id,
+            "user_name": name,
+            "attendance_date": pakistan_today(),
+            "break_start": datetime.now(timezone.utc).isoformat()
+        }).execute()
+        st.session_state.presence_status = "On Break"
+        update_presence()
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def mark_break_end():
+    try:
+        open_break = (
+            supabase.table("attendance_breaks")
+            .select("*")
+            .eq("user_id", current_user_id)
+            .is_("break_end", "null")
+            .order("break_start", desc=True)
+            .limit(1)
+            .execute()
+        ).data or []
+        if open_break:
+            supabase.table("attendance_breaks").update({
+                "break_end": datetime.now(timezone.utc).isoformat()
+            }).eq("id", open_break[0]["id"]).execute()
+        st.session_state.presence_status = "Working"
+        update_presence()
+        return True
+    except Exception:
+        return False
+
+
+def current_break():
+    try:
+        rows = (
+            supabase.table("attendance_breaks")
+            .select("*")
+            .eq("user_id", current_user_id)
+            .is_("break_end", "null")
+            .order("break_start", desc=True)
+            .limit(1)
+            .execute()
+        ).data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None
+
+
+def late_status(check_in_value):
+    check_dt = parse_timestamp(check_in_value)
+    if not check_dt:
+        return "--"
+    local = check_dt.astimezone(PK_TZ)
+    office_start = time(hour=9, minute=30)
+    return "Late" if local.time() > office_start else "On Time"
+
+
+def early_departure_status(check_out_value):
+    out_dt = parse_timestamp(check_out_value)
+    if not out_dt:
+        return "--"
+    local = out_dt.astimezone(PK_TZ)
+    office_end = time(hour=18, minute=0)
+    return "Early" if local.time() < office_end else "Normal"
+
+
+def archive_task(task_id):
+    try:
+        supabase.table("tasks").update({
+            "archived": True,
+            "archived_at": datetime.now(timezone.utc).isoformat(),
+            "archived_by": name
+        }).eq("id", task_id).execute()
+        add_activity(task_id, "Task Archived", f"Archived by {name}")
+        audit("Task archived", "task", task_id)
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def handover_task(task_id, new_owner, reason):
+    try:
+        task_rows = (
+            supabase.table("tasks")
+            .select("*")
+            .eq("id", task_id)
+            .limit(1)
+            .execute()
+        ).data or []
+        old_owner = task_rows[0].get("assigned_to") if task_rows else ""
+        supabase.table("tasks").update({
+            "assigned_to": new_owner,
+            "handover_reason": reason,
+            "handover_from": old_owner,
+            "handover_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }).eq("id", task_id).execute()
+        add_activity(task_id, "Task Handed Over", f"{old_owner} → {new_owner}. {reason}")
+        target_id = get_profile_id_by_name(new_owner)
+        create_notification(target_id, "Task handed over to you", task_rows[0].get("title", "Task") if task_rows else "Task", "task", task_id)
+        audit("Task handover", "task", task_id, f"{old_owner} -> {new_owner}")
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def task_status_badge(status):
+    icons = {
+        "New": "🆕",
+        "In Progress": "🟡",
+        "Waiting on Information": "🟠",
+        "Waiting on Platform": "🟣",
+        "Submitted for Review": "🔵",
+        "Changes Requested": "🔄",
+        "Approved": "✅",
+        "Completed": "✅"
+    }
+    return f"{icons.get(status, '⚪')} {status}"
+
+
+def priority_badge(priority):
+    icons = {"Urgent": "🔴", "High": "🟠", "Normal": "🔵", "Low": "⚪"}
+    return f"{icons.get(priority, '⚪')} {priority}"
+
+
+# Heartbeat / automation checks
+update_presence()
+process_due_recurring_tasks()
+escalate_unopened_urgent_tasks()
+
+
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -1674,31 +2329,42 @@ with st.sidebar:
     )
 
     # ----------------------------
-    # AIFA / MANAGEMENT
+    # NAVIGATION
     # ----------------------------
 
-    if is_manager():
+    common_tools = [
+        "🔎 Global Search",
+        "🧰 Task Workspace",
+        "💬 Direct Messages",
+        "📆 Calendar",
+        "📣 Announcements",
+        "📚 Knowledge Base",
+        group_chat_label,
+        "🔔 Notifications",
+        "⚙️ Settings"
+    ]
 
+    if is_manager():
         menu_options = [
             "🏠 Dashboard",
             "📋 Team Tasks",
             "➕ Create Task",
             "✅ Approvals",
             "👥 Team Overview",
+            "🟢 Team Status",
             "⏱ Attendance",
             "📅 Attendance Report",
+            "📊 Reports",
+            "🧩 Task Templates",
+            "🔁 Recurring Tasks",
+            "🛡 Permissions",
+            "🧾 Audit Log",
             "🛡 Compliance",
-            group_chat_label,
-            "🔔 Notifications",
+        ] + common_tools + [
             "📜 Activity"
         ]
 
-    # ----------------------------
-    # TALHA
-    # ----------------------------
-
     elif name == "Talha":
-
         menu_options = [
             "🏠 Dashboard",
             "📋 My Tasks",
@@ -1707,17 +2373,11 @@ with st.sidebar:
             "🛡 Compliance",
             "📨 Appeals",
             "💬 Seller Support",
-            group_chat_label,
-            "🔔 Notifications",
+        ] + common_tools + [
             "📜 Activity"
         ]
 
-    # ----------------------------
-    # JUNAID
-    # ----------------------------
-
     elif name == "Junaid":
-
         menu_options = [
             "🏠 Dashboard",
             "📋 My Tasks",
@@ -1725,34 +2385,17 @@ with st.sidebar:
             "🛒 Amazon",
             "🛍 eBay",
             "📦 Listing Uploads",
-            group_chat_label,
-            "🔔 Notifications",
-            "📜 Activity"
-        ]
-
-    # ----------------------------
-    # NABIHA
-    # ----------------------------
-
-    elif name == "Nabiha":
-
-        menu_options = [
-            "🏠 Dashboard",
-            "📋 My Tasks",
-            "⏱ Attendance",
-            group_chat_label,
-            "🔔 Notifications",
+        ] + common_tools + [
             "📜 Activity"
         ]
 
     else:
-
         menu_options = [
             "🏠 Dashboard",
             "📋 My Tasks",
             "⏱ Attendance",
-            group_chat_label,
-            "🔔 Notifications"
+        ] + common_tools + [
+            "📜 Activity"
         ]
 
     page = st.radio(
@@ -1842,6 +2485,15 @@ if page == "🏠 Dashboard":
         f'</div></div>',
         unsafe_allow_html=True
     )
+
+    pinned_announcements = [a for a in load_announcements() if a.get("pinned")]
+    for announcement in pinned_announcements[:2]:
+        tone = "error" if announcement.get("urgent") else "info"
+        message = f"📣 **{announcement.get('title', 'Announcement')}** — {announcement.get('body', '')}"
+        if tone == "error":
+            st.error(message)
+        else:
+            st.info(message)
 
     total_count = len(tasks)
 
@@ -2823,6 +3475,25 @@ elif page == "⏱ Attendance":
             )
 
     st.write("")
+    st.subheader("Break Management")
+    open_break = current_break()
+    b1, b2 = st.columns(2)
+    with b1:
+        if open_break:
+            st.warning("You are currently on break.")
+        else:
+            if st.button("☕ Start Break", use_container_width=True, key="start_break"):
+                if mark_break_start():
+                    st.rerun()
+    with b2:
+        if open_break:
+            if st.button("▶️ End Break", type="primary", use_container_width=True, key="end_break"):
+                if mark_break_end():
+                    st.rerun()
+        else:
+            st.caption("No active break.")
+
+    st.write("")
     st.subheader("My Attendance History")
 
     try:
@@ -3514,6 +4185,700 @@ elif page == "🔔 Notifications":
                 st.write(notification.get("message", ""))
                 if stamp:
                     st.caption(stamp)
+
+
+
+# ============================================================
+# GLOBAL SEARCH
+# ============================================================
+
+elif page == "🔎 Global Search":
+    st.markdown('<div class="tech-title">Global Search</div>', unsafe_allow_html=True)
+    st.caption("Search tasks, IDs, case references, chat, comments and knowledge items.")
+
+    query = st.text_input("Search everything", placeholder="Goods ID, ASIN, title, case ID, keyword...")
+    if query.strip():
+        q = query.strip().lower()
+
+        task_rows = load_all_tasks() if is_manager() else load_my_tasks()
+        task_hits = [
+            t for t in task_rows
+            if q in " ".join(str(t.get(k, "")) for k in [
+                "title", "description", "goods_id", "platform", "task_type",
+                "supplier_link", "submission_link", "case_id"
+            ]).lower()
+        ]
+
+        try:
+            chat_rows = (
+                supabase.table("chat_messages")
+                .select("*")
+                .ilike("message", f"%{query}%")
+                .limit(30)
+                .execute()
+            ).data or []
+        except Exception:
+            chat_rows = []
+
+        try:
+            comment_rows = (
+                supabase.table("task_comments")
+                .select("*")
+                .ilike("comment", f"%{query}%")
+                .limit(30)
+                .execute()
+            ).data or []
+        except Exception:
+            comment_rows = []
+
+        knowledge_hits = [
+            item for item in load_knowledge_items()
+            if q in f"{item.get('title','')} {item.get('category','')} {item.get('content','')}".lower()
+        ]
+
+        st.subheader(f"Tasks ({len(task_hits)})")
+        for task in task_hits[:30]:
+            with st.container(border=True):
+                st.markdown(f"**{task.get('title','Untitled')}**")
+                st.caption(f"{task.get('platform','')} • {task.get('status','')} • {task.get('assigned_to','')}")
+
+        st.subheader(f"Chat messages ({len(chat_rows)})")
+        for row in chat_rows:
+            st.write(f"**{row.get('user_name','')}**: {row.get('message','')}")
+
+        st.subheader(f"Task comments ({len(comment_rows)})")
+        for row in comment_rows:
+            st.write(f"**{row.get('user_name','')}**: {row.get('comment','')}")
+
+        st.subheader(f"Knowledge ({len(knowledge_hits)})")
+        for item in knowledge_hits:
+            st.write(f"**{item.get('title','')}** — {item.get('category','')}")
+
+
+# ============================================================
+# TASK WORKSPACE
+# ============================================================
+
+elif page == "🧰 Task Workspace":
+    st.markdown('<div class="tech-title">Task Workspace</div>', unsafe_allow_html=True)
+    st.caption("Comments, checklists, attachments, timeline, handover and archiving in one place.")
+
+    workspace_tasks = load_all_tasks() if is_manager() else load_my_tasks()
+    if not workspace_tasks:
+        st.info("No active tasks.")
+    else:
+        task_options = {
+            f"#{t['id']} • {t.get('title','Untitled')} • {t.get('assigned_to','')}": t
+            for t in workspace_tasks
+        }
+        chosen_label = st.selectbox("Choose task", list(task_options.keys()))
+        chosen = task_options[chosen_label]
+        task_id = chosen["id"]
+        register_task_view(task_id)
+
+        h1, h2, h3 = st.columns(3)
+        h1.metric("Status", chosen.get("status", "New"))
+        h2.metric("Priority", chosen.get("priority", "Normal"))
+        h3.metric("Owner", chosen.get("assigned_to", ""))
+
+        if chosen.get("submission_link"):
+            st.link_button("🔗 Open submitted work", chosen["submission_link"])
+        if chosen.get("review_reference_link"):
+            st.link_button("🧭 Open reviewer reference", chosen["review_reference_link"])
+
+        tabs = st.tabs(["💬 Comments", "☑️ Checklist", "📎 Attachments", "🕓 Timeline", "🔁 Handover", "🗄 Archive"])
+
+        with tabs[0]:
+            comments = task_comments(task_id)
+            for row in comments:
+                with st.container(border=True):
+                    st.markdown(f"**{row.get('user_name','User')}**")
+                    st.write(row.get("comment", ""))
+                    st.caption(row.get("created_at", ""))
+            new_comment = st.text_area("Add comment", key=f"task_comment_{task_id}")
+            if st.button("Post comment", key=f"post_comment_{task_id}"):
+                if add_task_comment(task_id, new_comment):
+                    st.rerun()
+
+        with tabs[1]:
+            subtasks = task_subtasks(task_id)
+            for sub in subtasks:
+                checked = st.checkbox(
+                    sub.get("title", "Subtask"),
+                    value=bool(sub.get("completed")),
+                    key=f"subtask_{sub['id']}"
+                )
+                if checked != bool(sub.get("completed")):
+                    if toggle_subtask(sub["id"], checked):
+                        st.rerun()
+            add_sub = st.text_input("New checklist item", key=f"new_sub_{task_id}")
+            if st.button("Add checklist item", key=f"add_sub_{task_id}"):
+                if add_subtask(task_id, add_sub):
+                    st.rerun()
+
+        with tabs[2]:
+            task_file = st.file_uploader(
+                "Upload task file",
+                type=["png","jpg","jpeg","webp","pdf","doc","docx","xls","xlsx","csv","txt","zip"],
+                key=f"task_file_{task_id}"
+            )
+            if task_file and st.button("Upload to task", key=f"upload_task_file_{task_id}"):
+                if attach_file_to_task(task_id, task_file):
+                    st.rerun()
+
+            for att in load_task_attachments(task_id):
+                url = signed_file_url("task-files", att.get("file_path"))
+                if url:
+                    st.link_button(
+                        f"📎 {att.get('file_name','Attachment')} ({human_file_size(att.get('file_size'))})",
+                        url
+                    )
+
+        with tabs[3]:
+            try:
+                timeline = (
+                    supabase.table("task_activity")
+                    .select("*")
+                    .eq("task_id", task_id)
+                    .order("created_at", desc=True)
+                    .execute()
+                ).data or []
+            except Exception:
+                timeline = []
+            for event in timeline:
+                with st.container(border=True):
+                    st.markdown(f"**{event.get('action','Activity')}**")
+                    st.write(event.get("details",""))
+                    st.caption(f"{event.get('user_name','')} • {event.get('created_at','')}")
+
+        with tabs[4]:
+            profiles = [p for p in load_team_profiles() if p.get("name")]
+            names = [p["name"] for p in profiles if p["name"] != chosen.get("assigned_to")]
+            if names:
+                new_owner = st.selectbox("New owner", names, key=f"handover_owner_{task_id}")
+                handover_reason = st.text_area("Handover reason", key=f"handover_reason_{task_id}")
+                if st.button("Hand over task", type="primary", key=f"handover_{task_id}"):
+                    if handover_task(task_id, new_owner, handover_reason):
+                        st.success("Task handed over.")
+                        st.rerun()
+
+        with tabs[5]:
+            if is_manager():
+                st.warning("Archiving removes this task from normal task lists but keeps its history.")
+                if st.button("Archive task", key=f"archive_{task_id}"):
+                    if archive_task(task_id):
+                        st.rerun()
+            else:
+                st.info("Only management can archive tasks.")
+
+
+# ============================================================
+# DIRECT MESSAGES
+# ============================================================
+
+elif page == "💬 Direct Messages":
+    st.markdown('<div class="tech-title">Direct Messages</div>', unsafe_allow_html=True)
+    st.caption("Private one-to-one team chat.")
+
+    people = [p for p in load_team_profiles() if str(p.get("id")) != str(current_user_id)]
+    if not people:
+        st.info("No other users found.")
+    else:
+        labels = {f"{p.get('name')} • {p.get('department','')}": p for p in people}
+        selected_label = st.selectbox("Chat with", list(labels.keys()))
+        person = labels[selected_label]
+
+        messages = load_direct_messages(person.get("id"))
+        for msg in messages:
+            with st.chat_message("user" if str(msg.get("sender_id")) == str(current_user_id) else "assistant"):
+                st.markdown(f"**{msg.get('sender_name','')}**")
+                st.write(msg.get("message",""))
+                st.caption(msg.get("created_at",""))
+
+        dm = st.chat_input(f"Message {person.get('name')}…")
+        if dm:
+            if send_direct_message(person.get("id"), person.get("name"), dm):
+                st.rerun()
+
+
+# ============================================================
+# CALENDAR
+# ============================================================
+
+elif page == "📆 Calendar":
+    st.markdown('<div class="tech-title">Work Calendar</div>', unsafe_allow_html=True)
+    st.caption("Deadlines and attendance on one date.")
+
+    selected = st.date_input("Select date", value=datetime.now(PK_TZ).date())
+    tasks = load_all_tasks() if is_manager() else load_my_tasks()
+
+    due = []
+    for task in tasks:
+        value = task.get("due_date")
+        if value:
+            try:
+                due_dt = parse_timestamp(value)
+                if due_dt and due_dt.astimezone(PK_TZ).date() == selected:
+                    due.append(task)
+            except Exception:
+                pass
+
+    st.subheader(f"Tasks due ({len(due)})")
+    for task in due:
+        st.write(f"{priority_badge(task.get('priority','Normal'))} **{task.get('title','')}** — {task.get('assigned_to','')}")
+
+    st.subheader("Attendance")
+    try:
+        q = supabase.table("attendance").select("*").eq("attendance_date", selected.isoformat())
+        if not is_manager():
+            q = q.eq("user_id", current_user_id)
+        rows = q.execute().data or []
+        if rows:
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        else:
+            st.info("No attendance recorded for this date.")
+    except Exception as error:
+        st.error(error)
+
+
+# ============================================================
+# ANNOUNCEMENTS
+# ============================================================
+
+elif page == "📣 Announcements":
+    st.markdown('<div class="tech-title">Announcements</div>', unsafe_allow_html=True)
+    st.caption("Pinned management messages for the whole team.")
+
+    if is_manager():
+        with st.expander("➕ New announcement"):
+            a_title = st.text_input("Title", key="announcement_title")
+            a_body = st.text_area("Message", key="announcement_body")
+            a_pinned = st.checkbox("Pin to dashboards", value=True, key="announcement_pin")
+            a_urgent = st.checkbox("Urgent tone", key="announcement_urgent")
+            if st.button("Publish announcement", type="primary"):
+                if a_title.strip() and a_body.strip():
+                    try:
+                        supabase.table("announcements").insert({
+                            "title": a_title.strip(),
+                            "body": a_body.strip(),
+                            "created_by": current_user_id,
+                            "created_by_name": name,
+                            "pinned": a_pinned,
+                            "urgent": a_urgent,
+                            "active": True
+                        }).execute()
+                        for person in load_team_profiles():
+                            if str(person.get("id")) != str(current_user_id):
+                                create_notification(
+                                    person.get("id"),
+                                    a_title.strip(),
+                                    a_body.strip()[:180],
+                                    "announcement"
+                                )
+                        audit("Announcement published", "announcement", None, a_title)
+                        st.rerun()
+                    except Exception as error:
+                        st.error(error)
+
+    announcements = load_announcements()
+    for item in announcements:
+        with st.container(border=True):
+            prefix = "📌 " if item.get("pinned") else ""
+            urgent = "🚨 " if item.get("urgent") else ""
+            st.markdown(f"### {urgent}{prefix}{item.get('title','')}")
+            st.write(item.get("body",""))
+            st.caption(f"{item.get('created_by_name','')} • {item.get('created_at','')}")
+
+
+# ============================================================
+# KNOWLEDGE BASE
+# ============================================================
+
+elif page == "📚 Knowledge Base":
+    st.markdown('<div class="tech-title">Knowledge & SOPs</div>', unsafe_allow_html=True)
+    st.caption("Marketplace procedures, compliance notes, SOPs and internal references.")
+
+    if is_manager():
+        with st.expander("➕ Add knowledge item"):
+            kb_title = st.text_input("Title", key="kb_title")
+            kb_category = st.selectbox("Category", ["General","Temu","Amazon","eBay","TikTok","Compliance","Operations"], key="kb_category")
+            kb_content = st.text_area("Content / SOP", height=180, key="kb_content")
+            kb_link = st.text_input("Reference link (optional)", key="kb_link")
+            kb_file = st.file_uploader("Optional document", type=["pdf","doc","docx","xls","xlsx","txt"], key="kb_file")
+            if st.button("Save knowledge item", type="primary"):
+                file_meta = upload_private_file("knowledge-files", kb_file, "knowledge") if kb_file else None
+                try:
+                    supabase.table("knowledge_items").insert({
+                        "title": kb_title.strip(),
+                        "category": kb_category,
+                        "content": kb_content.strip(),
+                        "reference_link": kb_link.strip(),
+                        "file_path": file_meta["path"] if file_meta else None,
+                        "file_name": file_meta["name"] if file_meta else None,
+                        "created_by": current_user_id,
+                        "created_by_name": name,
+                        "active": True
+                    }).execute()
+                    audit("Knowledge item created", "knowledge", None, kb_title)
+                    st.rerun()
+                except Exception as error:
+                    st.error(error)
+
+    items = load_knowledge_items()
+    category_filter = st.selectbox("Filter category", ["All"] + sorted(set(i.get("category","General") for i in items)))
+    for item in items:
+        if category_filter != "All" and item.get("category") != category_filter:
+            continue
+        with st.expander(f"{item.get('category','General')} • {item.get('title','')}"):
+            st.write(item.get("content",""))
+            if item.get("reference_link"):
+                st.link_button("Open reference", item.get("reference_link"))
+            if item.get("file_path"):
+                url = signed_file_url("knowledge-files", item.get("file_path"))
+                if url:
+                    st.link_button(f"📎 {item.get('file_name','Document')}", url)
+
+
+# ============================================================
+# TEAM STATUS
+# ============================================================
+
+elif page == "🟢 Team Status":
+    if not is_manager():
+        st.error("Management access only.")
+        st.stop()
+
+    st.markdown('<div class="tech-title">Team Status</div>', unsafe_allow_html=True)
+    st.caption("Live working, break and offline indicators.")
+
+    rows = load_presence()
+    now_utc = datetime.now(timezone.utc)
+    display = []
+    for row in rows:
+        seen = parse_timestamp(row.get("last_seen"))
+        minutes = int((now_utc - seen).total_seconds() / 60) if seen else 9999
+        status = row.get("status","Offline") if minutes <= 10 else "Offline"
+        display.append({
+            "Employee": row.get("user_name"),
+            "Status": status,
+            "Last Seen": format_pk_time(row.get("last_seen")),
+            "Minutes Ago": minutes if minutes < 9999 else None
+        })
+    if display:
+        st.dataframe(pd.DataFrame(display), use_container_width=True, hide_index=True)
+
+
+# ============================================================
+# REPORTS
+# ============================================================
+
+elif page == "📊 Reports":
+    if not is_manager():
+        st.error("Management access only.")
+        st.stop()
+
+    st.markdown('<div class="tech-title">Management Reports</div>', unsafe_allow_html=True)
+    st.caption("Performance, attendance and workload reporting.")
+
+    report_month = st.date_input("Month", value=datetime.now(PK_TZ).date().replace(day=1))
+    month_start = report_month.replace(day=1)
+    month_end = month_start.replace(day=calendar.monthrange(month_start.year, month_start.month)[1])
+
+    try:
+        all_tasks = (
+            supabase.table("tasks")
+            .select("*")
+            .gte("created_at", month_start.isoformat())
+            .lte("created_at", (month_end + timedelta(days=1)).isoformat())
+            .execute()
+        ).data or []
+    except Exception:
+        all_tasks = []
+
+    try:
+        attendance = (
+            supabase.table("attendance")
+            .select("*")
+            .gte("attendance_date", month_start.isoformat())
+            .lte("attendance_date", month_end.isoformat())
+            .execute()
+        ).data or []
+    except Exception:
+        attendance = []
+
+    profiles = [p for p in load_team_profiles() if p.get("name")]
+    report_rows = []
+
+    for person in profiles:
+        person_name = person.get("name")
+        person_tasks = [t for t in all_tasks if t.get("assigned_to") == person_name]
+        completed = [t for t in person_tasks if t.get("status") in ["Completed","Approved"]]
+        overdue = []
+        for t in person_tasks:
+            due = parse_timestamp(t.get("due_date")) if t.get("due_date") else None
+            if due and due.date() < datetime.now(PK_TZ).date() and t.get("status") not in ["Completed","Approved"]:
+                overdue.append(t)
+        person_att = [a for a in attendance if a.get("employee_name") == person_name]
+        late_days = sum(1 for a in person_att if late_status(a.get("check_in")) == "Late")
+
+        report_rows.append({
+            "Employee": person_name,
+            "Tasks": len(person_tasks),
+            "Completed": len(completed),
+            "Overdue": len(overdue),
+            "Days Present": len(person_att),
+            "Late Days": late_days,
+            "Completion %": round((len(completed)/len(person_tasks)*100), 1) if person_tasks else 0
+        })
+
+    report_df = pd.DataFrame(report_rows)
+    st.dataframe(report_df, use_container_width=True, hide_index=True)
+
+    if not report_df.empty:
+        leader = report_df.sort_values(["Completion %","Completed"], ascending=False).iloc[0]
+        st.success(f"🏆 Current completion leader: {leader['Employee']} — {leader['Completion %']}%")
+
+    task_df = pd.DataFrame(all_tasks)
+    att_df = pd.DataFrame(attendance)
+    excel_bytes = to_excel_bytes({
+        "Summary": report_df,
+        "Tasks": task_df,
+        "Attendance": att_df
+    })
+    st.download_button(
+        "⬇️ Export Excel Report",
+        data=excel_bytes,
+        file_name=f"techloom_report_{month_start.strftime('%Y_%m')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+# ============================================================
+# TASK TEMPLATES
+# ============================================================
+
+elif page == "🧩 Task Templates":
+    if not is_manager():
+        st.error("Management access only.")
+        st.stop()
+
+    st.markdown('<div class="tech-title">Task Templates</div>', unsafe_allow_html=True)
+
+    with st.expander("➕ Create template"):
+        t_name = st.text_input("Template name", key="tpl_name")
+        t_title = st.text_input("Default task title", key="tpl_title")
+        t_type = st.selectbox("Task type", ["New Listing","Listing Upload","Listing Update","Image Generation","Compliance","Appeal","Seller Support Case","Product Research","Other"], key="tpl_type")
+        t_platform = st.selectbox("Platform", ["Temu","Amazon","eBay","TikTok","Multiple"], key="tpl_platform")
+        t_priority = st.selectbox("Priority", ["Normal","High","Urgent","Low"], key="tpl_priority")
+        t_desc = st.text_area("Default instructions", key="tpl_desc")
+        if st.button("Save template", type="primary"):
+            try:
+                supabase.table("task_templates").insert({
+                    "name": t_name.strip(),
+                    "title_template": t_title.strip(),
+                    "description_template": t_desc.strip(),
+                    "task_type": t_type,
+                    "platform": t_platform,
+                    "priority": t_priority,
+                    "created_by": current_user_id,
+                    "active": True
+                }).execute()
+                st.rerun()
+            except Exception as error:
+                st.error(error)
+
+    templates = load_task_templates()
+    if templates:
+        labels = {t.get("name","Template"): t for t in templates}
+        chosen_name = st.selectbox("Use template", list(labels.keys()))
+        assignee = st.selectbox("Assign to", [p.get("name") for p in load_team_profiles() if p.get("name")], key="tpl_assignee")
+        due = st.date_input("Due date", value=datetime.now(PK_TZ).date()+timedelta(days=1), key="tpl_due")
+        if st.button("Create task from template"):
+            if create_task_from_template(labels[chosen_name], assignee, due):
+                st.success("Task created.")
+                st.rerun()
+
+
+# ============================================================
+# RECURRING TASKS
+# ============================================================
+
+elif page == "🔁 Recurring Tasks":
+    if not is_manager():
+        st.error("Management access only.")
+        st.stop()
+
+    st.markdown('<div class="tech-title">Recurring Tasks</div>', unsafe_allow_html=True)
+    st.caption("Daily, weekly or monthly work that creates itself.")
+
+    with st.expander("➕ New recurring task"):
+        r_title = st.text_input("Title", key="rec_title")
+        r_assignee = st.selectbox("Assign to", [p.get("name") for p in load_team_profiles() if p.get("name")], key="rec_assignee")
+        r_cadence = st.selectbox("Cadence", ["Daily","Weekly","Monthly"], key="rec_cadence")
+        r_type = st.selectbox("Task type", ["Other","Compliance","Listing Upload","Image Generation","Appeal"], key="rec_type")
+        r_platform = st.selectbox("Platform", ["Multiple","Temu","Amazon","eBay","TikTok"], key="rec_platform")
+        r_priority = st.selectbox("Priority", ["Normal","High","Urgent","Low"], key="rec_priority")
+        r_desc = st.text_area("Instructions", key="rec_desc")
+        r_due_hours = st.number_input("Due after hours", min_value=1, max_value=720, value=24, key="rec_due_hours")
+        if st.button("Create recurring task"):
+            try:
+                supabase.table("recurring_tasks").insert({
+                    "title": r_title.strip(),
+                    "description": r_desc.strip(),
+                    "assigned_to": r_assignee,
+                    "cadence": r_cadence,
+                    "task_type": r_type,
+                    "platform": r_platform,
+                    "priority": r_priority,
+                    "due_after_hours": int(r_due_hours),
+                    "next_run": datetime.now(timezone.utc).isoformat(),
+                    "created_by": current_user_id,
+                    "active": True
+                }).execute()
+                st.rerun()
+            except Exception as error:
+                st.error(error)
+
+    try:
+        recurring = supabase.table("recurring_tasks").select("*").order("created_at", desc=True).execute().data or []
+        if recurring:
+            st.dataframe(pd.DataFrame(recurring), use_container_width=True, hide_index=True)
+    except Exception as error:
+        st.error(error)
+
+
+# ============================================================
+# PERMISSIONS
+# ============================================================
+
+elif page == "🛡 Permissions":
+    if not is_manager():
+        st.error("Management access only.")
+        st.stop()
+
+    st.markdown('<div class="tech-title">Role Permissions</div>', unsafe_allow_html=True)
+    st.caption("Configure feature permissions by role. Current app still enforces core manager-only areas.")
+
+    roles = ["Team Member","Team Lead","Admin"]
+    features = ["create_task","approve_task","view_team_attendance","manage_templates","manage_announcements","manage_knowledge","archive_task","view_audit"]
+    selected_role = st.selectbox("Role", roles)
+
+    try:
+        rows = (
+            supabase.table("role_permissions")
+            .select("*")
+            .eq("role", selected_role)
+            .execute()
+        ).data or []
+        current = {r.get("feature"): bool(r.get("allowed")) for r in rows}
+    except Exception:
+        current = {}
+
+    changed = {}
+    for feature in features:
+        changed[feature] = st.checkbox(
+            feature.replace("_"," ").title(),
+            value=current.get(feature, selected_role in ["Team Lead","Admin"]),
+            key=f"perm_{selected_role}_{feature}"
+        )
+
+    if st.button("Save permissions"):
+        try:
+            for feature, allowed in changed.items():
+                supabase.table("role_permissions").upsert({
+                    "role": selected_role,
+                    "feature": feature,
+                    "allowed": allowed
+                }, on_conflict="role,feature").execute()
+            st.success("Permissions saved.")
+        except Exception as error:
+            st.error(error)
+
+
+# ============================================================
+# AUDIT LOG
+# ============================================================
+
+elif page == "🧾 Audit Log":
+    if not is_manager():
+        st.error("Management access only.")
+        st.stop()
+
+    st.markdown('<div class="tech-title">Audit Log</div>', unsafe_allow_html=True)
+    try:
+        logs = (
+            supabase.table("audit_logs")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(500)
+            .execute()
+        ).data or []
+        if logs:
+            df = pd.DataFrame(logs)
+            st.dataframe(df, use_container_width=True, hide_index=True)
+            st.download_button(
+                "Download CSV",
+                df.to_csv(index=False).encode("utf-8"),
+                file_name="techloom_audit_log.csv",
+                mime="text/csv"
+            )
+        else:
+            st.info("No audit events yet.")
+    except Exception as error:
+        st.error(error)
+
+
+# ============================================================
+# SETTINGS
+# ============================================================
+
+elif page == "⚙️ Settings":
+    st.markdown('<div class="tech-title">Settings</div>', unsafe_allow_html=True)
+    prefs = get_user_preferences()
+
+    st.subheader("Profile")
+    st.write(f"**Name:** {name}")
+    st.write(f"**Role:** {role}")
+    st.write(f"**Department:** {department}")
+
+    st.subheader("Presence")
+    presence_choice = st.selectbox(
+        "Current status",
+        ["Working","On Break","Busy","Away"],
+        index=["Working","On Break","Busy","Away"].index(st.session_state.get("presence_status","Working"))
+        if st.session_state.get("presence_status","Working") in ["Working","On Break","Busy","Away"] else 0
+    )
+    if presence_choice != st.session_state.get("presence_status"):
+        st.session_state.presence_status = presence_choice
+        update_presence()
+
+    st.subheader("Preferences")
+    notify_sound = st.checkbox("Notification sound", value=bool(prefs.get("notification_sound", True)))
+    desktop_alerts = st.checkbox("Desktop notification preference", value=bool(prefs.get("desktop_notifications", False)))
+    compact_mode = st.checkbox("Compact dashboard mode", value=bool(prefs.get("compact_mode", False)))
+    timezone_pref = st.selectbox("Timezone", ["Asia/Karachi","UTC"], index=0)
+
+    if st.button("Save preferences", type="primary"):
+        if save_user_preferences({
+            "notification_sound": notify_sound,
+            "desktop_notifications": desktop_alerts,
+            "compact_mode": compact_mode,
+            "timezone": timezone_pref
+        }):
+            st.session_state.notification_sound_enabled = notify_sound
+            st.success("Settings saved.")
+
+    st.subheader("Browser desktop notifications")
+    request_browser_notification_permission()
+
+    st.subheader("Password")
+    user_email = getattr(st.session_state.user, "email", None)
+    if user_email and st.button("Send password reset email"):
+        try:
+            supabase.auth.reset_password_for_email(user_email)
+            st.success("Password reset email sent.")
+        except Exception as error:
+            st.error(error)
 
 
 # ============================================================
