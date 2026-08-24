@@ -579,6 +579,73 @@ footer { visibility: hidden; }
     color:var(--muted);
 }
 
+
+/* ------------------------------------------------------------
+   ATTENDANCE EXPERIENCE
+   ------------------------------------------------------------ */
+.attendance-hero {
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:linear-gradient(135deg,#ffffff 0%,#f5fbf9 100%);
+    padding:20px 22px;
+    margin:6px 0 18px 0;
+    box-shadow:0 3px 12px rgba(15,118,110,.06);
+}
+.attendance-eyebrow {
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#0f766e;
+    margin-bottom:6px;
+}
+.attendance-date {
+    font-size:28px;
+    font-weight:800;
+    color:var(--ink);
+    line-height:1.15;
+}
+.attendance-day {
+    font-size:14px;
+    color:var(--muted);
+    margin-top:5px;
+}
+.attendance-status-card {
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:#fff;
+    padding:16px;
+    min-height:126px;
+    box-shadow:0 2px 8px rgba(15,23,42,.04);
+}
+.attendance-label {
+    font-size:11px;
+    color:var(--muted);
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+.attendance-value {
+    font-size:21px;
+    font-weight:800;
+    color:var(--ink);
+    margin-top:7px;
+}
+.attendance-note {
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+}
+.attendance-rules {
+    padding:12px 14px;
+    border:1px solid #dce9e6;
+    border-radius:12px;
+    background:#f8fffd;
+    color:#35504b;
+    font-size:12px;
+    line-height:1.7;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -3777,178 +3844,224 @@ elif page == "✅ Approvals":
 
 elif page == "⏱ Attendance":
 
-    st.info(
-        "Office timing: 10:00 AM–6:00 PM • "
-        "On Time: up to 10:15 • Late: 10:16–10:30 • "
-        "Very Late: 10:31–10:45 • Extremely Late: after 10:45"
-    )
+    now_local = datetime.now(PK_TZ)
+    attendance_date = now_local.date()
+    attendance_day_name = now_local.strftime("%A")
+    attendance_date_label = now_local.strftime("%d %B %Y")
 
     st.markdown(
-        '<div class="tech-title">'
-        'Attendance'
-        '</div>',
+        f"""
+        <div class="attendance-hero">
+            <div class="attendance-eyebrow">Today's Attendance</div>
+            <div class="attendance-date">{attendance_date_label}</div>
+            <div class="attendance-day">{attendance_day_name} • Office Hours 10:00 AM – 6:00 PM</div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
     st.markdown(
-        '<div class="tech-subtitle">'
-        'Check in when you arrive and check out when you leave.'
-        '</div>',
+        """
+        <div class="attendance-rules">
+            <b>Arrival grading:</b>
+            On Time up to 10:15 AM •
+            Late 10:16–10:30 AM •
+            Very Late 10:31–10:45 AM •
+            Extremely Late after 10:45 AM
+        </div>
+        """,
         unsafe_allow_html=True
     )
+
+    st.write("")
 
     attendance = get_today_attendance()
 
     if attendance is None:
 
-        st.info("You have not checked in today.")
+        st.warning(
+            f"Attendance has not been marked for {attendance_day_name}, {attendance_date_label}."
+        )
+
+        st.markdown(
+            f"""
+            <div class="attendance-status-card">
+                <div class="attendance-label">Current Status</div>
+                <div class="attendance-value">Not Marked</div>
+                <div class="attendance-note">
+                    Attendance date: {attendance_date_label} • {attendance_day_name}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.write("")
 
         if st.button(
-            "🟢 CHECK IN",
+            f"✅ Mark Attendance for {attendance_day_name}",
             type="primary",
             use_container_width=True,
             key="attendance_page_checkin"
         ):
-
             if check_in_employee():
                 st.success("Check-in recorded successfully.")
                 st.rerun()
 
     else:
 
-        a1, a2, a3 = st.columns(3)
+        check_in_value = attendance.get("check_in")
+        check_out_value = attendance.get("check_out")
+        arrival_grade = late_status(check_in_value)
+        work_duration = working_time(check_in_value, check_out_value)
 
-        a1.metric(
-            "🟢 Check In",
-            format_pk_time(
-                attendance.get("check_in")
+        a1, a2, a3, a4 = st.columns(4)
+
+        with a1:
+            st.markdown(
+                f"""
+                <div class="attendance-status-card">
+                    <div class="attendance-label">Check In</div>
+                    <div class="attendance-value">{format_pk_time(check_in_value)}</div>
+                    <div class="attendance-note">{arrival_grade}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
-        )
 
-        a2.metric(
-            "🔴 Check Out",
-            format_pk_time(
-                attendance.get("check_out")
+        with a2:
+            st.markdown(
+                f"""
+                <div class="attendance-status-card">
+                    <div class="attendance-label">Check Out</div>
+                    <div class="attendance-value">{format_pk_time(check_out_value) if check_out_value else "Not Yet"}</div>
+                    <div class="attendance-note">{early_departure_status(check_out_value) if check_out_value else "Working day in progress"}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
-        )
 
-        a3.metric(
-            "⏱ Working Time",
-            working_time(
-                attendance.get("check_in"),
-                attendance.get("check_out")
+        with a3:
+            st.markdown(
+                f"""
+                <div class="attendance-status-card">
+                    <div class="attendance-label">Working Time</div>
+                    <div class="attendance-value">{work_duration}</div>
+                    <div class="attendance-note">Recorded for {attendance_day_name}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
-        )
 
-        if not attendance.get("check_out"):
+        with a4:
+            st.markdown(
+                f"""
+                <div class="attendance-status-card">
+                    <div class="attendance-label">Attendance Date</div>
+                    <div class="attendance-value">{attendance_date.strftime("%d %b")}</div>
+                    <div class="attendance-note">{attendance_day_name}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
+        st.write("")
+        st.subheader("Today's Actions")
+
+        if not check_out_value:
             if st.button(
                 "🚪 CHECK OUT",
                 type="primary",
                 use_container_width=True,
                 key="attendance_page_checkout"
             ):
-
                 if check_out_employee():
                     st.success("Check-out recorded successfully.")
                     st.rerun()
-
         else:
-
-            st.success(
-                "Today's attendance is complete."
-            )
+            st.success("Today's attendance is complete.")
 
     st.write("")
     st.subheader("Break Management")
+
     open_break = current_break()
     b1, b2 = st.columns(2)
+
     with b1:
         if open_break:
             st.warning("You are currently on break.")
         else:
-            if st.button("☕ Start Break", use_container_width=True, key="start_break"):
+            if st.button(
+                "☕ Start Break",
+                use_container_width=True,
+                key="start_break"
+            ):
                 if mark_break_start():
                     st.rerun()
+
     with b2:
         if open_break:
-            if st.button("▶️ End Break", type="primary", use_container_width=True, key="end_break"):
+            if st.button(
+                "▶️ End Break",
+                type="primary",
+                use_container_width=True,
+                key="end_break"
+            ):
                 if mark_break_end():
                     st.rerun()
         else:
             st.caption("No active break.")
 
     st.write("")
-    st.subheader("My Attendance History")
+    st.subheader("Attendance History")
 
     try:
-
         history_result = (
             supabase
             .table("attendance")
             .select("*")
             .eq("user_id", current_user_id)
-            .order(
-                "attendance_date",
-                desc=True
-            )
+            .order("attendance_date", desc=True)
             .limit(60)
             .execute()
         )
 
         history = history_result.data or []
-
         history_rows = []
 
         for record in history:
+            record_date = record.get("attendance_date")
+            try:
+                date_obj = datetime.fromisoformat(str(record_date)).date()
+                day_name = date_obj.strftime("%A")
+            except Exception:
+                day_name = "—"
 
             history_rows.append({
-                "Date":
-                    record.get("attendance_date"),
-
-                "Check In":
-                    format_pk_time(
-                        record.get("check_in")
-                    ),
-
-                "Check Out":
-                    format_pk_time(
-                        record.get("check_out")
-                    ),
-
-                "Working Time":
-                    working_time(
-                        record.get("check_in"),
-                        record.get("check_out")
-                    ),
-
-                "Status":
-                    record.get(
-                        "status",
-                        "Present"
-                    )
+                "Date": record_date,
+                "Day": day_name,
+                "Check In": format_pk_time(record.get("check_in")),
+                "Arrival": late_status(record.get("check_in")),
+                "Check Out": format_pk_time(record.get("check_out")),
+                "Departure": early_departure_status(record.get("check_out")),
+                "Working Time": working_time(
+                    record.get("check_in"),
+                    record.get("check_out")
+                ),
+                "Status": record.get("status", "Present")
             })
 
         if history_rows:
-
             st.dataframe(
                 pd.DataFrame(history_rows),
                 use_container_width=True,
                 hide_index=True
             )
-
         else:
-
-            st.info(
-                "No attendance history yet."
-            )
+            st.info("No attendance history yet.")
 
     except Exception as error:
-
-        st.error(
-            "Could not load attendance history."
-        )
-
+        st.error("Could not load attendance history.")
         st.write(error)
 
 
