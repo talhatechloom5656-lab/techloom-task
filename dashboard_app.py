@@ -506,13 +506,22 @@ footer { visibility: hidden; }
 # SUPABASE
 # ============================================================
 
-@st.cache_resource
 def get_supabase():
+    """
+    Create one Supabase client per Streamlit user session.
 
-    return create_client(
-        st.secrets["SUPABASE_URL"],
-        st.secrets["SUPABASE_KEY"]
-    )
+    IMPORTANT:
+    Do not use st.cache_resource here because the Supabase client carries
+    authentication state. A globally cached client can mix auth sessions
+    between different employees and make RLS see the wrong auth.uid().
+    """
+    if "supabase_client" not in st.session_state:
+        st.session_state.supabase_client = create_client(
+            st.secrets["SUPABASE_URL"],
+            st.secrets["SUPABASE_KEY"]
+        )
+
+    return st.session_state.supabase_client
 
 
 supabase = get_supabase()
