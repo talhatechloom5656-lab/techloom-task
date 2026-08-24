@@ -24,7 +24,7 @@ st.set_page_config(
 
 
 # ============================================================
-# PREMIUM UI / STYLING  (light theme throughout — no dark mode)
+# PREMIUM UI / STYLING  (colored sidebar + white content area)
 # ============================================================
 
 st.markdown("""
@@ -32,20 +32,18 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --indigo: #4f46e5;
-    --indigo-dark: #4338ca;
-    --teal: #0d9488;
-    --indigo-soft: #eef2ff;
-    --teal-soft: #ecfdf5;
+    --teal: #0f766e;
+    --teal-light: #14b8a6;
+    --amber: #d97706;
+    --amber-soft: #fef3e2;
     --green: #059669;
     --red: #dc2626;
-    --amber: #d97706;
     --ink: #1e2333;
     --muted: #6b7280;
     --line: #e6e8ee;
     --panel: #ffffff;
-    --page-bg: #f8f9fb;
-    --sidebar-bg: #ffffff;
+    --page-bg: #ffffff;
+    --sidebar-bg: #0f766e;
 }
 
 html, body, [class*="css"] {
@@ -53,7 +51,7 @@ html, body, [class*="css"] {
 }
 
 /* ------------------------------------------------------------
-   APP BACKGROUND
+   APP BACKGROUND — clean white content area
    ------------------------------------------------------------ */
 .stApp {
     background: var(--page-bg);
@@ -67,11 +65,11 @@ html, body, [class*="css"] {
 }
 
 /* ------------------------------------------------------------
-   SIDEBAR — crisp white, indigo accent, easy to scan
+   SIDEBAR — solid teal, white text, the colorful anchor of the UI
    ------------------------------------------------------------ */
 [data-testid="stSidebar"] {
     background: var(--sidebar-bg);
-    border-right: 1px solid var(--line);
+    border-right: none;
     min-width: 296px;
 }
 
@@ -83,12 +81,12 @@ html, body, [class*="css"] {
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] div {
-    color: var(--ink);
+    color: #ffffff;
 }
 
 [data-testid="stSidebar"] .stCaption,
 [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-    color: var(--muted) !important;
+    color: rgba(255,255,255,.72) !important;
 }
 
 .sidebar-logo {
@@ -96,18 +94,18 @@ html, body, [class*="css"] {
     line-height: 1.2;
     font-weight: 800;
     letter-spacing: -.3px;
-    color: var(--indigo-dark);
+    color: #ffffff;
     margin-top: .3rem;
 }
 
 .sidebar-subtitle {
     font-size: 11.5px;
-    color: var(--muted) !important;
+    color: rgba(255,255,255,.72) !important;
     letter-spacing: .15px;
     margin-top: 4px;
     margin-bottom: 18px;
     padding-bottom: 16px;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid rgba(255,255,255,.18);
 }
 
 /* Turn radio into clean, tappable navigation rows */
@@ -120,32 +118,31 @@ html, body, [class*="css"] {
     min-height: 44px;
     display: flex;
     align-items: center;
-    border-radius: 10px;
+    border-radius: 9px;
     padding: 10px 12px !important;
     margin: 1px 0;
     background: transparent;
-    border-left: 3px solid transparent;
     transition: all .14s ease;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
-    background: #f4f5fb;
+    background: rgba(255,255,255,.10);
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label p {
-    color: #3d4356 !important;
+    color: rgba(255,255,255,.88) !important;
     font-weight: 600 !important;
     font-size: 14px !important;
     line-height: 1.25 !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
-    background: var(--indigo-soft);
-    border-left: 3px solid var(--indigo);
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
-    color: var(--indigo-dark) !important;
+    color: var(--teal) !important;
     font-weight: 700 !important;
 }
 
@@ -159,26 +156,26 @@ html, body, [class*="css"] {
 /* Sidebar buttons (Logout) */
 [data-testid="stSidebar"] .stButton > button {
     width: 100%;
-    background: #ffffff !important;
-    color: #b91c1c !important;
-    border: 1px solid #f3d2d2 !important;
+    background: rgba(255,255,255,.10) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,.28) !important;
     box-shadow: none !important;
     margin-top: 6px;
 }
 
 [data-testid="stSidebar"] .stButton > button p,
 [data-testid="stSidebar"] .stButton > button span {
-    color: #b91c1c !important;
+    color: #ffffff !important;
     font-weight: 650 !important;
 }
 
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: #fef2f2 !important;
-    border-color: #f2b8b8 !important;
+    background: rgba(255,255,255,.18) !important;
+    border-color: rgba(255,255,255,.42) !important;
 }
 
 /* ------------------------------------------------------------
-   TITLES & TEXT
+   TITLES & TEXT (main content — white background)
    ------------------------------------------------------------ */
 .tech-title {
     font-size: clamp(26px, 2.6vw, 36px);
@@ -219,12 +216,12 @@ html, body, [class*="css"] {
 }
 
 /* ------------------------------------------------------------
-   METRIC CARDS — subtle top accent, generous spacing
+   METRIC CARDS
    ------------------------------------------------------------ */
 div[data-testid="stMetric"] {
     background: var(--panel);
     border: 1px solid var(--line);
-    border-top: 3px solid var(--indigo);
+    border-top: 3px solid var(--teal);
     padding: 16px 18px 14px 18px;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(30,35,51,.05);
@@ -251,14 +248,14 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 
 /* ------------------------------------------------------------
-   TASK CARDS — left accent bar for quick scanning
+   TASK CARDS — left accent bar in amber for contrast against teal nav
    ------------------------------------------------------------ */
 .task-card {
     background: var(--panel);
     padding: 14px 18px 14px 16px;
     border-radius: 10px;
     border: 1px solid var(--line);
-    border-left: 4px solid var(--teal);
+    border-left: 4px solid var(--amber);
     margin-bottom: 9px;
     box-shadow: 0 1px 3px rgba(30,35,51,.04);
     transition: box-shadow .15s ease;
@@ -299,12 +296,12 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 
 button[kind="primary"] {
-    background: var(--indigo) !important;
+    background: var(--teal) !important;
     border: none !important;
 }
 
 button[kind="primary"]:hover {
-    background: var(--indigo-dark) !important;
+    background: #0c5f58 !important;
 }
 
 /* ------------------------------------------------------------
@@ -328,8 +325,8 @@ button[kind="primary"]:hover {
 [data-baseweb="input"] > div:focus-within,
 [data-baseweb="textarea"] > div:focus-within,
 [data-baseweb="select"] > div:focus-within {
-    border-color: var(--indigo) !important;
-    box-shadow: 0 0 0 3px var(--indigo-soft) !important;
+    border-color: var(--teal) !important;
+    box-shadow: 0 0 0 3px rgba(15,118,110,.14) !important;
 }
 
 /* ------------------------------------------------------------
@@ -381,11 +378,11 @@ button[data-baseweb="tab"] {
 }
 
 button[data-baseweb="tab"][aria-selected="true"] {
-    color: var(--indigo-dark) !important;
+    color: var(--teal) !important;
 }
 
 [data-baseweb="tab-highlight"] {
-    background-color: var(--indigo) !important;
+    background-color: var(--teal) !important;
 }
 
 /* ------------------------------------------------------------
@@ -411,8 +408,8 @@ hr {
     display: inline-block;
     padding: 6px 12px;
     border-radius: 999px;
-    background: var(--indigo-soft);
-    color: var(--indigo-dark);
+    background: var(--amber-soft);
+    color: var(--amber);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: .3px;
