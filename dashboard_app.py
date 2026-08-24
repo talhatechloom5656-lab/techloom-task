@@ -2284,12 +2284,27 @@ def current_break():
 
 
 def late_status(check_in_value):
+    """
+    Official TECHLOOM arrival grading:
+    - Up to 10:15 AM: On Time
+    - 10:16–10:30 AM: Late
+    - 10:31–10:45 AM: Very Late
+    - After 10:45 AM: Extremely Late
+    """
     check_dt = parse_timestamp(check_in_value)
     if not check_dt:
         return "--"
+
     local = check_dt.astimezone(PK_TZ)
-    office_start = time(hour=9, minute=30)
-    return "Late" if local.time() > office_start else "On Time"
+    arrival = local.time()
+
+    if arrival <= time(hour=10, minute=15):
+        return "On Time"
+    if arrival <= time(hour=10, minute=30):
+        return "Late"
+    if arrival <= time(hour=10, minute=45):
+        return "Very Late"
+    return "Extremely Late"
 
 
 def early_departure_status(check_out_value):
@@ -2298,7 +2313,7 @@ def early_departure_status(check_out_value):
         return "--"
     local = out_dt.astimezone(PK_TZ)
     office_end = time(hour=18, minute=0)
-    return "Early" if local.time() < office_end else "Normal"
+    return "Early Departure" if local.time() < office_end else "Full Day"
 
 
 def archive_task(task_id):
@@ -2701,11 +2716,18 @@ def attendance_summary_dataframe(rows):
         present = int((group["Status"].str.lower() == "present").sum())
         absent = int((group["Status"].str.lower() == "absent").sum())
         late = int((group["Arrival"] == "Late").sum())
+        very_late = int((group["Arrival"] == "Very Late").sum())
+        extremely_late = int((group["Arrival"] == "Extremely Late").sum())
+        on_time = int((group["Arrival"] == "On Time").sum())
+
         summary.append({
             "Employee": employee,
             "Present Days": present,
             "Absent Days": absent,
+            "On Time Days": on_time,
             "Late Days": late,
+            "Very Late Days": very_late,
+            "Extremely Late Days": extremely_late,
             "Total Days": len(group)
         })
     return pd.DataFrame(summary)
@@ -2717,6 +2739,157 @@ def attendance_excel_bytes(detail_df, summary_df, title):
         summary_df.to_excel(writer, sheet_name="Summary", index=False)
         detail_df.to_excel(writer, sheet_name="Attendance", index=False)
     return output.getvalue()
+
+
+def today_team_attendance():
+    try:
+        return (
+            supabase.table("attendance")
+            .select("*")
+            .eq("attendance_date", pakistan_today().isoformat())
+            .execute()
+        ).data or []
+    except Exception:
+        return []
+
+
+def today_activity_counts():
+    """Count meaningful task activity today by employee."""
+    try:
+        start_local = datetime.combine(
+            pakistan_today(),
+            time.min,
+            tzinfo=PK_TZ
+        ).astimezone(timezone.utc)
+
+        rows = (
+            supabase.table("task_activity")
+            .select("*")
+            .gte("created_at", start_local.isoformat())
+            .execute()
+        ).data or []
+    except Exception:
+        rows = []
+
+    counts = {}
+    for row in rows:
+        person = row.get("user_name")
+        if person:
+            counts[person] = counts.get(person, 0) + 1
+    return counts
+
+
+def today_completed_task_counts():
+    try:
+        start_local = datetime.combine(
+            pakistan_today(),
+            time.min,
+            tzinfo=PK_TZ
+        ).astimezone(timezone.utc)
+
+        rows = (
+            supabase.table("tasks")
+            .select("assigned_to,status,completed_at,updated_at")
+            .in_("status", ["Completed", "Approved"])
+            .gte("updated_at", start_local.isoformat())
+            .execute()
+        ).data or []
+    except Exception:
+        rows = []
+
+    counts = {}
+    for row in rows:
+        person = row.get("assigned_to")
+        if person:
+            counts[person] = counts.get(person, 0) + 1
+    return counts
+
+
+def build_team_shoutout():
+    """
+    Pick one positive, useful message for the top notification bar.
+    Priority:
+    1. On-time attendance shout-out
+    2. Strong completion activity
+    3. Strong overall task activity
+    4. Office timing reminder
+    """
+    attendance = today_team_attendance()
+
+    on_time_people = []
+    for row in attendance:
+        if late_status(row.get("check_in")) == "On Time":
+            employee = row.get("employee_name")
+            if employee:
+                on_time_people.append(employee)
+
+    completed = today_completed_task_counts()
+    activity = today_activity_counts()
+
+    if on_time_people:
+        if len(on_time_people) == 1:
+            return (
+                "👏",
+                f"Shout-out to {on_time_people[0]} for being on time today!",
+                "On-time arrival keeps the day moving smoothly."
+            )
+        names = ", ".join(on_time_people[:3])
+        suffix = "" if len(on_time_people) <= 3 else f" +{len(on_time_people)-3} more"
+        return (
+            "🌟",
+            f"Great start today: {names}{suffix}",
+            "These team members checked in within the official on-time window."
+        )
+
+    if completed:
+        top_person = max(completed, key=completed.get)
+        top_count = completed[top_person]
+        if top_count > 0:
+            return (
+                "🏆",
+                f"Activity shout-out: {top_person}",
+                f"{top_count} task{'s' if top_count != 1 else ''} completed/approved today."
+            )
+
+    if activity:
+        top_person = max(activity, key=activity.get)
+        top_count = activity[top_person]
+        if top_count >= 3:
+            return (
+                "⚡",
+                f"{top_person} is active today",
+                f"{top_count} task updates recorded so far."
+            )
+
+    return (
+        "🕙",
+        "Office hours: 10:00 AM – 6:00 PM",
+        "Arrival up to 10:15 AM is considered on time."
+    )
+
+
+def render_team_shoutout_bar():
+    icon, title, body = build_team_shoutout()
+    st.markdown(
+        f"""
+        <div style="
+            padding:14px 18px;
+            border-radius:14px;
+            border:1px solid #dfe7e5;
+            background:linear-gradient(90deg,#f7fffd 0%,#ffffff 100%);
+            margin:4px 0 18px 0;
+            box-shadow:0 2px 8px rgba(20,90,80,.05);
+        ">
+            <div style="font-size:14px;font-weight:800;color:#173c37;">
+                {icon} {title}
+            </div>
+            <div style="font-size:12px;color:#65736f;margin-top:3px;">
+                {body}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # ============================================================
 # SIDEBAR
@@ -2865,6 +3038,8 @@ with st.sidebar:
 # ============================================================
 
 if page == "🏠 Dashboard":
+
+    render_team_shoutout_bar()
 
     st.markdown(
         f'<div class="tech-title">'
@@ -3588,6 +3763,12 @@ elif page == "✅ Approvals":
 # ============================================================
 
 elif page == "⏱ Attendance":
+
+    st.info(
+        "Office timing: 10:00 AM–6:00 PM • "
+        "On Time: up to 10:15 • Late: 10:16–10:30 • "
+        "Very Late: 10:31–10:45 • Extremely Late: after 10:45"
+    )
 
     st.markdown(
         '<div class="tech-title">'
@@ -4785,10 +4966,15 @@ elif page == "👥 Team Attendance":
     )
 
     if not summary_df.empty:
-        s1, s2, s3 = st.columns(3)
+        s1, s2, s3, s4, s5 = st.columns(5)
         s1.metric("Present", int(summary_df["Present Days"].sum()))
         s2.metric("Absent", int(summary_df["Absent Days"].sum()))
-        s3.metric("Late", int(summary_df["Late Days"].sum()))
+        s3.metric("On Time", int(summary_df["On Time Days"].sum()))
+        s4.metric(
+            "Late / Very Late",
+            int(summary_df["Late Days"].sum() + summary_df["Very Late Days"].sum())
+        )
+        s5.metric("Extremely Late", int(summary_df["Extremely Late Days"].sum()))
 
         st.subheader("Summary")
         st.dataframe(
