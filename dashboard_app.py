@@ -2318,24 +2318,31 @@ def can_create_tasks():
 
 def unique_team_profiles():
     """
-    Return a clean, de-duplicated team directory.
+    Return a clean team directory for assignment.
 
-    UUID is the identity key. Name is display-only.
-    This prevents duplicate profile rows / duplicate names from destabilising
-    the assignment form.
+    We de-duplicate by UUID and by normalised display name. Older profile rows
+    can otherwise make two people with the same visible name appear in the
+    selector and can route a task to a stale UUID.
     """
     rows = load_team_profiles()
     clean = []
     seen_ids = set()
+    seen_names = set()
 
     for row in rows:
         user_id = str(row.get("id") or "").strip()
         employee_name = str(row.get("name") or "").strip()
+        normalised_name = employee_name.casefold()
 
-        if not user_id or not employee_name or user_id in seen_ids:
+        if not user_id or not employee_name:
+            continue
+
+        if user_id in seen_ids or normalised_name in seen_names:
             continue
 
         seen_ids.add(user_id)
+        seen_names.add(normalised_name)
+
         clean.append({
             "id": user_id,
             "name": employee_name,
@@ -2343,12 +2350,13 @@ def unique_team_profiles():
             "department": str(row.get("department") or "").strip(),
         })
 
-    clean.sort(key=lambda x: x["name"].lower())
+    clean.sort(key=lambda x: x["name"].casefold())
     return clean
 
 
 def assign_task_rpc(
     assignee_id,
+    assignee_name,
     task_title,
     instructions,
     task_type,
@@ -2361,36 +2369,43 @@ def assign_task_rpc(
     due_datetime,
 ):
     """
-    Create a task through a single server-side Supabase RPC.
+    Crash-safe task assignment.
 
-    This is intentionally preferred over a browser/client direct INSERT because:
-    - auth.uid() is validated server-side;
-    - Team Lead/Admin permissions are checked server-side;
-    - the assignee UUID is validated against profiles;
-    - the task insert is atomic;
-    - RLS differences between managers cannot crash the Streamlit flow.
+    Primary path:
+      server-side assign_task_secure RPC.
+
+    Fallback path:
+      authenticated insert into public.tasks. This keeps the portal usable if
+      the RPC has not yet been installed or PostgREST has not refreshed it.
+
+    The assignee UUID is used for notifications; the visible assignee name is
+    stored in the existing tasks.assigned_to text field.
     """
+    if not ensure_supabase_auth():
+        return False, None, (
+            "Your Supabase login session could not be verified. "
+            "Please sign out, sign back in and try again."
+        )
+
+    due_iso = due_datetime.isoformat()
+
+    payload = {
+        "p_assigned_to_user_id": str(assignee_id),
+        "p_title": task_title.strip(),
+        "p_description": instructions.strip(),
+        "p_task_type": task_type,
+        "p_platform": platform,
+        "p_priority": priority,
+        "p_supplier_link": supplier_link.strip() if supplier_link else None,
+        "p_supplier_price": float(supplier_price or 0),
+        "p_selling_price": float(selling_price or 0),
+        "p_goods_id": goods_id.strip() if goods_id else None,
+        "p_due_date": due_iso,
+    }
+
+    rpc_error = None
+
     try:
-        if not ensure_supabase_auth():
-            return False, None, (
-                "Your authenticated Supabase session could not be verified. "
-                "Please sign out and sign in again."
-            )
-
-        payload = {
-            "p_assigned_to_user_id": str(assignee_id),
-            "p_title": task_title.strip(),
-            "p_description": instructions.strip(),
-            "p_task_type": task_type,
-            "p_platform": platform,
-            "p_priority": priority,
-            "p_supplier_link": supplier_link.strip() if supplier_link else None,
-            "p_supplier_price": float(supplier_price or 0),
-            "p_selling_price": float(selling_price or 0),
-            "p_goods_id": goods_id.strip() if goods_id else None,
-            "p_due_date": due_datetime.isoformat(),
-        }
-
         result = supabase.rpc("assign_task_secure", payload).execute()
 
         row = None
@@ -2399,56 +2414,100 @@ def assign_task_rpc(
         elif isinstance(result.data, dict):
             row = result.data
 
+        if row:
+            new_task_id = row.get("id")
+
+            try:
+                if new_task_id:
+                    add_activity(
+                        new_task_id,
+                        "Task Created",
+                        f"{name} assigned '{task_title.strip()}' to {assignee_name}"
+                    )
+            except Exception:
+                pass
+
+            try:
+                if assignee_id:
+                    create_notification(
+                        assignee_id,
+                        "New task assigned",
+                        f"{name} assigned you: {task_title.strip()}",
+                        "task",
+                        new_task_id
+                    )
+            except Exception:
+                pass
+
+            return True, row, None
+
+        rpc_error = "The secure assignment function returned no task."
+
+    except Exception as error:
+        rpc_error = str(error)
+
+    # Fallback direct insert. This is deliberately inside its own try block so
+    # a database/RLS error is shown safely instead of crashing Streamlit.
+    try:
+        task_data = {
+            "title": task_title.strip(),
+            "description": instructions.strip(),
+            "task_type": task_type,
+            "platform": platform,
+            "priority": priority,
+            "status": "New",
+            "assigned_to": assignee_name,
+            "assigned_by": name,
+            "supplier_link": supplier_link.strip() if supplier_link else None,
+            "supplier_price": float(supplier_price or 0),
+            "selling_price": float(selling_price or 0),
+            "goods_id": goods_id.strip() if goods_id else None,
+            "due_date": due_iso,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "archived": False,
+        }
+
+        result = supabase.table("tasks").insert(task_data).execute()
+        row = result.data[0] if result.data else None
+
         if not row:
-            return False, None, "Supabase returned no task after assignment."
+            return False, None, (
+                "Task creation returned no database row. "
+                f"Secure RPC error: {rpc_error or 'unknown'}"
+            )
 
         new_task_id = row.get("id")
-        assigned_to_name = row.get("assigned_to") or ""
 
-        # These are non-critical secondary actions. They must never make
-        # successful task creation look like a crash.
         try:
             if new_task_id:
                 add_activity(
                     new_task_id,
                     "Task Created",
-                    f"{name} assigned '{task_title.strip()}' to {assigned_to_name}"
+                    f"{name} assigned '{task_title.strip()}' to {assignee_name}"
                 )
         except Exception:
             pass
 
         try:
-            create_notification(
-                assignee_id,
-                "New task assigned",
-                f"{name} assigned you: {task_title.strip()}",
-                "task",
-                new_task_id
-            )
+            if assignee_id:
+                create_notification(
+                    assignee_id,
+                    "New task assigned",
+                    f"{name} assigned you: {task_title.strip()}",
+                    "task",
+                    new_task_id
+                )
         except Exception:
             pass
 
         return True, row, None
 
-    except Exception as error:
-        error_text = str(error)
-
-        if "assign_task_secure" in error_text and (
-            "Could not find the function" in error_text
-            or "PGRST202" in error_text
-        ):
-            return False, None, (
-                "The secure task-assignment database function is not installed yet. "
-                "Run techloom_v17_assign_task_rpc.sql in Supabase SQL Editor."
-            )
-
-        if "not permitted" in error_text.lower():
-            return False, None, (
-                "Supabase does not recognise this account as an authorised "
-                "task assigner. Check Aifa's profile UUID and role."
-            )
-
-        return False, None, error_text
+    except Exception as fallback_error:
+        return False, None, (
+            "Task assignment was blocked by Supabase, but the portal stayed online. "
+            f"Secure RPC: {rpc_error or 'not available'} | "
+            f"Fallback insert: {fallback_error}"
+        )
 
 
 def load_all_tasks():
@@ -5588,7 +5647,8 @@ elif page == "Create Task":
         st.stop()
 
     team_names = [p["name"] for p in team_profiles]
-    profile_by_name = {p["name"]: p for p in team_profiles}
+    profile_by_id = {p["id"]: p for p in team_profiles}
+    id_by_name = {p["name"]: p["id"] for p in team_profiles}
 
     recommendation, workload = suggested_assignee(team_names)
 
@@ -5671,8 +5731,25 @@ elif page == "Create Task":
         st.markdown('<div class="form-section-v13"><b>2 · Ownership & priority</b><span>Balance capacity with urgency.</span></div>', unsafe_allow_html=True)
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            recommended_index = team_names.index(recommendation) if recommendation in team_names else 0
-            assigned_to = st.selectbox("Owner", team_names, index=recommended_index)
+            assignee_ids = [p["id"] for p in team_profiles]
+            recommended_id = id_by_name.get(recommendation)
+            recommended_index = assignee_ids.index(recommended_id) if recommended_id in assignee_ids else 0
+
+            assigned_to_id = st.selectbox(
+                "Owner",
+                assignee_ids,
+                index=recommended_index,
+                format_func=lambda user_id: (
+                    f"{profile_by_id[user_id]['name']}"
+                    + (
+                        f" · {profile_by_id[user_id]['department']}"
+                        if profile_by_id[user_id].get("department")
+                        else ""
+                    )
+                )
+            )
+
+            assigned_to = profile_by_id[assigned_to_id]["name"]
         with c2:
             priority = st.selectbox("Priority", ["Normal", "High", "Urgent", "Low"])
         with c3:
@@ -5710,7 +5787,7 @@ elif page == "Create Task":
                 st.error("Please add a definition of done so the assignee knows exactly what to return.")
             else:
                 due_datetime = datetime.combine(due_date, due_time)
-                selected_profile = profile_by_name.get(assigned_to)
+                selected_profile = profile_by_id.get(assigned_to_id)
 
                 if not selected_profile:
                     st.error(
@@ -5720,6 +5797,7 @@ elif page == "Create Task":
                 else:
                     success, created_task, assignment_error = assign_task_rpc(
                         assignee_id=selected_profile["id"],
+                        assignee_name=selected_profile["name"],
                         task_title=task_title,
                         instructions=instructions,
                         task_type=task_type,
@@ -5738,7 +5816,7 @@ elif page == "Create Task":
                             f"{created_task.get('assigned_to', assigned_to)}."
                         )
                         st.session_state["last_assigned_task_id"] = created_task.get("id")
-                        st.rerun()
+                        st.info("The task is saved. You can assign another task or open Team Tasks.")
                     else:
                         st.error("Task assignment failed safely — the portal is still running.")
                         st.warning(assignment_error)
