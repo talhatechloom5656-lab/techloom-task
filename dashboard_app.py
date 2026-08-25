@@ -583,6 +583,121 @@ button[data-baseweb="tab"][aria-selected="true"]{
   .page-head-new h1,.tech-title,.page-title,.dashboard-hero-title{font-size:26px}
   [data-testid="stSidebar"]{width:220px!important;min-width:220px!important}
 }
+
+/* ===== FINAL COMPACT PORTAL PATCH ===== */
+
+/* Remove any remaining Streamlit radio controls / navigation label */
+[data-testid="stSidebar"] [data-testid="stRadio"] > label > div:first-child,
+[data-testid="stSidebar"] [data-testid="stRadio"] [data-baseweb="radio"],
+[data-testid="stSidebar"] [role="radio"] > div:first-child,
+[data-testid="stSidebar"] input[type="radio"],
+[data-testid="stSidebar"] [data-testid="stRadio"] svg {
+    display:none !important;
+    width:0 !important;
+    height:0 !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    grid-template-columns:1fr !important;
+    gap:0 !important;
+}
+[data-testid="stSidebar"] .stRadio > label,
+[data-testid="stSidebar"] .stRadio > div > label:first-child {
+    display:none !important;
+}
+
+/* More compact app top spacing */
+.main .block-container {
+    padding-top:.55rem !important;
+}
+.portal-topbar {
+    margin-top:0 !important;
+    margin-bottom:12px !important;
+    min-height:38px !important;
+    padding-bottom:8px !important;
+}
+.dashboard-hero {
+    margin-bottom:10px !important;
+}
+
+/* Sidebar grouping */
+.sidebar-section {
+    padding:11px 7px 4px !important;
+    color:#9b9b95 !important;
+    font-size:8px !important;
+    font-weight:800 !important;
+    letter-spacing:.09em !important;
+    text-transform:uppercase;
+}
+.sidebar-divider{
+    height:1px;
+    background:#e8e8e4;
+    margin:9px 6px 3px;
+}
+
+/* Selected row subtle */
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){
+    background:#e7e7e3 !important;
+    box-shadow:none !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{
+    background:#ededeb !important;
+}
+
+/* Shorter KPI cards */
+div[data-testid="stMetric"]{
+    min-height:70px !important;
+    padding:9px 11px 8px !important;
+}
+div[data-testid="stMetric"] [data-testid="stMetricValue"]{
+    font-size:22px !important;
+}
+
+/* Task chips */
+.task-chip{
+    display:inline-flex;
+    align-items:center;
+    padding:2px 6px;
+    border-radius:999px;
+    font-size:8.5px;
+    font-weight:700;
+    margin-right:4px;
+}
+.task-chip.platform{background:#eef3f7;color:#5d6b76}
+.task-chip.status{background:#f1f1ef;color:#66635d}
+.task-chip.urgent{background:#ffe8e8;color:#a74343}
+.task-chip.high{background:#fff0d7;color:#936116}
+.task-chip.normal{background:#e8f2fb;color:#3475aa}
+.task-chip.low{background:#efefec;color:#777}
+
+/* Attendance indicator */
+.presence-dot{
+    display:inline-block;
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    margin-right:6px;
+    vertical-align:middle;
+}
+.presence-good{background:#38a169}
+.presence-warn{background:#dd9b2b}
+.presence-bad{background:#d9534f}
+.presence-neutral{background:#b9b9b4}
+
+/* compact announcement */
+.announcement-mini{
+    padding:7px 10px !important;
+    font-size:9.8px !important;
+    margin-bottom:10px !important;
+}
+
+/* Make task rows look clickable */
+.clickable-row{
+    cursor:pointer;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -3065,57 +3180,67 @@ with st.sidebar:
     chat_unread_count = get_unread_chat_count()
     chat_label = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
 
-    if is_manager():
-        menu_options = [
-            "Company HQ",
-            "My Tasks",
-            "Current Sprint",
-            "Timeline",
-            "Attendance",
-            "Team",
-            chat_label,
-            "Direct Messages",
-            "Data Hub",
-            "Knowledge Base",
-            "My Notes",
-            "Secure Folder",
-            "Settings",
-        ]
-    else:
-        menu_options = [
-            "Company HQ",
-            "My Tasks",
-            "Current Sprint",
-            "Timeline",
-            "Attendance",
-            "Team",
-            chat_label,
-            "Direct Messages",
-            "Data Hub",
-            "Knowledge Base",
-            "My Notes",
-            "Secure Folder",
-            "Settings",
-        ]
+    if "portal_page" not in st.session_state:
+        st.session_state.portal_page = "Company HQ"
 
-    page = st.radio(
-        "Navigation",
-        menu_options,
-        label_visibility="collapsed",
-        key="main_portal_nav"
+    def sidebar_group(title, options, key):
+        st.markdown(f'<div class="sidebar-section">{title}</div>', unsafe_allow_html=True)
+        current = st.session_state.portal_page
+        default_index = options.index(current) if current in options else 0
+        choice = st.radio(
+            title,
+            options,
+            index=default_index,
+            label_visibility="collapsed",
+            key=key
+        )
+        if choice != current:
+            st.session_state.portal_page = choice
+            st.rerun()
+
+    sidebar_group(
+        "Workspace",
+        ["Company HQ", "My Tasks", "Current Sprint", "Timeline"],
+        "nav_workspace"
     )
 
-    st.write("")
+    sidebar_group(
+        "Team",
+        ["Attendance", "Team"],
+        "nav_team"
+    )
+
+    sidebar_group(
+        "Collaboration",
+        [chat_label, "Direct Messages"],
+        "nav_collab"
+    )
+
+    sidebar_group(
+        "Data",
+        ["Data Hub", "Knowledge Base", "My Notes", "Secure Folder"],
+        "nav_data"
+    )
+
+    sidebar_group(
+        "Account",
+        ["Settings"],
+        "nav_account"
+    )
+
+    page = st.session_state.portal_page
+    if page.startswith("Chat"):
+        page = "Chat"
+
+    st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+
     if is_manager():
         if st.button("＋ New task", type="primary", use_container_width=True, key="sidebar_new_task"):
-            st.session_state["force_create_task"] = True
+            st.session_state.portal_page = "Create Task"
+            st.rerun()
 
     if st.button("Sign out", use_container_width=True, key="portal_logout"):
         logout()
-
-# sidebar quick-create override
-if st.session_state.pop("force_create_task", False):
-    page = "Create Task"
 
 # ============================================================
 # DASHBOARD
@@ -3155,20 +3280,26 @@ if page == "Company HQ":
     urgent = [t for t in active_tasks if t.get("priority") == "Urgent"]
     review = [t for t in active_tasks if t.get("status") == "Submitted for Review"]
 
-    st.markdown(
-        f"""
-        <div class="dashboard-hero">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
-            <div>
+    hleft, hright = st.columns([8.5, 1.5])
+    with hleft:
+        st.markdown(
+            f"""
+            <div class="dashboard-hero">
               <div class="dashboard-hero-title">Dashboard</div>
               <div class="dashboard-hero-copy">Your live workspace for today.</div>
             </div>
-            <div class="hero-date">{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}</div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+            """,
+            unsafe_allow_html=True
+        )
+    with hright:
+        st.markdown(
+            f'<div class="hero-date" style="margin-bottom:7px">{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}</div>',
+            unsafe_allow_html=True
+        )
+        if is_manager():
+            if st.button("＋ New task", type="primary", use_container_width=True, key="dash_new_task"):
+                st.session_state.portal_page = "Create Task"
+                st.rerun()
 
     st.markdown(
         f"""
@@ -3231,20 +3362,30 @@ if page == "Company HQ":
             for idx, task in enumerate(priority[:6]):
                 due = _due_local(task)
                 due_label = due.strftime("%d %b") if due else "No due date"
-                st.markdown(
-                    f"""
-                    <div class="attention-card">
-                      <div class="attention-card-title">{display_value(task.get("title"))}</div>
-                      <div class="attention-card-meta">
-                        {display_value(task.get("platform"))} ·
-                        {display_value(task.get("status"))} ·
-                        {display_value(task.get("priority"))} ·
-                        {due_label}
-                      </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                priority_value = display_value(task.get("priority"), "Normal")
+                priority_class = str(priority_value).lower()
+
+                row_left, row_right = st.columns([8.5, 1.5])
+                with row_left:
+                    st.markdown(
+                        f"""
+                        <div class="attention-card clickable-row">
+                          <div class="attention-card-title">{display_value(task.get("title"))}</div>
+                          <div class="attention-card-meta">
+                            <span class="task-chip platform">{display_value(task.get("platform"))}</span>
+                            <span class="task-chip status">{display_value(task.get("status"))}</span>
+                            <span class="task-chip {priority_class}">{priority_value}</span>
+                            <span>Due {due_label}</span>
+                          </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                with row_right:
+                    if st.button("Open", key=f"dash_open_{task.get('id')}_{idx}", use_container_width=True):
+                        st.session_state["selected_task_id"] = task.get("id")
+                        st.session_state.portal_page = "My Tasks"
+                        st.rerun()
         else:
             st.caption("Nothing urgent right now.")
 
@@ -3258,19 +3399,42 @@ if page == "Company HQ":
 
         att_map = {r.get("employee_name"): r for r in today_att}
 
-        for person in load_team_profiles()[:8]:
+        unique_people = []
+        seen_people = set()
+        for person in load_team_profiles():
+            dedupe_key = (
+                str(person.get("id") or "").strip().lower()
+                or str(person.get("email") or "").strip().lower()
+                or str(person.get("name") or "").strip().lower()
+            )
+            if not dedupe_key or dedupe_key in seen_people:
+                continue
+            seen_people.add(dedupe_key)
+            unique_people.append(person)
+
+        for person in unique_people[:8]:
             person_name = person.get("name")
             rec = att_map.get(person_name)
 
             if rec:
-                status = f"{late_status(rec.get('check_in'))} · {format_pk_time(rec.get('check_in'))}"
+                arrival = late_status(rec.get("check_in"))
+                if arrival == "On Time":
+                    dot_class = "presence-good"
+                elif arrival in ["Late", "Very Late"]:
+                    dot_class = "presence-warn"
+                else:
+                    dot_class = "presence-bad"
+                status = f"{arrival} · {format_pk_time(rec.get('check_in'))}"
             else:
+                dot_class = "presence-neutral"
                 status = "Not marked"
 
             st.markdown(
                 f"""
                 <div class="attention-card">
-                  <div class="attention-card-title">{display_value(person_name)}</div>
+                  <div class="attention-card-title">
+                    <span class="presence-dot {dot_class}"></span>{display_value(person_name)}
+                  </div>
                   <div class="attention-card-meta">{status}</div>
                 </div>
                 """,
