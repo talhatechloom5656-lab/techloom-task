@@ -2316,6 +2316,141 @@ def can_create_tasks():
     return is_manager()
 
 
+def unique_team_profiles():
+    """
+    Return a clean, de-duplicated team directory.
+
+    UUID is the identity key. Name is display-only.
+    This prevents duplicate profile rows / duplicate names from destabilising
+    the assignment form.
+    """
+    rows = load_team_profiles()
+    clean = []
+    seen_ids = set()
+
+    for row in rows:
+        user_id = str(row.get("id") or "").strip()
+        employee_name = str(row.get("name") or "").strip()
+
+        if not user_id or not employee_name or user_id in seen_ids:
+            continue
+
+        seen_ids.add(user_id)
+        clean.append({
+            "id": user_id,
+            "name": employee_name,
+            "role": str(row.get("role") or "").strip(),
+            "department": str(row.get("department") or "").strip(),
+        })
+
+    clean.sort(key=lambda x: x["name"].lower())
+    return clean
+
+
+def assign_task_rpc(
+    assignee_id,
+    task_title,
+    instructions,
+    task_type,
+    platform,
+    priority,
+    supplier_link,
+    supplier_price,
+    selling_price,
+    goods_id,
+    due_datetime,
+):
+    """
+    Create a task through a single server-side Supabase RPC.
+
+    This is intentionally preferred over a browser/client direct INSERT because:
+    - auth.uid() is validated server-side;
+    - Team Lead/Admin permissions are checked server-side;
+    - the assignee UUID is validated against profiles;
+    - the task insert is atomic;
+    - RLS differences between managers cannot crash the Streamlit flow.
+    """
+    try:
+        if not ensure_supabase_auth():
+            return False, None, (
+                "Your authenticated Supabase session could not be verified. "
+                "Please sign out and sign in again."
+            )
+
+        payload = {
+            "p_assigned_to_user_id": str(assignee_id),
+            "p_title": task_title.strip(),
+            "p_description": instructions.strip(),
+            "p_task_type": task_type,
+            "p_platform": platform,
+            "p_priority": priority,
+            "p_supplier_link": supplier_link.strip() if supplier_link else None,
+            "p_supplier_price": float(supplier_price or 0),
+            "p_selling_price": float(selling_price or 0),
+            "p_goods_id": goods_id.strip() if goods_id else None,
+            "p_due_date": due_datetime.isoformat(),
+        }
+
+        result = supabase.rpc("assign_task_secure", payload).execute()
+
+        row = None
+        if isinstance(result.data, list) and result.data:
+            row = result.data[0]
+        elif isinstance(result.data, dict):
+            row = result.data
+
+        if not row:
+            return False, None, "Supabase returned no task after assignment."
+
+        new_task_id = row.get("id")
+        assigned_to_name = row.get("assigned_to") or ""
+
+        # These are non-critical secondary actions. They must never make
+        # successful task creation look like a crash.
+        try:
+            if new_task_id:
+                add_activity(
+                    new_task_id,
+                    "Task Created",
+                    f"{name} assigned '{task_title.strip()}' to {assigned_to_name}"
+                )
+        except Exception:
+            pass
+
+        try:
+            create_notification(
+                assignee_id,
+                "New task assigned",
+                f"{name} assigned you: {task_title.strip()}",
+                "task",
+                new_task_id
+            )
+        except Exception:
+            pass
+
+        return True, row, None
+
+    except Exception as error:
+        error_text = str(error)
+
+        if "assign_task_secure" in error_text and (
+            "Could not find the function" in error_text
+            or "PGRST202" in error_text
+        ):
+            return False, None, (
+                "The secure task-assignment database function is not installed yet. "
+                "Run techloom_v17_assign_task_rpc.sql in Supabase SQL Editor."
+            )
+
+        if "not permitted" in error_text.lower():
+            return False, None, (
+                "Supabase does not recognise this account as an authorised "
+                "task assigner. Check Aifa's profile UUID and role."
+            )
+
+        return False, None, error_text
+
+
 def load_all_tasks():
 
     try:
@@ -5442,32 +5577,44 @@ elif page == "Create Task":
         unsafe_allow_html=True
     )
 
-    team_profiles = load_team_profiles()
-    team_names = [p.get("name") for p in team_profiles if p.get("name")]
-    if not team_names:
-        team_names = ["Talha", "Junaid", "Nabiha", "AIFA"]
+    team_profiles = unique_team_profiles()
+
+    if not team_profiles:
+        st.error(
+            "The team directory could not be loaded. "
+            "Task assignment has been stopped to prevent assigning work "
+            "to an invalid profile."
+        )
+        st.stop()
+
+    team_names = [p["name"] for p in team_profiles]
+    profile_by_name = {p["name"]: p for p in team_profiles}
 
     recommendation, workload = suggested_assignee(team_names)
 
     # Assignment intelligence — zero schema changes required.
     st.markdown('<div class="section-title">Team capacity</div>', unsafe_allow_html=True)
-    capacity_cols = st.columns(len(team_names))
-    for index, employee in enumerate(team_names):
-        stats = workload.get(employee, {"active": 0, "urgent": 0, "score": 0})
-        label = "Recommended" if employee == recommendation else "Active work"
-        with capacity_cols[index]:
-            st.markdown(
-                f"""
-                <div class="capacity-card-v13 {'recommended' if employee == recommendation else ''}">
-                  <div class="capacity-avatar-v13">{safe_html(employee[:1].upper())}</div>
-                  <div class="capacity-person-v13">{safe_html(employee)}</div>
-                  <div class="capacity-number-v13">{stats['active']}</div>
-                  <div class="capacity-label-v13">{label}</div>
-                  <div class="capacity-meta-v13">Load {stats['score']} · {stats['urgent']} urgent</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+    for row_start in range(0, len(team_names), 5):
+        row_names = team_names[row_start:row_start + 5]
+        capacity_cols = st.columns(len(row_names))
+
+        for index, employee in enumerate(row_names):
+            stats = workload.get(employee, {"active": 0, "urgent": 0, "score": 0})
+            label = "Recommended" if employee == recommendation else "Active work"
+
+            with capacity_cols[index]:
+                st.markdown(
+                    f"""
+                    <div class="capacity-card-v13 {'recommended' if employee == recommendation else ''}">
+                      <div class="capacity-avatar-v13">{safe_html(employee[:1].upper())}</div>
+                      <div class="capacity-person-v13">{safe_html(employee)}</div>
+                      <div class="capacity-number-v13">{stats['active']}</div>
+                      <div class="capacity-label-v13">{label}</div>
+                      <div class="capacity-meta-v13">Load {stats['score']} · {stats['urgent']} urgent</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
     st.caption("Recommendation uses active task count, status, priority and due-date pressure. You can always override it.")
 
@@ -5563,62 +5710,42 @@ elif page == "Create Task":
                 st.error("Please add a definition of done so the assignee knows exactly what to return.")
             else:
                 due_datetime = datetime.combine(due_date, due_time)
-                task_data = {
-                    "title": task_title.strip(),
-                    "description": instructions.strip(),
-                    "task_type": task_type,
-                    "platform": platform,
-                    "priority": priority,
-                    "status": "New",
-                    "assigned_to": assigned_to,
-                    "assigned_by": name,
-                    "supplier_link": supplier_link.strip(),
-                    "supplier_price": supplier_price,
-                    "selling_price": selling_price,
-                    "goods_id": goods_id.strip(),
-                    "due_date": due_datetime.isoformat(),
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                }
+                selected_profile = profile_by_name.get(assigned_to)
 
-                try:
-                    result = supabase.table("tasks").insert(task_data).execute()
-                    new_task_id = result.data[0]["id"] if result.data else None
-
-                    if new_task_id:
-                        add_activity(
-                            new_task_id,
-                            "Task Created",
-                            f"{name} assigned '{task_title.strip()}' to {assigned_to}"
-                        )
-
-                    notify_employee(
-                        assigned_to,
-                        "New task assigned",
-                        f"{name} assigned you: {task_title.strip()}",
-                        "task",
-                        new_task_id
+                if not selected_profile:
+                    st.error(
+                        "The selected employee profile is no longer valid. "
+                        "Refresh the page and select the employee again."
+                    )
+                else:
+                    success, created_task, assignment_error = assign_task_rpc(
+                        assignee_id=selected_profile["id"],
+                        task_title=task_title,
+                        instructions=instructions,
+                        task_type=task_type,
+                        platform=platform,
+                        priority=priority,
+                        supplier_link=supplier_link,
+                        supplier_price=supplier_price,
+                        selling_price=selling_price,
+                        goods_id=goods_id,
+                        due_datetime=due_datetime,
                     )
 
-                    st.success(f"Task assigned to {assigned_to}.")
-                    st.rerun()
-
-                except Exception as error:
-                    error_text = str(error)
-                    st.error("Could not create task.")
-
-                    if (
-                        "42501" in error_text
-                        or "row-level security" in error_text.lower()
-                        or "permission denied" in error_text.lower()
-                    ):
-                        st.warning(
-                            "The portal permission check passed, but Supabase "
-                            "Row Level Security rejected the task insert. "
-                            "Run the supplied task-assignment RLS migration in "
-                            "Supabase SQL Editor."
+                    if success:
+                        st.success(
+                            f"Task assigned successfully to "
+                            f"{created_task.get('assigned_to', assigned_to)}."
                         )
-
-                    st.code(error_text)
+                        st.session_state["last_assigned_task_id"] = created_task.get("id")
+                        st.rerun()
+                    else:
+                        st.error("Task assignment failed safely — the portal is still running.")
+                        st.warning(assignment_error)
+                        st.caption(
+                            f"Signed in as {name} · Role: {role} · "
+                            f"Auth user: {current_user_id}"
+                        )
 
 
 # ============================================================
