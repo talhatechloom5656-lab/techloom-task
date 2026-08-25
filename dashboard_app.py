@@ -43,201 +43,545 @@ st.markdown("""
 :root{
   --bg:#ffffff;
   --sidebar:#f7f7f5;
-  --line:#e9e9e6;
+  --line:#e8e8e4;
   --text:#252524;
-  --muted:#787872;
-  --soft:#f2f2ef;
+  --muted:#7b7b75;
+  --soft:#efefec;
   --blue:#2383e2;
-  --blue-soft:#eef6fd;
-  --green:#2e7241;
-  --green-soft:#edf8f0;
-  --amber:#9a6b20;
+  --blue-soft:#edf5fc;
+  --green:#2f7a48;
+  --green-soft:#eef8f0;
+  --amber:#996b20;
   --amber-soft:#fbf3df;
-  --red:#b54848;
+  --red:#b54a4a;
   --red-soft:#fff0f0;
-  --shadow:0 6px 22px rgba(32,32,30,.06);
 }
 
 html,body,[class*="css"]{
   font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
-.stApp{background:var(--bg);color:var(--text)}
-.block-container{max-width:1360px;padding:2.1rem 2.2rem 4rem}
 
-/* sidebar */
+.stApp{
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* Main content tighter and more app-like */
+.block-container{
+  max-width:1280px;
+  padding:1.15rem 1.55rem 3rem 1.55rem;
+}
+
+/* Hide Streamlit chrome as much as possible */
+header[data-testid="stHeader"]{
+  background:transparent;
+}
+[data-testid="stToolbar"]{
+  visibility:hidden;
+  height:0;
+}
+#MainMenu{visibility:hidden;}
+footer{visibility:hidden;}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
 [data-testid="stSidebar"]{
   background:var(--sidebar);
   border-right:1px solid var(--line);
+  width:230px !important;
+  min-width:230px !important;
 }
-[data-testid="stSidebar"] [data-testid="stSidebarContent"]{padding:1rem .8rem}
+[data-testid="stSidebar"] [data-testid="stSidebarContent"]{
+  padding:.7rem .65rem .7rem .65rem;
+}
 .side-brand{
-  display:flex;align-items:center;gap:9px;
-  height:44px;padding:0 7px;margin-bottom:5px
+  display:flex;
+  align-items:center;
+  gap:9px;
+  height:38px;
+  padding:0 6px;
+  margin-bottom:5px;
 }
 .brand-mark{
-  width:25px;height:25px;border-radius:8px;background:#20201f;color:#fff;
-  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:11px
+  width:24px;
+  height:24px;
+  border-radius:7px;
+  background:#252524;
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:800;
 }
-.side-brand strong{font-size:14px;color:#252524;letter-spacing:-.02em}
+.side-brand strong{
+  font-size:13px;
+  font-weight:750;
+  color:#252524;
+}
 .side-user{
-  border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px;margin:8px 0 10px
+  padding:8px 9px;
+  margin:6px 0 8px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fff;
 }
-.side-user b{display:block;font-size:12px;color:#252524}
-.side-user small{display:block;font-size:10px;color:#8b8b84;margin-top:3px}
-.nav-section{
-  font-size:9px;color:#9b9b95;padding:14px 8px 5px;
-  letter-spacing:.08em;font-weight:700
+.side-user b{
+  display:block;
+  font-size:11px;
+  color:#252524;
+}
+.side-user small{
+  display:block;
+  margin-top:3px;
+  font-size:9.5px;
+  color:#8c8c86;
 }
 
-[data-testid="stSidebar"] [role="radiogroup"]{gap:2px}
-[data-testid="stSidebar"] [data-testid="stRadio"] label{
-  width:100%;min-height:34px;padding:6px 8px!important;border-radius:6px;margin:0
+/* radio circles completely gone */
+[data-testid="stSidebar"] [role="radiogroup"]{
+  gap:1px;
 }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{background:#ecece9}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){background:#e9e9e6}
+[data-testid="stSidebar"] [data-testid="stRadio"] label{
+  width:100%;
+  min-height:31px;
+  padding:5px 7px !important;
+  margin:0;
+  border-radius:6px;
+  display:flex;
+  align-items:center;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{
+  background:#ecece9;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){
+  background:#e9e9e6;
+}
 [data-testid="stSidebar"] [data-testid="stRadio"] label p{
-  color:#4d4d49!important;font-size:12px!important;font-weight:520!important
+  color:#50504c !important;
+  font-size:11.3px !important;
+  font-weight:520 !important;
+  margin:0 !important;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p{
-  color:#252524!important;font-weight:650!important
+  color:#252524 !important;
+  font-weight:700 !important;
 }
-[data-testid="stSidebar"] [data-baseweb="radio"]>div:first-child,
-[data-testid="stSidebar"] input[type="radio"]{display:none!important}
-[data-testid="stSidebar"] p,[data-testid="stSidebar"] span,[data-testid="stSidebar"] label{color:#555550}
-[data-testid="stSidebar"] .stButton>button{
-  width:100%;min-height:34px;border-radius:7px!important;background:#fff!important;
-  border:1px solid #dfdfdb!important;color:#333!important;box-shadow:none!important;font-size:11px
+[data-testid="stSidebar"] [data-baseweb="radio"],
+[data-testid="stSidebar"] input[type="radio"],
+[data-testid="stSidebar"] [role="radio"] > div:first-child{
+  display:none !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child{
+  display:none !important;
+}
+[data-testid="stSidebar"] .stButton > button{
+  width:100%;
+  min-height:31px;
+  padding:5px 8px;
+  border-radius:6px !important;
+  border:1px solid #deded9 !important;
+  background:#fff !important;
+  color:#444 !important;
+  box-shadow:none !important;
+  font-size:10.5px !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover{
+  background:#efefec !important;
+}
+.sidebar-section{
+  padding:11px 7px 4px;
+  color:#9a9a94;
+  font-size:8.5px;
+  font-weight:750;
+  letter-spacing:.08em;
 }
 
-/* topbar */
+/* ============================================================
+   TOPBAR
+   ============================================================ */
 .portal-topbar{
-  position:relative;display:flex;justify-content:space-between;align-items:center;
-  margin:-.4rem 0 2.2rem;padding-bottom:14px;border-bottom:1px solid #f0f0ed
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  min-height:43px;
+  margin:0 0 18px 0;
+  padding:0 1px 10px 1px;
+  border-bottom:1px solid #efefec;
 }
-.crumb{display:flex;align-items:center;gap:8px;color:#5f5f59;font-size:12px;font-weight:600}
-.crumb-mark{font-size:11px}
-.top-user{display:flex;align-items:center;gap:8px;color:#686862;font-size:11px}
+.crumb{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#5a5a56;
+  font-size:11px;
+  font-weight:620;
+}
+.crumb-mark{
+  font-size:9px;
+  color:#75756f;
+}
+.top-user{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#666660;
+  font-size:10.5px;
+}
 .top-avatar{
-  width:27px;height:27px;border-radius:50%;background:#2f80ed;color:#fff;
-  display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800
+  width:25px;
+  height:25px;
+  border-radius:50%;
+  background:#2f80ed;
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:9px;
+  font-weight:800;
 }
 .notify-dot{
-  min-width:24px;height:24px;border-radius:6px;background:#f5f5f2;border:1px solid #e8e8e4;
-  display:inline-flex;align-items:center;justify-content:center;color:#666;font-size:11px
+  width:25px;
+  height:25px;
+  border-radius:6px;
+  border:1px solid #e6e6e2;
+  background:#f7f7f5;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  color:#666;
 }
 
-/* page */
-.eyebrow{display:block;font-size:9px;letter-spacing:.1em;color:#93938c;font-weight:800;margin-bottom:10px}
+/* ============================================================
+   TYPOGRAPHY / PAGE HEADERS
+   ============================================================ */
+.eyebrow{
+  display:block;
+  margin-bottom:8px;
+  color:#94948e;
+  font-size:8.5px;
+  font-weight:750;
+  letter-spacing:.1em;
+}
 .page-head-new{
-  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:21px
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:16px;
 }
-.page-head-new h1{font-size:34px;letter-spacing:-.045em;margin:0 0 6px;color:#252524}
-.page-head-new p{color:var(--muted);margin:0;max-width:660px;font-size:12px}
-.page-title{font-size:34px;font-weight:760;letter-spacing:-.045em;color:#252524;line-height:1.05}
-.page-subtitle{font-size:12px;color:var(--muted);margin-top:6px}
-.tech-title{font-size:34px;font-weight:760;letter-spacing:-.045em;color:#252524}
-.tech-subtitle{font-size:12px;color:var(--muted);margin-bottom:20px}
-
-/* tabs */
-button[data-baseweb="tab"]{font-size:11px!important;color:#777!important;padding:8px 10px!important}
-button[data-baseweb="tab"][aria-selected="true"]{color:#222!important;font-weight:700!important}
-[data-baseweb="tab-highlight"]{background:#222!important;height:1.5px!important}
-
-/* panels */
-.panel,.workspace-hero,.task-board-header,.attendance-hero{
-  border:1px solid var(--line);border-radius:11px;background:#fff;padding:18px;box-shadow:none
+.page-head-new h1{
+  margin:0 0 4px;
+  color:#252524;
+  font-size:29px;
+  line-height:1.05;
+  letter-spacing:-.045em;
+  font-weight:760;
 }
-.workspace-hero-title,.task-board-title{font-size:14px;font-weight:700;color:#292927}
-.workspace-hero-copy,.task-board-copy{font-size:11px;color:#85857e;margin-top:4px}
+.page-head-new p{
+  margin:0;
+  color:#7e7e78;
+  font-size:11px;
+}
+.tech-title,.page-title{
+  color:#252524;
+  font-size:29px;
+  font-weight:760;
+  letter-spacing:-.045em;
+  line-height:1.05;
+}
+.tech-subtitle,.page-subtitle{
+  color:#7e7e78;
+  font-size:10.8px;
+  margin-top:5px;
+  margin-bottom:16px;
+}
+.section-title{
+  font-size:12px;
+  font-weight:700;
+  color:#343432;
+  margin:8px 0 8px;
+}
 
-/* metrics */
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.dashboard-hero{
+  border:0;
+  padding:0;
+  margin-bottom:14px;
+  background:transparent;
+}
+.dashboard-hero-title{
+  font-size:29px;
+  line-height:1.05;
+  letter-spacing:-.045em;
+  font-weight:760;
+  color:#252524;
+}
+.dashboard-hero-copy{
+  font-size:11px;
+  color:#7e7e78;
+  margin-top:5px;
+}
+.hero-date{
+  text-align:right;
+  font-size:10px;
+  color:#85857f;
+  line-height:1.45;
+}
+.today-strip{
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fafaf8;
+  padding:10px 12px;
+  margin:0 0 12px;
+  font-size:10.5px;
+  color:#696963;
+}
+.today-strip b{
+  color:#30302e;
+  font-size:11px;
+}
+.announcement-mini{
+  border:1px solid #f1d6d6;
+  background:#fff7f7;
+  color:#8e4a4a;
+  border-radius:8px;
+  padding:9px 11px;
+  font-size:10.5px;
+  margin-bottom:12px;
+}
+
+/* Compact KPI cards */
 div[data-testid="stMetric"]{
-  border:1px solid var(--line);border-radius:10px;padding:16px;background:#fff;box-shadow:none;min-height:94px
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fff;
+  min-height:78px;
+  padding:11px 12px 9px;
+  box-shadow:none;
 }
 div[data-testid="stMetric"] [data-testid="stMetricLabel"] p{
-  color:#81817b!important;font-size:10px!important;font-weight:650!important
+  font-size:9px !important;
+  font-weight:650 !important;
+  color:#7f7f79 !important;
+  margin-bottom:2px !important;
 }
 div[data-testid="stMetric"] [data-testid="stMetricValue"]{
-  color:#252524!important;font-size:28px!important;font-weight:730!important;letter-spacing:-.04em
+  font-size:24px !important;
+  color:#252524 !important;
+  font-weight:720 !important;
+  letter-spacing:-.04em;
 }
 
-/* task board */
-.work-card,.task-card,.attention-card{
-  background:#fff;border:1px solid #e6e6e2;border-radius:8px;padding:11px;margin-bottom:7px;
-  box-shadow:0 1px 2px rgba(0,0,0,.02);transition:.15s ease
+/* ============================================================
+   PANELS / CARDS
+   ============================================================ */
+.panel,.workspace-hero,.task-board-header{
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fff;
+  padding:14px;
+  box-shadow:none;
 }
-.work-card:hover,.task-card:hover,.attention-card:hover{
-  transform:translateY(-1px);box-shadow:0 5px 16px rgba(0,0,0,.05);border-color:#d7d7d2
+.attention-card,.work-card,.task-card{
+  border:1px solid #e6e6e2;
+  border-radius:7px;
+  background:#fff;
+  padding:9px 10px;
+  margin-bottom:6px;
+  box-shadow:0 1px 1px rgba(0,0,0,.02);
 }
-.work-card-title,.task-card-title,.attention-card-title{
-  display:block;font-size:12.5px;font-weight:650;line-height:1.35;color:#292927
+.attention-card:hover,.work-card:hover,.task-card:hover{
+  border-color:#d5d5d0;
+  background:#fdfdfc;
 }
-.work-meta,.task-meta,.attention-card-meta{font-size:10px;color:#8c8c86;line-height:1.55;margin-top:4px}
+.attention-card-title,.work-card-title,.task-card-title{
+  color:#2b2b29;
+  font-size:11.5px;
+  line-height:1.35;
+  font-weight:650;
+}
+.attention-card-meta,.work-meta,.task-meta{
+  color:#8b8b85;
+  font-size:9.3px;
+  line-height:1.5;
+  margin-top:3px;
+}
 .status-chip,.status-pill{
-  display:inline-flex;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:650;
-  background:#eee;color:#555;margin-right:3px;border:0
+  display:inline-flex;
+  align-items:center;
+  padding:2px 5px;
+  border-radius:4px;
+  font-size:8.5px;
+  font-weight:650;
+  margin-right:3px;
+  border:0;
+  background:#eee;
+  color:#555;
 }
-.priority-urgent{background:#ffe5e5;color:#a63d3d}
-.priority-high{background:#fff0d7;color:#956515}
-.priority-normal{background:#e8f2fb;color:#3574a7}
+.priority-urgent{background:#ffe6e6;color:#a63d3d}
+.priority-high{background:#fff0d7;color:#986814}
+.priority-normal{background:#e8f2fb;color:#3475aa}
 .priority-low{background:#f0f0ed;color:#777}
-.kanban-column-title{
-  font-size:10px;font-weight:700;color:#696963;margin-bottom:7px;text-transform:none;letter-spacing:0
-}
-.kanban-count{float:right;color:#aaa}
-[data-testid="column"]{min-width:0}
 
-/* forms */
-[data-baseweb="input"]>div,[data-baseweb="textarea"]>div,[data-baseweb="select"]>div{
-  border:1px solid #deded9!important;border-radius:7px!important;background:#fff!important;min-height:39px
+/* ============================================================
+   BOARD
+   ============================================================ */
+.kanban-column-title{
+  font-size:9.5px;
+  font-weight:700;
+  color:#6e6e68;
+  margin-bottom:6px;
 }
-[data-baseweb="input"]>div:focus-within,[data-baseweb="textarea"]>div:focus-within,[data-baseweb="select"]>div:focus-within{
-  border-color:#8db9e8!important;box-shadow:0 0 0 3px rgba(35,131,226,.10)!important
+.kanban-count{
+  float:right;
+  color:#aaa;
+}
+[data-testid="column"]{
+  min-width:0;
+}
+
+/* ============================================================
+   FORMS / INPUTS / BUTTONS
+   ============================================================ */
+[data-baseweb="input"]>div,
+[data-baseweb="textarea"]>div,
+[data-baseweb="select"]>div{
+  min-height:36px;
+  background:#fff !important;
+  border:1px solid #deded9 !important;
+  border-radius:7px !important;
+}
+[data-baseweb="input"]>div:focus-within,
+[data-baseweb="textarea"]>div:focus-within,
+[data-baseweb="select"]>div:focus-within{
+  border-color:#8db9e8 !important;
+  box-shadow:0 0 0 3px rgba(35,131,226,.09) !important;
 }
 .stTextInput label p,.stTextArea label p,.stSelectbox label p,.stDateInput label p,
-.stNumberInput label p,.stFileUploader label p{
-  font-size:10.5px!important;color:#666!important;font-weight:600!important
+.stNumberInput label p,.stFileUploader label p,.stMultiSelect label p{
+  font-size:9.5px !important;
+  color:#696963 !important;
+  font-weight:600 !important;
 }
-
-/* buttons */
 .stButton>button,.stFormSubmitButton>button,.stDownloadButton>button,.stLinkButton>a{
-  border:1px solid #dfdfdb;border-radius:7px!important;background:#fff;min-height:36px;
-  font-size:11px;font-weight:600;box-shadow:none
+  min-height:33px;
+  border-radius:7px !important;
+  border:1px solid #deded9;
+  background:#fff;
+  font-size:10px;
+  font-weight:600;
+  box-shadow:none;
 }
 button[kind="primary"],.stFormSubmitButton button[kind="primary"]{
-  background:var(--blue)!important;border-color:var(--blue)!important;color:#fff!important
+  background:var(--blue) !important;
+  border-color:var(--blue) !important;
+  color:#fff !important;
 }
 
-/* tables */
+/* ============================================================
+   TABLES / TABS / EXPANDERS
+   ============================================================ */
+button[data-baseweb="tab"]{
+  padding:6px 8px !important;
+  font-size:10px !important;
+  color:#797973 !important;
+}
+button[data-baseweb="tab"][aria-selected="true"]{
+  color:#252524 !important;
+  font-weight:700 !important;
+}
+[data-baseweb="tab-highlight"]{
+  height:1.5px !important;
+  background:#252524 !important;
+}
 [data-testid="stDataFrame"],[data-testid="stTable"]{
-  border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff
+  border:1px solid var(--line);
+  border-radius:8px;
+  overflow:hidden;
+  background:#fff;
+}
+[data-testid="stExpander"]{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fff;
+  margin-bottom:6px;
+}
+[data-testid="stAlert"]{
+  border-radius:8px;
+  padding-top:.55rem !important;
+  padding-bottom:.55rem !important;
 }
 
-/* attendance */
-.attendance-hero{background:linear-gradient(145deg,#fff,#f8f8f5);padding:20px}
-.attendance-eyebrow{font-size:9px;letter-spacing:.08em;color:#93938c;font-weight:700;text-transform:uppercase}
-.attendance-date{font-size:27px;font-weight:730;letter-spacing:-.04em;color:#252524;margin-top:5px}
-.attendance-day,.attendance-note{font-size:10.5px;color:#85857e}
-.attendance-status-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:14px;min-height:108px}
-.attendance-label{font-size:9px;color:#85857e;font-weight:750;text-transform:uppercase;letter-spacing:.04em}
-.attendance-value{font-size:18px;font-weight:700;color:#252524;margin-top:7px}
-.attendance-rules{border:1px solid var(--line);border-radius:8px;background:#fafaf8;color:#686862;padding:10px 12px;font-size:10px}
+/* ============================================================
+   ATTENDANCE
+   ============================================================ */
+.attendance-hero{
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fafaf8;
+  padding:14px;
+  margin-bottom:10px;
+}
+.attendance-eyebrow{
+  color:#92928c;
+  font-size:8.5px;
+  font-weight:750;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.attendance-date{
+  color:#252524;
+  font-size:24px;
+  font-weight:730;
+  letter-spacing:-.04em;
+  margin-top:4px;
+}
+.attendance-day,.attendance-note{
+  color:#85857f;
+  font-size:9.5px;
+}
+.attendance-status-card{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fff;
+  padding:11px;
+  min-height:90px;
+}
+.attendance-label{
+  color:#85857f;
+  font-size:8.5px;
+  font-weight:750;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.attendance-value{
+  color:#252524;
+  font-size:17px;
+  font-weight:700;
+  margin-top:5px;
+}
+.attendance-rules{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fafaf8;
+  padding:9px 10px;
+  color:#666660;
+  font-size:9.5px;
+}
 
-/* expanders + alerts */
-[data-testid="stExpander"]{border:1px solid var(--line);border-radius:9px;background:#fff}
-[data-testid="stAlert"]{border-radius:8px}
-
-/* chat */
-[data-testid="stChatMessage"]{background:transparent!important;border:0!important}
-
-/* hide footer */
-footer{visibility:hidden}
-
+/* ============================================================
+   MOBILE
+   ============================================================ */
 @media(max-width:900px){
- .block-container{padding:1.2rem .9rem 3rem}
- .page-head-new{align-items:flex-start;flex-direction:column}
- .page-head-new h1,.page-title,.tech-title{font-size:29px}
- .portal-topbar{margin-top:0}
+  .block-container{padding:1rem .8rem 2.5rem}
+  .page-head-new{align-items:flex-start;flex-direction:column}
+  .page-head-new h1,.tech-title,.page-title,.dashboard-hero-title{font-size:26px}
+  [data-testid="stSidebar"]{width:220px!important;min-width:220px!important}
 }
 </style>
 """, unsafe_allow_html=True)
@@ -2719,327 +3063,258 @@ with st.sidebar:
     )
 
     chat_unread_count = get_unread_chat_count()
-    group_chat_label = (
-        f"Chat  • {chat_unread_count} unread"
-        if chat_unread_count > 0 else "Chat"
-    )
+    chat_label = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
 
     if is_manager():
         menu_options = [
-            "⌂ Company HQ",
-            "◉ Dashboard",
-            "☑ Team Tasks",
-            "⚑ Current Sprint",
-            "▤ Timeline",
-            "＋ Create Task",
-            "✓ Approvals",
-            "◴ Attendance",
-            "♙ Team Attendance",
-            "♟ Team Overview",
-            "◌ " + group_chat_label,
-            "◍ Direct Messages",
-            "⇧ Data Hub",
-            "▧ My Notes",
-            "▣ Secure Folder",
-            "📚 Knowledge Base",
-            "📣 Announcements",
-            "📊 Reports",
-            "⚙ Settings",
+            "Company HQ",
+            "My Tasks",
+            "Current Sprint",
+            "Timeline",
+            "Attendance",
+            "Team",
+            chat_label,
+            "Direct Messages",
+            "Data Hub",
+            "Knowledge Base",
+            "My Notes",
+            "Secure Folder",
+            "Settings",
         ]
     else:
         menu_options = [
-            "⌂ Company HQ",
-            "◉ Dashboard",
-            "☑ My Tasks",
-            "⚑ Current Sprint",
-            "▤ Timeline",
-            "◴ Attendance",
-            "♙ Team Attendance",
-            "◌ " + group_chat_label,
-            "◍ Direct Messages",
-            "⇧ Data Hub",
-            "▧ My Notes",
-            "▣ Secure Folder",
-            "📚 Knowledge Base",
-            "📣 Announcements",
-            "⚙ Settings",
+            "Company HQ",
+            "My Tasks",
+            "Current Sprint",
+            "Timeline",
+            "Attendance",
+            "Team",
+            chat_label,
+            "Direct Messages",
+            "Data Hub",
+            "Knowledge Base",
+            "My Notes",
+            "Secure Folder",
+            "Settings",
         ]
 
     page = st.radio(
         "Navigation",
         menu_options,
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        key="main_portal_nav"
     )
 
     st.write("")
-
-    if st.session_state.get("notification_sound_enabled", False):
-        if st.button("🔊 Sound on", use_container_width=True, key="portal_sound_test"):
-            play_notification_tone()
-    else:
-        if st.button("🔊 Enable sound", use_container_width=True, key="portal_sound_enable"):
-            enable_notification_sound()
-
-    render_notification_monitor()
+    if is_manager():
+        if st.button("＋ New task", type="primary", use_container_width=True, key="sidebar_new_task"):
+            st.session_state["force_create_task"] = True
 
     if st.button("Sign out", use_container_width=True, key="portal_logout"):
         logout()
+
+# sidebar quick-create override
+if st.session_state.pop("force_create_task", False):
+    page = "Create Task"
 
 # ============================================================
 # DASHBOARD
 # ============================================================
 
-if page in ["⌂ Company HQ", "◉ Dashboard"]:
+if page == "Company HQ":
 
     portal_header("Techloom HQ")
-    render_team_shoutout_bar()
+
+    current_day = datetime.now(PK_TZ)
+    tasks = load_all_tasks() if is_manager() else load_my_tasks()
+
+    active_statuses = {
+        "New",
+        "In Progress",
+        "Waiting on Information",
+        "Waiting on Platform",
+        "Submitted for Review",
+        "Changes Requested"
+    }
+
+    active_tasks = [
+        t for t in tasks
+        if t.get("status", "New") in active_statuses
+        and not t.get("archived", False)
+    ]
+
+    def _due_local(task):
+        if not task.get("due_date"):
+            return None
+        parsed = parse_timestamp(task.get("due_date"))
+        return parsed.astimezone(PK_TZ) if parsed else None
+
+    today = current_day.date()
+    due_today = [t for t in active_tasks if _due_local(t) and _due_local(t).date() == today]
+    overdue = [t for t in active_tasks if _due_local(t) and _due_local(t).date() < today]
+    urgent = [t for t in active_tasks if t.get("priority") == "Urgent"]
+    review = [t for t in active_tasks if t.get("status") == "Submitted for Review"]
 
     st.markdown(
-        f'<div class="tech-title">'
-        f'Welcome, {name} 👋'
-        f'</div>',
+        f"""
+        <div class="dashboard-hero">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
+            <div>
+              <div class="dashboard-hero-title">Dashboard</div>
+              <div class="dashboard-hero-copy">Your live workspace for today.</div>
+            </div>
+            <div class="hero-date">{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}</div>
+          </div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
     st.markdown(
-        f'<div class="tech-subtitle">'
-        f'{department} • {role}'
-        f'</div>',
+        f"""
+        <div class="today-strip">
+          <b>Today at Techloom</b> &nbsp; · &nbsp;
+          {len(due_today)} due today &nbsp; · &nbsp;
+          {len(overdue)} overdue &nbsp; · &nbsp;
+          {len(review)} awaiting review
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-    tasks = tasks_for_current_user()
+    # Compact announcement: show only latest active one
+    try:
+        ann = (
+            supabase.table("announcements")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        ).data or []
+    except Exception:
+        ann = []
 
-    today_date = datetime.now(PK_TZ).date()
-    due_today_count = 0
-    overdue_count = 0
-
-    for task_item in tasks:
-        due_value = task_item.get("due_date")
-        if due_value and task_item.get("status") not in ["Completed", "Approved"]:
-            try:
-                due_dt = datetime.fromisoformat(str(due_value).replace("Z", "+00:00"))
-                due_day = due_dt.date()
-                if due_day == today_date:
-                    due_today_count += 1
-                elif due_day < today_date:
-                    overdue_count += 1
-            except Exception:
-                pass
-
-    unread_dashboard = len(get_unread_notifications(limit=100))
-
-    st.markdown(
-        '<div class="workspace-hero">'
-        f'<div class="workspace-hero-title">Today at Techloom</div>'
-        f'<div class="workspace-hero-copy">'
-        f'{due_today_count} due today • {overdue_count} overdue • '
-        f'{unread_dashboard} unread notification(s)'
-        f'</div></div>',
-        unsafe_allow_html=True
-    )
-
-    pinned_announcements = [a for a in load_announcements() if a.get("pinned")]
-    for announcement in pinned_announcements[:2]:
-        tone = "error" if announcement.get("urgent") else "info"
-        message = f"📣 **{announcement.get('title', 'Announcement')}** — {announcement.get('body', '')}"
-        if tone == "error":
-            st.error(message)
-        else:
-            st.info(message)
-
-    total_count = len(tasks)
-
-    new_count = 0
-    progress_count = 0
-    review_count = 0
-    changes_count = 0
-    completed_count = 0
-
-    for task in tasks:
-
-        status = task.get(
-            "status",
-            ""
+    if ann:
+        latest = ann[0]
+        st.markdown(
+            f"""
+            <div class="announcement-mini">
+              📣 <b>{display_value(latest.get("title"))}</b> — {display_value(latest.get("body"))}
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
-        if status == "New":
-            new_count += 1
-
-        elif status == "In Progress":
-            progress_count += 1
-
-        elif status == "Submitted for Review":
-            review_count += 1
-
-        elif status == "Changes Requested":
-            changes_count += 1
-
-        elif status in [
-            "Completed",
-            "Approved"
-        ]:
-            completed_count += 1
-
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-
-    c1.metric(
-        "📋 Total Tasks",
-        total_count
-    )
-
-    c2.metric(
-        "🆕 New",
-        new_count
-    )
-
-    c3.metric(
-        "🕒 In Progress",
-        progress_count
-    )
-
-    c4.metric(
-        "📤 For Review",
-        review_count
-    )
-
-    c5.metric(
-        "🔄 Changes",
-        changes_count
-    )
-
-    c6.metric(
-        "✅ Done",
-        completed_count
-    )
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Active", len(active_tasks))
+    m2.metric("Due Today", len(due_today))
+    m3.metric("Urgent", len(urgent))
+    m4.metric("For Review", len(review))
 
     st.write("")
 
-    st.markdown(
-        '<div class="section-title">'
-        'Today\'s Attendance'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    render_today_attendance()
-
-    st.write("")
-
-    left, right = st.columns(
-        [2.7, 1]
-    )
-
-    # --------------------------------------------------------
-    # RECENT TASKS
-    # --------------------------------------------------------
+    left, right = st.columns([1.55, 1])
 
     with left:
+        st.markdown('<div class="section-title">Priority work</div>', unsafe_allow_html=True)
 
-        st.markdown(
-            '<div class="section-title">'
-            'Recent Tasks'
-            '</div>',
-            unsafe_allow_html=True
-        )
+        priority = []
+        seen = set()
+        for group in [overdue, urgent, due_today, review, active_tasks]:
+            for task in group:
+                tid = task.get("id")
+                if tid not in seen:
+                    priority.append(task)
+                    seen.add(tid)
 
-        if not tasks:
-
-            st.info(
-                "No tasks available."
-            )
-
-        else:
-
-            for task in tasks[:7]:
-
-                title = task.get(
-                    "title",
-                    "Untitled Task"
-                )
-
-                platform = task.get(
-                    "platform",
-                    "N/A"
-                )
-
-                task_type = task.get(
-                    "task_type",
-                    "Task"
-                )
-
-                assigned_to = task.get(
-                    "assigned_to",
-                    "N/A"
-                )
-
-                priority = task.get(
-                    "priority",
-                    "Normal"
-                )
-
-                status = task.get(
-                    "status",
-                    "New"
-                )
-
-                task_html = (
-                    '<div class="task-card">'
-                    f'<div class="task-card-title">{title}</div>'
-                    f'<div class="task-meta">{platform} &nbsp; • &nbsp; '
-                    f'{task_type} &nbsp; • &nbsp; Assigned to: {assigned_to}</div>'
-                    f'<div class="task-meta">Priority: <b>{priority}</b> '
-                    f'&nbsp; • &nbsp; Status: <b>{status}</b></div>'
-                    '</div>'
-                )
-
+        if priority:
+            for idx, task in enumerate(priority[:6]):
+                due = _due_local(task)
+                due_label = due.strftime("%d %b") if due else "No due date"
                 st.markdown(
-                    task_html,
+                    f"""
+                    <div class="attention-card">
+                      <div class="attention-card-title">{display_value(task.get("title"))}</div>
+                      <div class="attention-card-meta">
+                        {display_value(task.get("platform"))} ·
+                        {display_value(task.get("status"))} ·
+                        {display_value(task.get("priority"))} ·
+                        {due_label}
+                      </div>
+                    </div>
+                    """,
                     unsafe_allow_html=True
                 )
-
-    # --------------------------------------------------------
-    # QUICK OVERVIEW
-    # --------------------------------------------------------
+        else:
+            st.caption("Nothing urgent right now.")
 
     with right:
+        st.markdown('<div class="section-title">Team today</div>', unsafe_allow_html=True)
 
-        st.markdown(
-            '<div class="section-title">'
-            'Quick Overview'
-            '</div>',
-            unsafe_allow_html=True
-        )
+        try:
+            today_att = today_team_attendance()
+        except Exception:
+            today_att = []
 
-        st.info(
-            f"🕒 Active tasks: "
-            f"{new_count + progress_count}"
-        )
+        att_map = {r.get("employee_name"): r for r in today_att}
 
-        st.info(
-            f"📤 Waiting review: "
-            f"{review_count}"
-        )
+        for person in load_team_profiles()[:8]:
+            person_name = person.get("name")
+            rec = att_map.get(person_name)
 
-        st.info(
-            f"🔄 Changes requested: "
-            f"{changes_count}"
-        )
+            if rec:
+                status = f"{late_status(rec.get('check_in'))} · {format_pk_time(rec.get('check_in'))}"
+            else:
+                status = "Not marked"
 
-        st.success(
-            f"✅ Completed / Approved: "
-            f"{completed_count}"
-        )
+            st.markdown(
+                f"""
+                <div class="attention-card">
+                  <div class="attention-card-title">{display_value(person_name)}</div>
+                  <div class="attention-card-meta">{status}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
+    st.write("")
+    st.markdown('<div class="section-title">Recent activity</div>', unsafe_allow_html=True)
+
+    try:
+        activity = (
+            supabase.table("task_activity")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(6)
+            .execute()
+        ).data or []
+    except Exception:
+        activity = []
+
+    if activity:
+        for item in activity:
+            st.markdown(
+                f"""
+                <div class="attention-card">
+                  <div class="attention-card-title">
+                    {display_value(item.get("user_name"), "User")} · {display_value(item.get("action"))}
+                  </div>
+                  <div class="attention-card-meta">
+                    {display_value(item.get("details"))} · {display_value(item.get("created_at"))}
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 # ============================================================
 # MY TASKS / TEAM TASKS — WORK INBOX + KANBAN
 # ============================================================
 
-elif page in ["☑ My Tasks","☑ Team Tasks"]:
+elif page == "My Tasks":
 
     portal_header("Tasks")
-    is_team_view = page == "☑ Team Tasks"
+    is_team_view = is_manager() and st.toggle("Team view", value=False, key="task_team_view_toggle")
     tasks = load_all_tasks() if is_team_view else load_my_tasks()
 
     st.markdown(
@@ -3179,7 +3454,7 @@ elif page in ["☑ My Tasks","☑ Team Tasks"]:
 # CREATE TASK
 # ============================================================
 
-elif page == "＋ Create Task":
+elif page == "Create Task":
 
     if not is_manager():
         st.error("You do not have permission to create tasks.")
@@ -3516,7 +3791,7 @@ elif page == "✓ Approvals":
 # ATTENDANCE
 # ============================================================
 
-elif page == "◴ Attendance":
+elif page == "Attendance":
 
     portal_header("Attendance")
 
@@ -3847,7 +4122,7 @@ elif page == "📅 Attendance Report":
 # TEAM OVERVIEW
 # ============================================================
 
-elif page == "♟ Team Overview":
+elif page == "Team":
 
     portal_header("Team")
 
@@ -4186,7 +4461,7 @@ elif page == "💬 Seller Support":
 # GROUP CHAT
 # ============================================================
 
-elif page.startswith("◌ Chat"):
+elif page.startswith("Chat"):
 
     portal_header("Team Chat")
 
@@ -4318,7 +4593,7 @@ elif page == "🔔 Notifications":
 # CURRENT SPRINT
 # ============================================================
 
-elif page == "⚑ Current Sprint":
+elif page == "Current Sprint":
     portal_header("Current Sprint")
     st.markdown(
         '<div class="page-head-new"><div><span class="eyebrow">WEEKLY FOCUS</span>'
@@ -4353,7 +4628,7 @@ elif page == "⚑ Current Sprint":
 # TIMELINE
 # ============================================================
 
-elif page == "▤ Timeline":
+elif page == "Timeline":
     portal_header("Timeline")
     st.markdown(
         '<div class="page-head-new"><div><span class="eyebrow">WORK HISTORY</span>'
@@ -4398,7 +4673,7 @@ elif page == "▤ Timeline":
 # DATA HUB
 # ============================================================
 
-elif page == "⇧ Data Hub":
+elif page == "Data Hub":
     portal_header("Data Hub")
     st.markdown(
         '<div class="page-head-new"><div><span class="eyebrow">SHARED FILES</span>'
@@ -4442,7 +4717,7 @@ elif page == "⇧ Data Hub":
 # MY NOTES
 # ============================================================
 
-elif page == "▧ My Notes":
+elif page == "My Notes":
     portal_header("My Notes")
     st.markdown(
         '<div class="page-head-new"><div><span class="eyebrow">PRIVATE</span>'
@@ -4467,7 +4742,7 @@ elif page == "▧ My Notes":
 # SECURE FOLDER
 # ============================================================
 
-elif page == "▣ Secure Folder":
+elif page == "Secure Folder":
     portal_header("Secure Folder")
     st.markdown(
         '<div class="page-head-new"><div><span class="eyebrow">RESTRICTED FILES</span>'
@@ -4703,7 +4978,7 @@ elif page == "🧰 Task Workspace":
 # DIRECT MESSAGES
 # ============================================================
 
-elif page == "◍ Direct Messages":
+elif page == "Direct Messages":
 
     portal_header("Direct Messages")
     st.markdown('<div class="tech-title">Direct Messages</div>', unsafe_allow_html=True)
@@ -4774,7 +5049,7 @@ elif page == "📆 Calendar":
 # ANNOUNCEMENTS
 # ============================================================
 
-elif page == "📣 Announcements":
+elif page == "Announcements":
 
     portal_header("Announcements")
     st.markdown('<div class="tech-title">Announcements</div>', unsafe_allow_html=True)
@@ -4825,7 +5100,7 @@ elif page == "📣 Announcements":
 # KNOWLEDGE BASE
 # ============================================================
 
-elif page == "📚 Knowledge Base":
+elif page == "Knowledge Base":
 
     portal_header("Knowledge Base")
     st.markdown('<div class="tech-title">Knowledge & SOPs</div>', unsafe_allow_html=True)
@@ -4877,7 +5152,7 @@ elif page == "📚 Knowledge Base":
 # TEAM ATTENDANCE — EVERYONE CAN VIEW + EXPORT
 # ============================================================
 
-elif page == "♙ Team Attendance":
+elif page == "Team Attendance":
 
     portal_header("Team Attendance")
     st.markdown('<div class="tech-title">Team Attendance</div>', unsafe_allow_html=True)
@@ -5024,7 +5299,7 @@ elif page == "🟢 Team Status":
 # REPORTS
 # ============================================================
 
-elif page == "📊 Reports":
+elif page == "Reports":
 
     portal_header("Reports")
     if not is_manager():
@@ -5286,7 +5561,7 @@ elif page == "🧾 Audit Log":
 # SETTINGS
 # ============================================================
 
-elif page == "⚙ Settings":
+elif page == "Settings":
 
     portal_header("Settings")
     st.markdown('<div class="tech-title">Settings</div>', unsafe_allow_html=True)
