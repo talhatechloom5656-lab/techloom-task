@@ -620,6 +620,58 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"]{font-size:22px!importa
 .tl-dot-good{background:#36a269}.tl-dot-warn{background:#df9a2d}.tl-dot-bad{background:#d9534f}.tl-dot-neutral{background:#b7b7b1}
 .stButton>button,.stFormSubmitButton>button{min-height:33px!important;border-radius:7px!important;font-size:10px!important}
 
+
+/* ===== DASHBOARD CHAT SHORTCUT ===== */
+.chat-shortcut-card{
+    border:1px solid #e6e6e2;
+    border-radius:10px;
+    background:#fff;
+    padding:10px 11px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-height:55px;
+}
+.chat-shortcut-icon{
+    position:relative;
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#eef6fd;
+    font-size:17px;
+    flex:none;
+}
+.chat-unread-badge{
+    position:absolute;
+    right:-5px;
+    top:-6px;
+    min-width:17px;
+    height:17px;
+    padding:0 4px;
+    border-radius:999px;
+    background:#e5484d;
+    color:#fff;
+    border:2px solid #fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:8px;
+    font-weight:800;
+}
+.chat-shortcut-title{
+    color:#2b2b29;
+    font-size:10.5px;
+    font-weight:700;
+}
+.chat-shortcut-copy{
+    color:#8a8a84;
+    font-size:8.8px;
+    margin-top:2px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -3073,6 +3125,11 @@ def load_secure_portal_files():
     except Exception:
         return []
 
+def go_to_chat():
+    """Open Team Chat from the dashboard shortcut."""
+    st.session_state["main_portal_nav"] = "Chat"
+
+
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -3100,7 +3157,7 @@ with st.sidebar:
     )
 
     chat_unread_count = get_unread_chat_count()
-    chat_label = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
+    chat_label = "Chat"
 
     if is_manager():
         menu_options = [
@@ -3218,6 +3275,44 @@ if page == "Company HQ":
         """,
         unsafe_allow_html=True
     )
+
+    # Front-page chat shortcut with live unread badge.
+    unread_chat = get_unread_chat_count()
+
+    chat_space, chat_widget = st.columns([4.8, 1.2])
+
+    with chat_widget:
+        badge_html = (
+            f'<span class="chat-unread-badge">{unread_chat if unread_chat < 100 else "99+"}</span>'
+            if unread_chat > 0 else ""
+        )
+        chat_copy = (
+            f"{unread_chat} unread message{'s' if unread_chat != 1 else ''}"
+            if unread_chat > 0 else "No unread messages"
+        )
+
+        st.markdown(
+            f"""
+            <div class="chat-shortcut-card">
+                <div class="chat-shortcut-icon">
+                    💬
+                    {badge_html}
+                </div>
+                <div>
+                    <div class="chat-shortcut-title">Team Chat</div>
+                    <div class="chat-shortcut-copy">{chat_copy}</div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.button(
+            "Open Chat",
+            key="dashboard_open_chat",
+            use_container_width=True,
+            on_click=go_to_chat
+        )
 
     # Compact announcement: show only latest active one
     try:
