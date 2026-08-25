@@ -1606,7 +1606,7 @@ st.markdown("""
   box-shadow:0 10px 28px rgba(15,23,42,.13);
 }
 .command-ticker:before{
-  content:"GRAND FAREWELL";
+  content:"MESSAGE OF THE DAY";
   position:absolute;
   left:0;
   top:0;
@@ -1627,7 +1627,7 @@ st.markdown("""
   align-items:center;
   gap:34px;
   min-width:max-content;
-  padding-left:175px;
+  padding-left:205px;
   white-space:nowrap;
   animation:tlTicker 30s linear infinite;
   color:#dce9ff;
@@ -1907,7 +1907,7 @@ st.markdown("""
     font-size:7px;
   }
   .command-ticker-track{
-    padding-left:125px;
+    padding-left:150px;
     font-size:12px;
   }
   .command-ticker-track b{
@@ -4907,17 +4907,54 @@ if page == "Company HQ":
     ]
 
     # --------------------------------------------------------
-    # LIVE UPCOMING TICKER
-    # Duplicate ticker content intentionally creates a seamless loop.
+    # MESSAGE OF THE DAY
+    # A deterministic daily rotation based on Pakistan local date.
+    # Everyone sees the same message for the full day.
     # --------------------------------------------------------
+    daily_messages = [
+        ("Focus", "Small progress, repeated consistently, becomes exceptional work."),
+        ("Teamwork", "Great teams communicate early, help quickly and finish together."),
+        ("Quality", "Do it carefully once rather than fixing it repeatedly later."),
+        ("Ownership", "Own the outcome, not only the task."),
+        ("Momentum", "Start with the most important task and build momentum from there."),
+        ("Learning", "Every marketplace problem solved today becomes experience for tomorrow."),
+        ("Clarity", "Clear communication saves more time than rushed execution."),
+        ("Consistency", "Reliable daily execution beats occasional bursts of effort."),
+        ("Initiative", "If you see a useful improvement, suggest it and help make it happen."),
+        ("Customer Focus", "Every accurate listing and resolved case improves the customer experience."),
+        ("Discipline", "Priorities become results when they are protected from distractions."),
+        ("Collaboration", "Share blockers early so the team can solve them before they become delays."),
+        ("Excellence", "Professional work is the result of many small details handled properly."),
+        ("Progress", "Finish what matters most before starting what matters less."),
+        ("Problem Solving", "Bring the problem, the evidence and at least one possible solution."),
+        ("Accuracy", "Check the details before submitting — accuracy protects the whole team."),
+        ("Growth", "Improve one process today and tomorrow's work becomes easier."),
+        ("Responsibility", "Keep your tasks updated so everyone knows the real status of the work."),
+        ("Energy", "A focused first hour can set the direction for the entire day."),
+        ("Respect", "Good teamwork means respecting deadlines, communication and each other's time."),
+        ("Preparation", "Good preparation prevents rushed corrections later."),
+        ("Results", "Measure the day by meaningful work completed, not activity alone."),
+        ("Adaptability", "Marketplace rules change; strong teams learn and adjust quickly."),
+        ("Support", "Helping a teammate succeed strengthens the performance of everyone."),
+        ("Improvement", "Notice what slowed you down today and improve it for next time."),
+        ("Confidence", "Work carefully, document clearly and submit with confidence."),
+        ("Leadership", "Leadership is visible in reliability, ownership and how you support others."),
+        ("Efficiency", "Simplify repetitive work so more time goes to important decisions."),
+        ("Communication", "A short clear update is better than leaving the team guessing."),
+        ("Finish Strong", "Before the day ends, close loops, update tasks and prepare tomorrow's priorities."),
+        ("Perspective", "One difficult task solved well can create value far beyond a single day."),
+    ]
+
+    today_local = datetime.now(PK_TZ)
+    message_index = (today_local.timetuple().tm_yday - 1) % len(daily_messages)
+    message_theme, message_text = daily_messages[message_index]
+
     ticker_item = (
-        '<span>🎉 <b>Grand Farewell Party for Ma\'am Aifa Tassawar</b></span>'
+        f'<span>💡 <b>{safe_html(message_theme)}</b></span>'
         '<span class="command-ticker-sep">◆</span>'
-        '<span class="ticker-date">31 August 2026</span>'
+        f'<span class="ticker-invite">{safe_html(message_text)}</span>'
         '<span class="command-ticker-sep">◆</span>'
-        '<span class="ticker-place">📍 Ranchers, Sargodha</span>'
-        '<span class="command-ticker-sep">◆</span>'
-        '<span class="ticker-invite">Come join us for an evening of memories, laughter and celebration — everyone is warmly invited!</span>'
+        f'<span class="ticker-date">{today_local.strftime("%A, %d %B %Y")}</span>'
         '<span class="command-ticker-sep">◆</span>'
     )
 
