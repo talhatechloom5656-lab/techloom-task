@@ -3485,9 +3485,18 @@ if page == "Company HQ":
         for status_name in status_order
     }
 
+    chart_labels = {
+        "New": "New",
+        "In Progress": "In progress",
+        "Waiting on Information": "Waiting info",
+        "Waiting on Platform": "Waiting platform",
+        "Submitted for Review": "For review",
+        "Changes Requested": "Changes"
+    }
+
     chart_df = pd.DataFrame(
         {
-            "Status": list(status_counts.keys()),
+            "Status": [chart_labels.get(k, k) for k in status_counts.keys()],
             "Tasks": list(status_counts.values())
         }
     ).set_index("Status")
@@ -3571,34 +3580,19 @@ if page == "Company HQ":
         )
 
     with right_analytics:
-        st.markdown(
-            f"""
-            <div class="analytics-panel">
-                <div class="analytics-title">Team attendance today</div>
-                <div class="analytics-copy">A quick view of today's attendance status.</div>
-
-                <div class="mini-stat-grid">
-                    <div class="mini-stat">
-                        <b>{len(unique_people)}</b>
-                        <span>Team members</span>
-                    </div>
-                    <div class="mini-stat">
-                        <b>{marked_count}</b>
-                        <span>Attendance marked</span>
-                    </div>
-                    <div class="mini-stat">
-                        <b>{on_time_count}</b>
-                        <span>On time</span>
-                    </div>
-                    <div class="mini-stat">
-                        <b>{not_marked_count}</b>
-                        <span>Not marked</span>
-                    </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
+        attendance_summary_html = (
+            '<div class="analytics-panel">'
+            '<div class="analytics-title">Team attendance today</div>'
+            '<div class="analytics-copy">A quick view of today\'s attendance status.</div>'
+            '<div class="mini-stat-grid">'
+            f'<div class="mini-stat"><b>{len(unique_people)}</b><span>Team members</span></div>'
+            f'<div class="mini-stat"><b>{marked_count}</b><span>Attendance marked</span></div>'
+            f'<div class="mini-stat"><b>{on_time_count}</b><span>On time</span></div>'
+            f'<div class="mini-stat"><b>{not_marked_count}</b><span>Not marked</span></div>'
+            '</div>'
+            '</div>'
         )
+        st.markdown(attendance_summary_html, unsafe_allow_html=True)
 
         if attendance_rows:
             attendance_df = pd.DataFrame(attendance_rows)
@@ -5038,26 +5032,141 @@ elif page == "Current Sprint":
     )
 
     tasks = sprint_tasks()
+
+    # De-duplicate sprint tasks by a stable visual signature.
+    clean_tasks = []
+    seen = set()
+
+    for task in tasks:
+        signature = (
+            str(task.get("title") or "").strip().lower(),
+            str(task.get("goods_id") or "").strip().lower(),
+            str(task.get("assigned_to") or "").strip().lower(),
+            str(task.get("status") or "").strip().lower(),
+            str(task.get("due_date") or "").strip().lower(),
+        )
+        if signature in seen:
+            continue
+        seen.add(signature)
+        clean_tasks.append(task)
+
+    tasks = clean_tasks
+
     if not tasks:
         st.success("No sprint work is currently pending.")
     else:
-        columns = [
-            ("To-do", ["New"]),
-            ("In progress", ["In Progress"]),
-            ("Waiting / review", ["Waiting on Information","Waiting on Platform","Submitted for Review","Changes Requested"]),
-            ("Complete", ["Completed","Approved"]),
-        ]
-        board = st.columns(4)
-        for idx, (label, statuses) in enumerate(columns):
-            with board[idx]:
-                group = [t for t in tasks if t.get("status") in statuses]
-                st.markdown(
-                    f'<div class="kanban-column-title">{label}<span class="kanban-count">{len(group)}</span></div>',
-                    unsafe_allow_html=True
-                )
-                for j, task in enumerate(group):
-                    render_task_card(task, f"sprint_{idx}_{j}")
+        # Summary row
+        s1, s2, s3, s4 = st.columns(4)
+        s1.metric("To do", sum(1 for t in tasks if t.get("status") == "New"))
+        s2.metric("In progress", sum(1 for t in tasks if t.get("status") == "In Progress"))
+        s3.metric(
+            "Waiting / review",
+            sum(
+                1 for t in tasks
+                if t.get("status") in [
+                    "Waiting on Information",
+                    "Waiting on Platform",
+                    "Submitted for Review",
+                    "Changes Requested"
+                ]
+            )
+        )
+        s4.metric("Due this week", len(tasks))
 
+        st.write("")
+
+        focus_tab, board_tab = st.tabs(["Focus list", "Board"])
+
+        with focus_tab:
+            # Sort urgent / due first
+            def sprint_sort_key(task):
+                priority_rank = {
+                    "Urgent": 0,
+                    "High": 1,
+                    "Normal": 2,
+                    "Low": 3
+                }.get(task.get("priority"), 4)
+
+                due = parse_timestamp(task.get("due_date")) if task.get("due_date") else None
+                due_rank = due.timestamp() if due else 9999999999
+
+                return (priority_rank, due_rank)
+
+            for idx, task in enumerate(sorted(tasks, key=sprint_sort_key)):
+                left, right = st.columns([8.6, 1.4])
+
+                with left:
+                    card_html = (
+                        '<div class="work-card">'
+                        f'<div class="work-card-title">{display_value(task.get("title"))}</div>'
+                        f'<span class="status-chip">{display_value(task.get("platform"))}</span>'
+                        f'<span class="status-chip {task_priority_class(task.get("priority","Normal"))}">'
+                        f'{display_value(task.get("priority"))}</span>'
+                        f'<span class="status-chip">{display_value(task.get("status"))}</span>'
+                        f'<div class="work-meta">Due: {display_value(task_due_bucket(task))} • '
+                        f'Type: {display_value(task.get("task_type"))}</div>'
+                        '</div>'
+                    )
+                    st.markdown(card_html, unsafe_allow_html=True)
+
+                with right:
+                    if st.button(
+                        "Open",
+                        key=f"sprint_open_{task.get('id')}_{idx}",
+                        use_container_width=True
+                    ):
+                        st.session_state["selected_task_id"] = task.get("id")
+                        st.session_state["main_portal_nav"] = "My Tasks"
+                        st.rerun()
+
+        with board_tab:
+            columns = [
+                ("To do", ["New"]),
+                ("In progress", ["In Progress"]),
+                (
+                    "Waiting / review",
+                    [
+                        "Waiting on Information",
+                        "Waiting on Platform",
+                        "Submitted for Review",
+                        "Changes Requested"
+                    ]
+                ),
+                ("Complete", ["Completed", "Approved"]),
+            ]
+
+            board = st.columns(4)
+
+            for idx, (label, statuses) in enumerate(columns):
+                with board[idx]:
+                    group = [t for t in tasks if t.get("status") in statuses]
+
+                    st.markdown(
+                        f'<div class="kanban-column-title">{label}'
+                        f'<span class="kanban-count">{len(group)}</span></div>',
+                        unsafe_allow_html=True
+                    )
+
+                    for j, task in enumerate(group[:6]):
+                        card_html = (
+                            '<div class="work-card">'
+                            f'<div class="work-card-title">{display_value(task.get("title"))}</div>'
+                            f'<span class="status-chip">{display_value(task.get("platform"))}</span>'
+                            f'<span class="status-chip {task_priority_class(task.get("priority","Normal"))}">'
+                            f'{display_value(task.get("priority"))}</span>'
+                            f'<div class="work-meta">{display_value(task_due_bucket(task))}</div>'
+                            '</div>'
+                        )
+                        st.markdown(card_html, unsafe_allow_html=True)
+
+                        if st.button(
+                            "Open",
+                            key=f"sprint_board_open_{task.get('id')}_{idx}_{j}",
+                            use_container_width=True
+                        ):
+                            st.session_state["selected_task_id"] = task.get("id")
+                            st.session_state["main_portal_nav"] = "My Tasks"
+                            st.rerun()
 
 # ============================================================
 # TIMELINE
