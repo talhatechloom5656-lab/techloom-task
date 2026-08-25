@@ -672,6 +672,28 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"]{font-size:22px!importa
     margin-top:2px;
 }
 
+
+/* ===== V8 CLEAN MY TASKS ===== */
+.task-action-wrap{
+    margin-top:-2px;
+    margin-bottom:10px;
+}
+.task-detail-top{
+    border:1px solid #e8e8e4;
+    background:#fafaf8;
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:12px;
+}
+.task-detail-top b{
+    font-size:11px;
+    color:#2b2b29;
+}
+.task-detail-top span{
+    color:#888882;
+    font-size:9px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -2525,48 +2547,50 @@ def render_task_card(task, key_prefix):
     assigned_by = task.get("assigned_by", "")
     goods_id = task.get("goods_id", "")
 
-    st.markdown(
-        (
-            '<div class="work-card">'
-            f'<div class="work-card-title">{title}</div>'
-            f'<span class="status-chip">{platform}</span>'
-            f'<span class="status-chip {task_priority_class(priority)}">{priority}</span>'
-            f'<span class="status-chip">{status}</span>'
-            f'<div class="work-meta">Due: {due_text} • Type: {task_type}</div>'
-            f'<div class="work-meta">Assigned by: {assigned_by}'
-            + (f' • ID: {goods_id}' if goods_id else '') +
-            '</div></div>'
-        ),
-        unsafe_allow_html=True
+    card_html = (
+        '<div class="work-card">'
+        f'<div class="work-card-title">{display_value(title)}</div>'
+        f'<span class="status-chip">{display_value(platform)}</span>'
+        f'<span class="status-chip {task_priority_class(priority)}">{display_value(priority)}</span>'
+        f'<span class="status-chip">{display_value(status)}</span>'
+        f'<div class="work-meta">Due: {display_value(due_text)} • Type: {display_value(task_type)}</div>'
+        f'<div class="work-meta">Assigned by: {display_value(assigned_by)}'
+        + (f' • ID: {display_value(goods_id)}' if goods_id else '') +
+        '</div></div>'
     )
+    st.markdown(card_html, unsafe_allow_html=True)
 
-    c1, c2 = st.columns(2)
-    with c1:
-        if status == "New" and not is_manager():
-            if st.button("▶ Start", key=f"{key_prefix}_start_{task_id}", use_container_width=True):
-                if update_task_status(task_id, "In Progress"):
-                    st.rerun()
-        else:
-            if st.button("Open", key=f"{key_prefix}_open_{task_id}", use_container_width=True):
-                open_task_detail(task)
+    st.markdown('<div class="task-action-wrap">', unsafe_allow_html=True)
+
+    if status == "New" and not is_manager():
+        if st.button(
+            "▶ Start & Open",
+            key=f"{key_prefix}_start_open_{task_id}",
+            type="primary",
+            use_container_width=True
+        ):
+            if update_task_status(task_id, "In Progress"):
+                # Fetch fresh task state for the detail view.
+                fresh = task.copy()
+                fresh["status"] = "In Progress"
+                open_task_detail(fresh)
                 st.rerun()
-    with c2:
-        if not is_manager() and status in ["In Progress","Changes Requested","Waiting on Information","Waiting on Platform","New"]:
-            if st.button("📤 Review", key=f"{key_prefix}_review_{task_id}", use_container_width=True):
-                open_task_detail(task)
-                st.session_state.task_detail_tab = "Submission"
-                st.rerun()
-        else:
-            if st.button("Details", key=f"{key_prefix}_details_{task_id}", use_container_width=True):
-                open_task_detail(task)
-                st.rerun()
+    else:
+        if st.button(
+            "Open task",
+            key=f"{key_prefix}_open_{task_id}",
+            use_container_width=True
+        ):
+            open_task_detail(task)
+            st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_task_detail_panel(task):
     task_id = task["id"]
     register_task_view(task_id)
 
-    st.markdown("---")
     st.markdown(f"## {task.get('title','Untitled Task')}")
     st.caption(
         f"{task.get('platform','')} • {task.get('task_type','')} • "
@@ -2725,7 +2749,7 @@ def render_task_detail_panel(task):
                 f"{event.get('details','')}"
             )
 
-    if st.button("✕ Close Task", key=f"close_task_{task_id}"):
+    if st.button("← Back to My Tasks", key=f"close_task_{task_id}", use_container_width=True):
         st.session_state.selected_task_id = None
         st.rerun()
 
@@ -3491,6 +3515,56 @@ elif page == "My Tasks":
     is_team_view = is_manager() and st.toggle("Team view", value=False, key="task_team_view_toggle")
     tasks = load_all_tasks() if is_team_view else load_my_tasks()
 
+    # De-duplicate repeated visual task records.
+    # Prefer the newest occurrence for the same task signature.
+    deduped_tasks = []
+    seen_task_signatures = set()
+
+    for task in tasks:
+        signature = (
+            str(task.get("title") or "").strip().lower(),
+            str(task.get("goods_id") or "").strip().lower(),
+            str(task.get("assigned_to") or "").strip().lower(),
+            str(task.get("status") or "").strip().lower(),
+        )
+        if signature in seen_task_signatures:
+            continue
+        seen_task_signatures.add(signature)
+        deduped_tasks.append(task)
+
+    tasks = deduped_tasks
+
+    # If a task has been opened, show its workspace immediately at the top.
+    selected_id = st.session_state.get("selected_task_id")
+    if selected_id:
+        selected_task = find_task_by_id(selected_id, tasks)
+
+        # Fallback to a direct fetch in case the task changed status and no longer
+        # matches a de-duplicated in-memory row.
+        if not selected_task:
+            try:
+                direct = (
+                    supabase.table("tasks")
+                    .select("*")
+                    .eq("id", selected_id)
+                    .limit(1)
+                    .execute()
+                ).data or []
+                selected_task = direct[0] if direct else None
+            except Exception:
+                selected_task = None
+
+        if selected_task:
+            st.markdown(
+                '<div class="task-detail-top">'
+                '<b>Task workspace</b><br>'
+                '<span>Use the tabs below for instructions, checklist, comments, files and submission.</span>'
+                '</div>',
+                unsafe_allow_html=True
+            )
+            render_task_detail_panel(selected_task)
+            st.stop()
+
     st.markdown(
         '<div class="task-board-header">'
         '<div>'
@@ -3618,11 +3692,6 @@ elif page == "My Tasks":
                     for i, task in enumerate(owner_tasks):
                         render_task_card(task, f"owner_{owner}_{i}")
 
-    selected_id = st.session_state.get("selected_task_id")
-    if selected_id:
-        selected_task = find_task_by_id(selected_id, tasks)
-        if selected_task:
-            render_task_detail_panel(selected_task)
 
 # ============================================================
 # CREATE TASK
