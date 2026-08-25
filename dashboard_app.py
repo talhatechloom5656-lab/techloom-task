@@ -41,611 +41,485 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --teal: #0f766e;
-    --teal-light: #14b8a6;
-    --amber: #d97706;
-    --amber-soft: #fef3e2;
-    --green: #059669;
-    --red: #dc2626;
-    --ink: #1e2333;
-    --muted: #6b7280;
-    --line: #e6e8ee;
-    --panel: #ffffff;
-    --page-bg: #ffffff;
-    --sidebar-bg: #0f766e;
+    --canvas: #F2F3F6;
+    --navy: #01104E;
+    --blue: #2535E4;
+    --blue-soft: #EEF0FF;
+    --ink: #0B0B0F;
+    --muted: #737A93;
+    --muted-2: #A2A7C2;
+    --line: #E4E7EF;
+    --card: #FFFFFF;
+    --green: #13454B;
+    --green-soft: #EDF7F5;
+    --danger: #AD4A4A;
+    --danger-soft: #FFF3F3;
+    --warning: #B76A16;
+    --warning-soft: #FFF7EC;
 }
 
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
 }
 
-/* ------------------------------------------------------------
-   APP BACKGROUND — clean white content area
-   ------------------------------------------------------------ */
 .stApp {
-    background: var(--page-bg);
+    background: var(--canvas);
     color: var(--ink);
 }
 
 .block-container {
-    max-width: 1460px;
-    padding-top: 2.1rem;
-    padding-bottom: 3rem;
+    max-width: 1500px;
+    padding: 2.0rem 2.2rem 3rem 2.2rem;
 }
 
-/* ------------------------------------------------------------
-   SIDEBAR — solid teal, white text, the colorful anchor of the UI
-   ------------------------------------------------------------ */
+/* -------- Sidebar -------- */
 [data-testid="stSidebar"] {
-    background: var(--sidebar-bg);
-    border-right: none;
-    min-width: 296px;
+    background: var(--navy);
+    border-right: 0;
+    min-width: 286px;
 }
 
 [data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    padding: 1.3rem .95rem 1rem .95rem;
-}
-
-[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] span,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] div {
-    color: #ffffff;
-}
-
-[data-testid="stSidebar"] .stCaption,
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-    color: rgba(255,255,255,.72) !important;
+    padding: 1.35rem 1rem 1rem 1rem;
 }
 
 .sidebar-logo {
-    font-size: 21px;
-    line-height: 1.2;
+    font-size: 19px;
     font-weight: 800;
-    letter-spacing: -.3px;
-    color: #ffffff;
-    margin-top: .3rem;
+    color: #fff;
+    letter-spacing: -.45px;
+    margin-bottom: 3px;
 }
 
 .sidebar-subtitle {
-    font-size: 11.5px;
-    color: rgba(255,255,255,.72) !important;
-    letter-spacing: .15px;
-    margin-top: 4px;
-    margin-bottom: 18px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255,255,255,.18);
+    font-size: 11px;
+    color: rgba(255,255,255,.56) !important;
+    padding-bottom: 17px;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+    margin-bottom: 14px;
 }
 
-/* Turn radio into clean, tappable navigation rows */
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] span {
+    color: rgba(255,255,255,.82);
+}
+
+[data-testid="stSidebar"] .stCaption p {
+    color: rgba(255,255,255,.54) !important;
+}
+
 [data-testid="stSidebar"] [role="radiogroup"] {
-    gap: 2px;
+    gap: 3px;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     width: 100%;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    border-radius: 9px;
-    padding: 10px 12px !important;
+    min-height: 42px;
+    padding: 9px 11px !important;
+    border-radius: 10px;
     margin: 1px 0;
-    background: transparent;
-    transition: all .14s ease;
+    transition: .14s ease;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
-    background: rgba(255,255,255,.10);
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label p {
-    color: rgba(255,255,255,.88) !important;
-    font-weight: 600 !important;
-    font-size: 14px !important;
-    line-height: 1.25 !important;
+    background: rgba(255,255,255,.08);
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 7px 20px rgba(0,0,0,.14);
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
-    color: var(--teal) !important;
-    font-weight: 700 !important;
+    color: var(--navy) !important;
+    font-weight: 750 !important;
 }
 
-/* Hide the native radio-circle indicator across Streamlit DOM variants */
-[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
+[data-testid="stSidebar"] [data-testid="stRadio"] label p {
+    font-size: 13px !important;
+    font-weight: 570 !important;
+}
+
 [data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
 [data-testid="stSidebar"] input[type="radio"] {
     display: none !important;
 }
 
-/* Sidebar buttons (Logout) */
 [data-testid="stSidebar"] .stButton > button {
     width: 100%;
-    background: rgba(255,255,255,.10) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255,255,255,.28) !important;
+    min-height: 40px;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,.07) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,.16) !important;
     box-shadow: none !important;
-    margin-top: 6px;
-}
-
-[data-testid="stSidebar"] .stButton > button p,
-[data-testid="stSidebar"] .stButton > button span {
-    color: #ffffff !important;
-    font-weight: 650 !important;
 }
 
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(255,255,255,.18) !important;
-    border-color: rgba(255,255,255,.42) !important;
+    background: rgba(255,255,255,.13) !important;
 }
 
-/* ------------------------------------------------------------
-   TITLES & TEXT (main content — white background)
-   ------------------------------------------------------------ */
+/* -------- Page typography -------- */
 .tech-title {
-    font-size: clamp(26px, 2.6vw, 36px);
-    line-height: 1.15;
+    font-size: clamp(28px, 2.5vw, 38px);
     font-weight: 800;
-    letter-spacing: -.8px;
+    line-height: 1.12;
+    letter-spacing: -1.25px;
     color: var(--ink);
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 .tech-subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--muted);
     margin-bottom: 22px;
 }
 
 .section-title {
-    font-size: 17px;
-    line-height: 1.2;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 750;
+    letter-spacing: -.25px;
     color: var(--ink);
-    letter-spacing: -.2px;
-    margin-top: 10px;
-    margin-bottom: 12px;
+    margin: 12px 0 11px;
 }
 
-.stApp p,
-.stApp label,
-.stApp li {
-    color: #3d4356;
-}
-
-.stApp h1,
-.stApp h2,
-.stApp h3,
-.stApp h4 {
+.stApp h1, .stApp h2, .stApp h3, .stApp h4 {
     color: var(--ink);
+    letter-spacing: -.55px;
 }
 
-/* ------------------------------------------------------------
-   METRIC CARDS
-   ------------------------------------------------------------ */
+.stApp p, .stApp label, .stApp li {
+    color: #4F556A;
+}
+
+/* -------- Cards / containers -------- */
 div[data-testid="stMetric"] {
-    background: var(--panel);
+    background: var(--card);
     border: 1px solid var(--line);
-    border-top: 3px solid var(--teal);
-    padding: 16px 18px 14px 18px;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(30,35,51,.05);
-    min-height: 104px;
-    transition: box-shadow .15s ease;
-}
-
-div[data-testid="stMetric"]:hover {
-    box-shadow: 0 6px 16px rgba(30,35,51,.08);
+    padding: 18px 18px 16px;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(1,16,78,.035);
+    min-height: 108px;
 }
 
 div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
     color: var(--muted) !important;
-    font-weight: 600;
-    font-size: 12.5px;
+    font-size: 11.5px;
+    font-weight: 650;
     text-transform: uppercase;
-    letter-spacing: .3px;
+    letter-spacing: .5px;
 }
 
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: var(--ink) !important;
-    font-weight: 780;
-    letter-spacing: -.6px;
+    color: var(--navy) !important;
+    font-weight: 800;
+    letter-spacing: -.8px;
 }
 
-/* ------------------------------------------------------------
-   TASK CARDS — left accent bar in amber for contrast against teal nav
-   ------------------------------------------------------------ */
-.task-card {
-    background: var(--panel);
-    padding: 14px 18px 14px 16px;
-    border-radius: 10px;
+.workspace-hero,
+.task-board-header,
+.attendance-hero {
     border: 1px solid var(--line);
-    border-left: 4px solid var(--amber);
-    margin-bottom: 9px;
-    box-shadow: 0 1px 3px rgba(30,35,51,.04);
-    transition: box-shadow .15s ease;
+    border-radius: 17px;
+    padding: 20px 22px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(1,16,78,.035);
+    margin-bottom: 16px;
 }
 
-.task-card:hover {
-    box-shadow: 0 6px 16px rgba(30,35,51,.07);
+.workspace-hero-title,
+.task-board-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--navy);
 }
 
-.task-card-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 5px;
-}
-
-.task-meta {
+.workspace-hero-copy,
+.task-board-copy {
     color: var(--muted);
     font-size: 12.5px;
-    margin-top: 3px;
+    margin-top: 4px;
 }
 
-/* ------------------------------------------------------------
-   BUTTONS
-   ------------------------------------------------------------ */
-.stButton > button, .stFormSubmitButton > button {
-    border-radius: 8px !important;
-    min-height: 42px;
-    font-weight: 650;
-    border: 1px solid #dfe2ea;
-    box-shadow: none;
-    transition: all .14s ease;
+/* -------- Task cards -------- */
+.task-card,
+.work-card,
+.attendance-status-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 15px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(1,16,78,.03);
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
 
-.stButton > button:hover, .stFormSubmitButton > button:hover {
-    border-color: #c7cbdb;
-    box-shadow: 0 4px 12px rgba(30,35,51,.06);
+.task-card:hover,
+.work-card:hover {
+    transform: translateY(-1px);
+    border-color: #CCD1E4;
+    box-shadow: 0 8px 22px rgba(1,16,78,.07);
 }
 
-button[kind="primary"] {
-    background: var(--teal) !important;
-    border: none !important;
+.task-card {
+    border-left: 3px solid var(--blue);
 }
 
-button[kind="primary"]:hover {
-    background: #0c5f58 !important;
+.task-card-title,
+.work-card-title {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 750;
+    margin-bottom: 6px;
 }
 
-/* ------------------------------------------------------------
-   INPUTS
-   ------------------------------------------------------------ */
+.task-meta,
+.work-meta {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.status-chip,
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #F6F7FA;
+    border: 1px solid var(--line);
+    color: #575D70;
+    font-size: 10.5px;
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+.priority-urgent {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: #F0D3D3;
+}
+.priority-high {
+    background: var(--warning-soft);
+    color: var(--warning);
+    border-color: #F1DDC5;
+}
+.priority-normal {
+    background: var(--blue-soft);
+    color: var(--blue);
+    border-color: #D8DCFF;
+}
+.priority-low {
+    background: #F7F8FA;
+    color: #737A93;
+}
+
+/* -------- Inputs -------- */
 [data-baseweb="input"] > div,
 [data-baseweb="textarea"] > div,
 [data-baseweb="select"] > div {
-    border-radius: 8px !important;
-    border-color: #dde0e8 !important;
-    background: #ffffff !important;
-}
-
-[data-baseweb="input"] input,
-[data-baseweb="textarea"] textarea,
-[data-baseweb="select"] input,
-[data-baseweb="select"] div {
-    color: var(--ink) !important;
+    border-radius: 11px !important;
+    border-color: #DDE1EB !important;
+    background: #fff !important;
+    min-height: 44px;
 }
 
 [data-baseweb="input"] > div:focus-within,
 [data-baseweb="textarea"] > div:focus-within,
 [data-baseweb="select"] > div:focus-within {
-    border-color: var(--teal) !important;
-    box-shadow: 0 0 0 3px rgba(15,118,110,.14) !important;
+    border-color: var(--blue) !important;
+    box-shadow: 0 0 0 3px rgba(37,53,228,.10) !important;
 }
 
-/* ------------------------------------------------------------
-   EXPANDERS
-   ------------------------------------------------------------ */
-[data-testid="stExpander"] {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(30,35,51,.03);
-    margin-bottom: 10px;
+[data-baseweb="input"] input,
+[data-baseweb="textarea"] textarea {
+    color: var(--ink) !important;
+    font-size: 13px !important;
 }
 
-/* ------------------------------------------------------------
-   TABLES
-   ------------------------------------------------------------ */
-[data-testid="stDataFrame"], [data-testid="stTable"] {
-    background: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid var(--line);
+.stTextInput label p,
+.stTextArea label p,
+.stSelectbox label p,
+.stDateInput label p,
+.stTimeInput label p,
+.stNumberInput label p,
+.stFileUploader label p {
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    color: #555C70 !important;
 }
 
-[data-testid="stDataFrame"] * {
-    color: #2c3142;
+/* -------- Buttons -------- */
+.stButton > button,
+.stFormSubmitButton > button,
+.stDownloadButton > button,
+.stLinkButton > a {
+    border-radius: 10px !important;
+    min-height: 42px;
+    font-weight: 700;
+    font-size: 12.5px;
+    border: 1px solid #D9DDEA;
+    box-shadow: none;
 }
 
-/* ------------------------------------------------------------
-   ALERTS
-   ------------------------------------------------------------ */
-[data-testid="stAlert"] {
-    border-radius: 10px;
-    border-width: 1px;
-    box-shadow: 0 1px 3px rgba(30,35,51,.03);
+button[kind="primary"],
+.stFormSubmitButton button[kind="primary"] {
+    background: var(--blue) !important;
+    border-color: var(--blue) !important;
+    color: #fff !important;
 }
 
-[data-testid="stAlert"] p {
-    color: #1e2333 !important;
-    font-weight: 500;
+button[kind="primary"]:hover {
+    background: #1D2BC1 !important;
 }
 
-/* ------------------------------------------------------------
-   TABS (if used)
-   ------------------------------------------------------------ */
+/* -------- Tabs -------- */
 button[data-baseweb="tab"] {
-    font-weight: 600;
     color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 650;
 }
 
 button[data-baseweb="tab"][aria-selected="true"] {
-    color: var(--teal) !important;
+    color: var(--navy) !important;
+    font-weight: 800;
 }
 
 [data-baseweb="tab-highlight"] {
-    background-color: var(--teal) !important;
+    background-color: var(--blue) !important;
+    height: 2px !important;
 }
 
-/* ------------------------------------------------------------
-   MISC
-   ------------------------------------------------------------ */
-hr {
-    border-color: var(--line) !important;
+/* -------- Tables -------- */
+[data-testid="stDataFrame"],
+[data-testid="stTable"] {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: 0 2px 8px rgba(1,16,78,.025);
 }
 
-/* Login */
-.login-shell {
-    min-height: 77vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* -------- Expanders -------- */
+[data-testid="stExpander"] {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    margin-bottom: 9px;
+    overflow: hidden;
 }
 
-.login-hero {
-    padding: 30px 6px 20px 6px;
+/* -------- Alerts -------- */
+[data-testid="stAlert"] {
+    border-radius: 12px;
+    border-width: 1px;
 }
 
-.login-kicker {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--amber-soft);
-    color: var(--amber);
+/* -------- Attendance -------- */
+.attendance-eyebrow {
+    color: var(--blue);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.attendance-date {
+    color: var(--navy);
+    font-size: 27px;
+    font-weight: 800;
+    margin-top: 5px;
+}
+
+.attendance-day,
+.attendance-note {
+    color: var(--muted);
     font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .3px;
+}
+
+.attendance-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.attendance-value {
+    color: var(--navy);
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 7px;
+}
+
+.attendance-rules {
+    background: #fff;
+    border: 1px solid var(--line);
+    color: #555C70;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 11.5px;
+}
+
+/* -------- Kanban -------- */
+.kanban-column-title {
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.kanban-count {
+    float: right;
+    color: var(--muted-2);
+}
+
+/* -------- Login -------- */
+.login-kicker {
+    display: inline-flex;
+    background: var(--blue-soft);
+    color: var(--blue);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
     margin-bottom: 14px;
 }
 
 .login-heading {
-    font-size: clamp(32px, 4.2vw, 54px);
-    line-height: 1.08;
+    color: var(--navy);
+    font-size: clamp(34px, 4vw, 54px);
     font-weight: 800;
-    letter-spacing: -1.6px;
-    color: var(--ink);
-    max-width: 720px;
+    letter-spacing: -1.8px;
+    line-height: 1.05;
 }
 
-.login-copy {
-    font-size: 15px;
-    line-height: 1.7;
-    color: var(--muted);
-    max-width: 590px;
-    margin-top: 16px;
-}
-
-.login-card-title {
-    font-size: 21px;
-    font-weight: 800;
-    color: var(--ink);
-    margin-bottom: 3px;
-}
-
+.login-copy,
 .login-card-copy {
     color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 10px;
 }
 
-/* Small-screen refinement */
+/* -------- Utility -------- */
+hr {
+    border-color: var(--line) !important;
+}
+
+footer {
+    visibility: hidden;
+}
+
 @media (max-width: 900px) {
     .block-container {
-        padding-top: 1.2rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding: 1.2rem 1rem 2.5rem;
     }
-
     .tech-title {
-        font-size: 26px;
+        font-size: 27px;
+    }
+    [data-testid="stSidebar"] {
+        min-width: 270px;
     }
 }
-
-/* Notification badge / workspace cards */
-.workspace-hero {
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 20px 22px;
-    background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 55%, #fff7ed 100%);
-    margin-bottom: 18px;
-}
-.workspace-hero-title {
-    font-size: 15px;
-    font-weight: 750;
-    color: var(--ink);
-}
-.workspace-hero-copy {
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 4px;
-}
-.status-pill {
-    display: inline-block;
-    padding: 4px 9px;
-    border-radius: 999px;
-    background: #ecfdf5;
-    color: #047857;
-    font-size: 11px;
-    font-weight: 700;
-}
-.chat-bubble {
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 10px 12px;
-    margin: 6px 0;
-    background: #fff;
-}
-
-/* Hide Streamlit footer */
-footer { visibility: hidden; }
-
-/* ------------------------------------------------------------
-   TASK EXPERIENCE 2.0
-   ------------------------------------------------------------ */
-.task-board-header {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:14px;
-    padding:18px 20px;
-    border:1px solid var(--line);
-    border-radius:14px;
-    background:linear-gradient(135deg,#ffffff 0%,#f7fbfa 100%);
-    margin-bottom:14px;
-}
-.task-board-title {
-    font-size:20px;
-    font-weight:800;
-    color:var(--ink);
-}
-.task-board-copy {
-    color:var(--muted);
-    font-size:13px;
-    margin-top:3px;
-}
-.work-card {
-    border:1px solid var(--line);
-    border-radius:12px;
-    background:#fff;
-    padding:14px;
-    margin-bottom:10px;
-    box-shadow:0 1px 3px rgba(30,35,51,.04);
-}
-.work-card:hover {
-    box-shadow:0 7px 20px rgba(30,35,51,.08);
-}
-.work-card-title {
-    font-weight:750;
-    font-size:14px;
-    color:var(--ink);
-    margin-bottom:6px;
-}
-.work-meta {
-    font-size:12px;
-    color:var(--muted);
-    line-height:1.6;
-}
-.status-chip {
-    display:inline-block;
-    padding:4px 8px;
-    border-radius:999px;
-    font-size:11px;
-    font-weight:700;
-    border:1px solid #e1e5ea;
-    background:#f8fafc;
-    color:#334155;
-    margin-right:5px;
-}
-.priority-urgent { background:#fff1f2; color:#be123c; border-color:#fecdd3; }
-.priority-high { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }
-.priority-normal { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
-.priority-low { background:#f8fafc; color:#64748b; border-color:#e2e8f0; }
-.kanban-column-title {
-    font-size:13px;
-    font-weight:800;
-    color:#334155;
-    margin-bottom:8px;
-}
-.kanban-count {
-    float:right;
-    font-weight:700;
-    color:var(--muted);
-}
-
-
-/* ------------------------------------------------------------
-   ATTENDANCE EXPERIENCE
-   ------------------------------------------------------------ */
-.attendance-hero {
-    border:1px solid var(--line);
-    border-radius:16px;
-    background:linear-gradient(135deg,#ffffff 0%,#f5fbf9 100%);
-    padding:20px 22px;
-    margin:6px 0 18px 0;
-    box-shadow:0 3px 12px rgba(15,118,110,.06);
-}
-.attendance-eyebrow {
-    font-size:12px;
-    font-weight:800;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    color:#0f766e;
-    margin-bottom:6px;
-}
-.attendance-date {
-    font-size:28px;
-    font-weight:800;
-    color:var(--ink);
-    line-height:1.15;
-}
-.attendance-day {
-    font-size:14px;
-    color:var(--muted);
-    margin-top:5px;
-}
-.attendance-status-card {
-    border:1px solid var(--line);
-    border-radius:14px;
-    background:#fff;
-    padding:16px;
-    min-height:126px;
-    box-shadow:0 2px 8px rgba(15,23,42,.04);
-}
-.attendance-label {
-    font-size:11px;
-    color:var(--muted);
-    font-weight:800;
-    text-transform:uppercase;
-    letter-spacing:.05em;
-}
-.attendance-value {
-    font-size:21px;
-    font-weight:800;
-    color:var(--ink);
-    margin-top:7px;
-}
-.attendance-note {
-    font-size:12px;
-    color:var(--muted);
-    margin-top:6px;
-}
-.attendance-rules {
-    padding:12px 14px;
-    border:1px solid #dce9e6;
-    border-radius:12px;
-    background:#f8fffd;
-    color:#35504b;
-    font-size:12px;
-    line-height:1.7;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -969,6 +843,49 @@ if not ensure_supabase_auth():
 PK_TZ = ZoneInfo("Asia/Karachi")
 ATTENDANCE_START_DATE = datetime(2026, 8, 25).date()  # Official first attendance day
 
+def _session_cache_get(key, ttl_seconds):
+    item = st.session_state.get("_fast_cache", {}).get(key)
+    if not item:
+        return None
+    created_at, value = item
+    if (datetime.now(timezone.utc) - created_at).total_seconds() > ttl_seconds:
+        return None
+    return value
+
+
+def _session_cache_set(key, value):
+    cache = st.session_state.setdefault("_fast_cache", {})
+    cache[key] = (datetime.now(timezone.utc), value)
+    return value
+
+
+def clear_fast_cache(*prefixes):
+    cache = st.session_state.setdefault("_fast_cache", {})
+    if not prefixes:
+        cache.clear()
+        return
+    for key in list(cache.keys()):
+        if any(str(key).startswith(prefix) for prefix in prefixes):
+            cache.pop(key, None)
+
+
+def run_lightweight_maintenance():
+    """Avoid expensive background checks on every Streamlit rerun/tab click."""
+    now = datetime.now(timezone.utc)
+
+    last_presence = st.session_state.get("_last_presence_ping")
+    if not last_presence or (now - last_presence).total_seconds() >= 60:
+        update_presence()
+        st.session_state._last_presence_ping = now
+
+    if is_manager():
+        last_manager_checks = st.session_state.get("_last_manager_checks")
+        if not last_manager_checks or (now - last_manager_checks).total_seconds() >= 300:
+            process_due_recurring_tasks()
+            escalate_unopened_urgent_tasks()
+            st.session_state._last_manager_checks = now
+
+
 
 # ============================================================
 # HELPERS
@@ -983,58 +900,46 @@ def is_manager():
 
 
 def load_all_tasks():
-
+    cached = _session_cache_get("tasks_all", 5)
+    if cached is not None:
+        return cached
     try:
-
         result = (
             supabase
             .table("tasks")
             .select("*")
             .eq("archived", False)
-            .order(
-                "created_at",
-                desc=True
-            )
+            .order("created_at", desc=True)
+            .limit(250)
             .execute()
         )
-
-        return result.data or []
-
+        return _session_cache_set("tasks_all", result.data or [])
     except Exception as error:
-
         st.error("Could not load tasks.")
         st.write(error)
-
         return []
 
 
 def load_my_tasks():
-
+    cache_key = f"tasks_user:{current_user_id}"
+    cached = _session_cache_get(cache_key, 5)
+    if cached is not None:
+        return cached
     try:
-
         result = (
             supabase
             .table("tasks")
             .select("*")
             .eq("archived", False)
-            .eq(
-                "assigned_to",
-                name
-            )
-            .order(
-                "created_at",
-                desc=True
-            )
+            .eq("assigned_to", name)
+            .order("created_at", desc=True)
+            .limit(200)
             .execute()
         )
-
-        return result.data or []
-
+        return _session_cache_set(cache_key, result.data or [])
     except Exception as error:
-
         st.error("Could not load your tasks.")
         st.write(error)
-
         return []
 
 
@@ -1140,6 +1045,7 @@ def update_task_status(
         except Exception:
             pass
 
+        clear_fast_cache("tasks_")
         return True
 
     except Exception as error:
@@ -1157,10 +1063,13 @@ def update_task_status(
 # ============================================================
 
 def load_team_profiles():
-    """Return basic team directory data through a controlled Supabase RPC."""
+    """Cached team directory; profiles rarely change during a working session."""
+    cached = _session_cache_get("team_profiles", 60)
+    if cached is not None:
+        return cached
     try:
         result = supabase.rpc("get_team_profiles").execute()
-        return result.data or []
+        return _session_cache_set("team_profiles", result.data or [])
     except Exception:
         return []
 
@@ -2445,10 +2354,8 @@ def priority_badge(priority):
     return f"{icons.get(priority, '⚪')} {priority}"
 
 
-# Heartbeat / automation checks
-update_presence()
-process_due_recurring_tasks()
-escalate_unopened_urgent_tasks()
+# Heartbeat / automation checks are throttled for fast navigation.
+run_lightweight_maintenance()
 
 
 
@@ -2979,14 +2886,14 @@ with st.sidebar:
 
     st.markdown(
         '<div class="sidebar-logo">'
-        '◈ TECHLOOM TASK'
+        'TECHLOOM / TASK'
         '</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
         '<div class="sidebar-subtitle">'
-        'Work Smart. Stay Organized.'
+        'Operations workspace'
         '</div>',
         unsafe_allow_html=True
     )
@@ -3112,6 +3019,9 @@ with st.sidebar:
 
         logout()
 
+# Main workspace separator / consistent top rhythm
+st.markdown('<div style="height:2px"></div>', unsafe_allow_html=True)
+
 
 # ============================================================
 # DASHBOARD
@@ -3121,21 +3031,33 @@ if page == "🏠 Dashboard":
 
     render_team_shoutout_bar()
 
+    current_day = datetime.now(PK_TZ)
     st.markdown(
-        f'<div class="tech-title">'
-        f'Welcome, {name} 👋'
-        f'</div>',
+        f'<div class="tech-title">Good morning, {name}</div>',
         unsafe_allow_html=True
     )
-
     st.markdown(
         f'<div class="tech-subtitle">'
-        f'{department} • {role}'
+        f'{current_day.strftime("%A, %d %B %Y")} &nbsp; • &nbsp; '
+        f'{department} &nbsp; • &nbsp; {role}'
         f'</div>',
         unsafe_allow_html=True
     )
 
-    tasks = tasks_for_current_user()
+    all_dashboard_tasks = tasks_for_current_user()
+    ACTIVE_DASHBOARD_STATUSES = {
+        "New",
+        "In Progress",
+        "Waiting on Information",
+        "Waiting on Platform",
+        "Submitted for Review",
+        "Changes Requested"
+    }
+    tasks = [
+        task for task in all_dashboard_tasks
+        if task.get("status", "New") in ACTIVE_DASHBOARD_STATUSES
+        and not task.get("archived", False)
+    ]
 
     today_date = datetime.now(PK_TZ).date()
     due_today_count = 0
