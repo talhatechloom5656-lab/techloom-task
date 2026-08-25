@@ -5,6 +5,7 @@ import re
 import io
 import json
 import calendar
+import html
 import streamlit.components.v1 as components
 import json
 import streamlit.components.v1 as components
@@ -1355,6 +1356,228 @@ button[data-baseweb="tab"][aria-selected="true"]{
   .dashboard-hero-title,.tech-title,.page-title,.page-head-new h1{font-size:27px!important}
   .login-heading{font-size:34px!important}
   .login-hero{padding:34px 30px!important;min-height:280px!important}
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# V13 — EXECUTIVE WORKSPACE POLISH / SYMMETRY / CHAT / TASKS
+# ============================================================
+
+st.markdown("""
+<style>
+/* Wider desktop canvas, strict spacing rhythm */
+.block-container{max-width:1380px!important;padding:1.15rem 1.7rem 4rem!important}
+[data-testid="stHorizontalBlock"]{gap:12px!important}
+[data-testid="column"]{min-width:0!important}
+h1,h2,h3{letter-spacing:-.025em!important}
+hr{border-color:#e8edf3!important;margin:1rem 0!important}
+
+/* Unified card geometry */
+.panel,.workspace-hero,.task-board-header,.analytics-panel,
+.attendance-hero,.attendance-status-card,.dm-shortcut-card,
+div[data-testid="stMetric"]{
+  border-radius:12px!important;
+}
+.task-board-header{
+  min-height:72px!important;
+  display:flex!important;
+  align-items:center!important;
+  margin-bottom:12px!important;
+}
+.task-board-title,.workspace-hero-title{
+  font-size:13px!important;font-weight:760!important;color:#1c2a3e!important;
+}
+.task-board-copy,.workspace-hero-copy{
+  font-size:9.4px!important;color:#8390a2!important;margin-top:3px!important;
+}
+
+/* Inputs now line up vertically */
+.stTextInput,.stSelectbox,.stDateInput,.stTimeInput,.stNumberInput,.stTextArea{
+  margin-bottom:2px!important;
+}
+[data-baseweb="input"]>div,[data-baseweb="select"]>div{
+  min-height:40px!important;
+}
+
+/* Task capacity */
+.capacity-card-v13{
+  min-height:132px;
+  border:1px solid #e3e9f1;
+  background:#fff;
+  border-radius:12px;
+  padding:13px;
+  box-shadow:0 1px 2px rgba(15,23,42,.025);
+  position:relative;
+}
+.capacity-card-v13.recommended{
+  border-color:#a9c5fb;
+  background:linear-gradient(145deg,#fff,#f3f7ff);
+  box-shadow:0 0 0 2px rgba(37,99,235,.05),0 8px 20px rgba(37,99,235,.06);
+}
+.capacity-card-v13.recommended:after{
+  content:"BEST FIT";
+  position:absolute;right:10px;top:10px;
+  font-size:6.5px;font-weight:800;letter-spacing:.08em;
+  color:#2563eb;background:#eaf2ff;border-radius:999px;padding:3px 6px;
+}
+.capacity-avatar-v13{
+  width:27px;height:27px;border-radius:8px;background:#eef3f9;color:#35516f;
+  display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;
+}
+.capacity-card-v13.recommended .capacity-avatar-v13{background:#2563eb;color:#fff}
+.capacity-person-v13{font-size:10px;font-weight:720;color:#26354b;margin-top:9px}
+.capacity-number-v13{font-size:20px;font-weight:760;color:#16233a;margin-top:5px;line-height:1}
+.capacity-label-v13{font-size:7.8px;color:#8090a4;margin-top:4px}
+.capacity-meta-v13{font-size:7.7px;color:#97a2b1;margin-top:6px}
+
+/* Create-task form hierarchy */
+.form-section-v13{
+  border-top:1px solid #edf1f5;
+  padding:14px 0 8px;
+  margin-top:8px;
+  display:flex;align-items:baseline;gap:9px;
+}
+.form-section-v13:first-of-type{border-top:0;padding-top:3px}
+.form-section-v13 b{font-size:10px;color:#25364e}
+.form-section-v13 span{font-size:8.5px;color:#8a96a6}
+
+/* New task cards */
+.task-card-v13{
+  border:1px solid #e3e9f1;
+  background:#fff;
+  border-radius:12px;
+  padding:13px 13px 11px;
+  margin:0 0 7px;
+  min-height:143px;
+  box-shadow:0 1px 2px rgba(15,23,42,.025);
+  transition:.15s ease;
+}
+.task-card-v13:hover{
+  border-color:#cbd7e6;
+  box-shadow:0 8px 22px rgba(15,23,42,.06);
+  transform:translateY(-1px);
+}
+.task-card-v13-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.task-card-v13-title{
+  color:#1d2d44;font-size:10.8px;font-weight:740;line-height:1.38;
+  min-height:30px;
+}
+.task-priority-v13{
+  flex:none;border-radius:999px;padding:3px 7px;font-size:7px;font-weight:800;
+  background:#eef2f6;color:#68778b;
+}
+.task-card-v13-tags{display:flex;flex-wrap:wrap;gap:4px;margin:7px 0 11px}
+.task-card-v13-tags span{
+  font-size:7.3px;color:#68778b;background:#f4f6f9;border:1px solid #edf0f4;
+  border-radius:5px;padding:2px 5px;
+}
+.task-card-v13-footer{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  border-top:1px solid #eff2f6;padding-top:9px;
+}
+.task-owner-v13{display:flex;align-items:center;gap:7px}
+.task-owner-avatar-v13{
+  width:25px;height:25px;border-radius:50%;background:#eaf1fc;color:#2e5f9b;
+  display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;
+}
+.task-owner-v13 div,.task-due-v13{display:flex;flex-direction:column}
+.task-owner-v13 small,.task-due-v13 small{
+  font-size:6.3px;letter-spacing:.08em;color:#a0a9b6;font-weight:800;
+}
+.task-owner-v13 b,.task-due-v13 b{font-size:8.4px;color:#536176;font-weight:680;margin-top:1px}
+.task-due-v13{text-align:right}
+.task-due-v13.warning b{color:#b56a12}
+.task-due-v13.danger b{color:#c33d45}
+.task-card-v13-sub{font-size:7.2px;color:#a0a9b6;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Kanban stays readable even with six columns */
+.kanban-column-title{
+  background:#f5f7fa;border:1px solid #e6ebf1;border-radius:8px;
+  padding:7px 8px!important;margin-bottom:8px!important;
+  color:#56657a!important;
+}
+
+/* Chat: contained, Slack-like conversation */
+.chat-channel-v13{
+  min-height:78px;border:1px solid #e3e9f1;background:#fff;border-radius:12px;
+  padding:13px 14px;display:flex;align-items:center;gap:11px;
+  box-shadow:0 1px 2px rgba(15,23,42,.025);
+}
+.chat-channel-icon-v13{
+  width:35px;height:35px;border-radius:10px;background:#edf4ff;color:#2563eb;
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:750;
+}
+.chat-channel-v13 b{display:block;color:#1f3048;font-size:11px}
+.chat-channel-v13 span{display:block;color:#8793a4;font-size:8.5px;margin-top:3px}
+.chat-feed-label-v13{
+  display:flex;justify-content:space-between;align-items:center;
+  margin:17px 2px 8px;color:#98a3b2;font-size:7px;font-weight:760;letter-spacing:.08em;
+}
+[data-testid="stChatMessage"]{
+  max-width:850px!important;
+  padding:.65rem .75rem!important;
+  border:1px solid #e7ebf1!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  margin:.36rem auto!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.025)!important;
+}
+[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p{
+  font-size:10px!important;line-height:1.55!important;color:#344054!important;
+}
+[data-testid="stChatMessageAvatarUser"]{
+  background:#2563eb!important;
+}
+[data-testid="stChatInput"]{
+  max-width:880px!important;margin-left:auto!important;margin-right:auto!important;
+}
+[data-testid="stChatInput"]>div{
+  border-radius:12px!important;border-color:#d8e1ec!important;
+  box-shadow:0 8px 24px rgba(15,23,42,.07)!important;
+}
+
+/* DM split-view */
+.dm-panel-title-v13{
+  font-size:8px;font-weight:800;letter-spacing:.08em;color:#98a3b2;margin-bottom:8px;
+}
+.dm-person-v13{
+  display:flex;align-items:center;gap:9px;border:1px solid #e4eaf1;background:#fff;
+  border-radius:11px;padding:11px;margin-top:10px;
+}
+.dm-person-avatar-v13{
+  width:31px;height:31px;border-radius:9px;background:#edf4ff;color:#2563eb;
+  display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;
+}
+.dm-person-v13 b,.dm-person-v13 span{display:block}
+.dm-person-v13 b{font-size:9.5px;color:#293a52}
+.dm-person-v13 span{font-size:7.7px;color:#8e99a8;margin-top:2px}
+.dm-conversation-head-v13{
+  border-bottom:1px solid #e8edf3;padding:1px 2px 10px;margin-bottom:8px;
+}
+.dm-conversation-head-v13 b,.dm-conversation-head-v13 span{display:block}
+.dm-conversation-head-v13 b{font-size:12px;color:#1d2d44}
+.dm-conversation-head-v13 span{font-size:8px;color:#96a1af;margin-top:2px}
+
+/* DMs teammate selector looks like a list, not survey radio */
+[data-testid="stRadio"] label{
+  border-radius:8px!important;
+}
+[data-testid="stRadio"] label:hover{background:#f5f8fc!important}
+
+/* Task details: stronger content hierarchy */
+.task-detail-top{
+  padding:12px 14px!important;background:linear-gradient(90deg,#f7faff,#fff)!important;
+  border-color:#dce6f2!important;
+}
+.task-detail-top b{color:#233b5c!important}
+.task-detail-top span{color:#8693a4!important}
+
+/* Responsive */
+@media(max-width:1050px){
+  .capacity-card-v13{min-height:120px}
+  .task-card-v13{min-height:136px}
 }
 </style>
 """, unsafe_allow_html=True)
@@ -3198,6 +3421,94 @@ def find_task_by_id(task_id, source_tasks):
     return None
 
 
+
+def safe_html(value, fallback="—"):
+    """Escape user/database content before inserting into custom HTML."""
+    clean = display_value(value, fallback)
+    return html.escape(str(clean))
+
+
+def task_due_datetime_local(task):
+    value = task.get("due_date")
+    if not value:
+        return None
+    parsed = parse_timestamp(value)
+    return parsed.astimezone(PK_TZ) if parsed else None
+
+
+def task_workload_score(task):
+    """Weighted active-work score used for manager assignment suggestions."""
+    if task.get("status") in ["Completed", "Approved"]:
+        return 0.0
+
+    status_weight = {
+        "New": 1.0,
+        "In Progress": 1.4,
+        "Waiting on Information": 0.65,
+        "Waiting on Platform": 0.65,
+        "Submitted for Review": 0.45,
+        "Changes Requested": 1.25,
+    }.get(task.get("status"), 1.0)
+
+    priority_weight = {
+        "Urgent": 1.7,
+        "High": 1.35,
+        "Normal": 1.0,
+        "Low": 0.7,
+    }.get(task.get("priority"), 1.0)
+
+    due = task_due_datetime_local(task)
+    due_weight = 1.0
+    if due:
+        hours = (due - datetime.now(PK_TZ)).total_seconds() / 3600
+        if hours < 0:
+            due_weight = 1.6
+        elif hours <= 24:
+            due_weight = 1.35
+        elif hours <= 72:
+            due_weight = 1.15
+
+    return round(status_weight * priority_weight * due_weight, 2)
+
+
+def team_workload_snapshot(team_names):
+    """Return balanced workload data without requiring any schema changes."""
+    try:
+        active = load_all_tasks()
+    except Exception:
+        active = []
+
+    snapshot = {}
+    for employee in team_names:
+        owned = [
+            task for task in active
+            if str(task.get("assigned_to") or "").strip() == str(employee).strip()
+            and task.get("status") not in ["Completed", "Approved"]
+        ]
+        snapshot[employee] = {
+            "active": len(owned),
+            "urgent": sum(1 for task in owned if task.get("priority") == "Urgent"),
+            "review": sum(1 for task in owned if task.get("status") == "Submitted for Review"),
+            "score": round(sum(task_workload_score(task) for task in owned), 1),
+        }
+    return snapshot
+
+
+def suggested_assignee(team_names):
+    snapshot = team_workload_snapshot(team_names)
+    if not snapshot:
+        return (team_names[0] if team_names else None), snapshot
+    suggested = min(
+        snapshot,
+        key=lambda employee: (
+            snapshot[employee]["score"],
+            snapshot[employee]["active"],
+            employee.lower(),
+        ),
+    )
+    return suggested, snapshot
+
+
 def render_task_card(task, key_prefix):
     task_id = task["id"]
     title = task.get("title", "Untitled Task")
@@ -3207,46 +3518,69 @@ def render_task_card(task, key_prefix):
     status = task.get("status", "New")
     due_text = task_due_bucket(task)
     assigned_by = task.get("assigned_by", "")
+    assigned_to = task.get("assigned_to", "")
     goods_id = task.get("goods_id", "")
+    due_dt = task_due_datetime_local(task)
 
-    card_html = (
-        '<div class="work-card">'
-        f'<div class="work-card-title">{display_value(title)}</div>'
-        f'<span class="status-chip">{display_value(platform)}</span>'
-        f'<span class="status-chip {task_priority_class(priority)}">{display_value(priority)}</span>'
-        f'<span class="status-chip">{display_value(status)}</span>'
-        f'<div class="work-meta">Due: {display_value(due_text)} • Type: {display_value(task_type)}</div>'
-        f'<div class="work-meta">Assigned by: {display_value(assigned_by)}'
-        + (f' • ID: {display_value(goods_id)}' if goods_id else '') +
-        '</div></div>'
-    )
+    due_state = "neutral"
+    if due_dt and status not in ["Completed", "Approved"]:
+        remaining = (due_dt - datetime.now(PK_TZ)).total_seconds()
+        if remaining < 0:
+            due_state = "danger"
+        elif remaining <= 86400:
+            due_state = "warning"
+
+    owner_initial = (str(assigned_to).strip()[:1] or "U").upper()
+
+    card_html = f"""
+    <div class="task-card-v13">
+      <div class="task-card-v13-top">
+        <div class="task-card-v13-title">{safe_html(title)}</div>
+        <span class="task-priority-v13 {task_priority_class(priority)}">{safe_html(priority)}</span>
+      </div>
+      <div class="task-card-v13-tags">
+        <span>{safe_html(platform)}</span>
+        <span>{safe_html(task_type)}</span>
+        <span>{safe_html(status)}</span>
+      </div>
+      <div class="task-card-v13-footer">
+        <div class="task-owner-v13">
+          <span class="task-owner-avatar-v13">{safe_html(owner_initial)}</span>
+          <div><small>OWNER</small><b>{safe_html(assigned_to, "Unassigned")}</b></div>
+        </div>
+        <div class="task-due-v13 {due_state}">
+          <small>DUE</small>
+          <b>{safe_html(due_text)}</b>
+        </div>
+      </div>
+      <div class="task-card-v13-sub">
+        Assigned by {safe_html(assigned_by)}
+        {(" · " + safe_html(goods_id)) if goods_id else ""}
+      </div>
+    </div>
+    """
     st.markdown(card_html, unsafe_allow_html=True)
-
-    st.markdown('<div class="task-action-wrap">', unsafe_allow_html=True)
 
     if status == "New" and not is_manager():
         if st.button(
-            "▶ Start & Open",
+            "Start task",
             key=f"{key_prefix}_start_open_{task_id}",
             type="primary",
             use_container_width=True
         ):
             if update_task_status(task_id, "In Progress"):
-                # Fetch fresh task state for the detail view.
                 fresh = task.copy()
                 fresh["status"] = "In Progress"
                 open_task_detail(fresh)
                 st.rerun()
     else:
         if st.button(
-            "Open task",
+            "Open workspace",
             key=f"{key_prefix}_open_{task_id}",
             use_container_width=True
         ):
             open_task_detail(task)
             st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def render_task_detail_panel(task):
@@ -4379,15 +4713,17 @@ elif page == "My Tasks":
 
     st.write("")
 
-    search_col, status_col, priority_col, platform_col = st.columns(4)
-    with search_col:
-        search = st.text_input("Search", placeholder="Title, Goods ID, ASIN...")
-    with status_col:
+    filter_a, filter_b, filter_c, filter_d, filter_e = st.columns([1.7, 1, 1, 1, 1])
+    with filter_a:
+        search = st.text_input("Search work", placeholder="Title, SKU, owner, platform…")
+    with filter_b:
         status_filter = st.selectbox("Status", ["All","New","In Progress","Waiting on Information","Waiting on Platform","Submitted for Review","Changes Requested","Approved","Completed"])
-    with priority_col:
+    with filter_c:
         priority_filter = st.selectbox("Priority", ["All","Urgent","High","Normal","Low"])
-    with platform_col:
+    with filter_d:
         platform_filter = st.selectbox("Platform", ["All","Temu","Amazon","eBay","TikTok","Multiple"])
+    with filter_e:
+        sort_mode = st.selectbox("Sort", ["Smart priority","Due soon","Newest"])
 
     filtered = []
     for task in tasks:
@@ -4402,7 +4738,25 @@ elif page == "My Tasks":
             continue
         filtered.append(task)
 
-    tabs = st.tabs(["📥 Work Inbox","🧱 Kanban","👤 By Owner"] if is_team_view else ["📥 Work Inbox","🧱 Kanban"])
+    def smart_sort_key(task):
+        priority_rank = {"Urgent": 0, "High": 1, "Normal": 2, "Low": 3}
+        status_rank = {"Changes Requested": 0, "New": 1, "In Progress": 2, "Waiting on Information": 3, "Waiting on Platform": 3, "Submitted for Review": 4}
+        due = task_due_datetime_local(task)
+        due_ts = due.timestamp() if due else float("inf")
+        return (
+            priority_rank.get(task.get("priority"), 9),
+            status_rank.get(task.get("status"), 9),
+            due_ts,
+        )
+
+    if sort_mode == "Due soon":
+        filtered.sort(key=lambda task: task_due_datetime_local(task).timestamp() if task_due_datetime_local(task) else float("inf"))
+    elif sort_mode == "Newest":
+        filtered.sort(key=lambda task: parse_timestamp(task.get("created_at")).timestamp() if parse_timestamp(task.get("created_at")) else 0, reverse=True)
+    else:
+        filtered.sort(key=smart_sort_key)
+
+    tabs = st.tabs(["Focus","Board","By owner"] if is_team_view else ["Focus","Board"])
 
     with tabs[0]:
         inbox_groups = [
@@ -4477,131 +4831,134 @@ elif page == "Create Task":
         st.error("You do not have permission to create tasks.")
         st.stop()
 
-    st.markdown('<div class="tech-title">Assign a New Task</div>', unsafe_allow_html=True)
+    portal_header("Assign work")
+    st.markdown('<div class="tech-title">Assign work</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="tech-subtitle">'
-        'Create a clear brief, choose the owner and set the delivery details.'
-        '</div>',
+        '<div class="tech-subtitle">Create a focused brief, balance team capacity and make the expected output obvious.</div>',
         unsafe_allow_html=True
     )
 
     team_profiles = load_team_profiles()
-    team_names = [
-        p.get("name")
-        for p in team_profiles
-        if p.get("name")
-    ]
+    team_names = [p.get("name") for p in team_profiles if p.get("name")]
     if not team_names:
         team_names = ["Talha", "Junaid", "Nabiha", "AIFA"]
 
-    st.markdown(
-        '<div class="workspace-hero">'
-        '<div class="workspace-hero-title">📌 Assignment brief</div>'
-        '<div class="workspace-hero-copy">'
-        'A good task should tell the assignee what needs doing, where it belongs, '
-        'when it is due and what evidence/link should be returned.'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
+    recommendation, workload = suggested_assignee(team_names)
+
+    # Assignment intelligence — zero schema changes required.
+    st.markdown('<div class="section-title">Team capacity</div>', unsafe_allow_html=True)
+    capacity_cols = st.columns(len(team_names))
+    for index, employee in enumerate(team_names):
+        stats = workload.get(employee, {"active": 0, "urgent": 0, "score": 0})
+        label = "Recommended" if employee == recommendation else "Active work"
+        with capacity_cols[index]:
+            st.markdown(
+                f"""
+                <div class="capacity-card-v13 {'recommended' if employee == recommendation else ''}">
+                  <div class="capacity-avatar-v13">{safe_html(employee[:1].upper())}</div>
+                  <div class="capacity-person-v13">{safe_html(employee)}</div>
+                  <div class="capacity-number-v13">{stats['active']}</div>
+                  <div class="capacity-label-v13">{label}</div>
+                  <div class="capacity-meta-v13">Load {stats['score']} · {stats['urgent']} urgent</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    st.caption("Recommendation uses active task count, status, priority and due-date pressure. You can always override it.")
+
+    task_templates = {
+        "Blank task": {
+            "title": "",
+            "instructions": "",
+            "type": "Other",
+            "platform": "Multiple",
+        },
+        "New marketplace listing": {
+            "title": "Create and publish new product listing",
+            "instructions": "Prepare the listing from the supplied source. Verify product identity, title, attributes, images, pricing and required compliance fields. Return the live listing URL and note any blockers.",
+            "type": "New Listing",
+            "platform": "Temu",
+        },
+        "Listing optimisation": {
+            "title": "Optimise existing product listing",
+            "instructions": "Review the existing listing for accuracy, discoverability and conversion. Improve the permitted content, verify attributes and images, and return the updated listing URL plus a short summary of changes.",
+            "type": "Listing Update",
+            "platform": "Amazon",
+        },
+        "Compliance / appeal": {
+            "title": "Resolve marketplace compliance issue",
+            "instructions": "Review the marketplace notice and listing evidence. Identify the exact issue, prepare the compliant correction or appeal, document what was changed and return the case/listing reference.",
+            "type": "Compliance",
+            "platform": "Temu",
+        },
+        "Product research": {
+            "title": "Research product opportunity",
+            "instructions": "Research the product and relevant marketplace. Capture supplier/reference evidence, pricing, competition, risks and a clear recommendation. Return source links and findings.",
+            "type": "Product Research",
+            "platform": "Multiple",
+        },
+    }
+
+    template_name = st.selectbox("Start from a task template", list(task_templates.keys()))
+    template = task_templates[template_name]
 
     with st.form("create_task_form"):
+        st.markdown('<div class="form-section-v13"><b>1 · Outcome</b><span>What should be completed?</span></div>', unsafe_allow_html=True)
         task_title = st.text_input(
             "Task title",
-            placeholder="e.g. Upload Amazon listing for new explorer hat"
+            value=template["title"],
+            placeholder="Use an action + outcome, e.g. Publish Amazon listing for Explorer Hat"
         )
-
-        c1, c2, c3 = st.columns(3)
-
-        with c1:
-            assigned_to = st.selectbox(
-                "Assign to",
-                team_names
-            )
-
-            priority = st.selectbox(
-                "Priority",
-                ["Normal", "High", "Urgent", "Low"]
-            )
-
-        with c2:
-            task_type = st.selectbox(
-                "Task type",
-                [
-                    "New Listing",
-                    "Listing Upload",
-                    "Listing Update",
-                    "Image Generation",
-                    "Compliance",
-                    "Appeal",
-                    "Seller Support Case",
-                    "Product Research",
-                    "Other"
-                ]
-            )
-
-            platform = st.selectbox(
-                "Platform",
-                ["Temu", "Amazon", "eBay", "TikTok", "Multiple"]
-            )
-
-        with c3:
-            due_date = st.date_input(
-                "Due date",
-                value=datetime.now(PK_TZ).date() + timedelta(days=1)
-            )
-            due_time = st.time_input(
-                "Due time",
-                value=time(hour=17, minute=0)
-            )
-
-        l1, l2 = st.columns(2)
-
-        with l1:
-            supplier_link = st.text_input(
-                "Supplier / reference link",
-                placeholder="https://..."
-            )
-            goods_id = st.text_input(
-                "Goods ID / ASIN / SKU",
-                placeholder="Optional"
-            )
-
-        with l2:
-            supplier_price = st.number_input(
-                "Supplier price",
-                min_value=0.0,
-                step=0.10
-            )
-            selling_price = st.number_input(
-                "Selling price",
-                min_value=0.0,
-                step=0.10
-            )
-
         instructions = st.text_area(
-            "Instructions",
-            height=170,
-            placeholder=(
-                "Explain exactly what needs to be done, important checks, "
-                "required output and anything the assignee must return."
-            )
+            "Definition of done / instructions",
+            value=template["instructions"],
+            height=150,
+            placeholder="Required steps, checks, output and evidence to return."
         )
 
-        submit_task = st.form_submit_button(
-            "Assign Task →",
-            type="primary",
-            use_container_width=True
-        )
+        st.markdown('<div class="form-section-v13"><b>2 · Ownership & priority</b><span>Balance capacity with urgency.</span></div>', unsafe_allow_html=True)
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            recommended_index = team_names.index(recommendation) if recommendation in team_names else 0
+            assigned_to = st.selectbox("Owner", team_names, index=recommended_index)
+        with c2:
+            priority = st.selectbox("Priority", ["Normal", "High", "Urgent", "Low"])
+        with c3:
+            task_type_options = ["New Listing","Listing Upload","Listing Update","Image Generation","Compliance","Appeal","Seller Support Case","Product Research","Other"]
+            type_index = task_type_options.index(template["type"]) if template["type"] in task_type_options else 0
+            task_type = st.selectbox("Task type", task_type_options, index=type_index)
+        with c4:
+            platforms = ["Temu", "Amazon", "eBay", "TikTok", "Multiple"]
+            platform_index = platforms.index(template["platform"]) if template["platform"] in platforms else 0
+            platform = st.selectbox("Platform", platforms, index=platform_index)
+
+        st.markdown('<div class="form-section-v13"><b>3 · Delivery</b><span>Set a realistic deadline and source reference.</span></div>', unsafe_allow_html=True)
+        d1, d2, d3 = st.columns([1, 1, 2])
+        with d1:
+            due_date = st.date_input("Due date", value=datetime.now(PK_TZ).date() + timedelta(days=1))
+        with d2:
+            due_time = st.time_input("Due time", value=time(hour=17, minute=0))
+        with d3:
+            supplier_link = st.text_input("Supplier / reference link", placeholder="https://…")
+
+        r1, r2, r3 = st.columns([1.5, 1, 1])
+        with r1:
+            goods_id = st.text_input("Goods ID / ASIN / SKU", placeholder="Optional reference")
+        with r2:
+            supplier_price = st.number_input("Supplier price", min_value=0.0, step=0.10)
+        with r3:
+            selling_price = st.number_input("Selling price", min_value=0.0, step=0.10)
+
+        submit_task = st.form_submit_button("Assign task", type="primary", use_container_width=True)
 
         if submit_task:
             if not task_title.strip():
                 st.error("Please enter a task title.")
+            elif not instructions.strip():
+                st.error("Please add a definition of done so the assignee knows exactly what to return.")
             else:
-                due_datetime = datetime.combine(
-                    due_date,
-                    due_time
-                )
-
+                due_datetime = datetime.combine(due_date, due_time)
                 task_data = {
                     "title": task_title.strip(),
                     "description": instructions.strip(),
@@ -4620,13 +4977,7 @@ elif page == "Create Task":
                 }
 
                 try:
-                    result = (
-                        supabase
-                        .table("tasks")
-                        .insert(task_data)
-                        .execute()
-                    )
-
+                    result = supabase.table("tasks").insert(task_data).execute()
                     new_task_id = result.data[0]["id"] if result.data else None
 
                     if new_task_id:
@@ -5480,80 +5831,63 @@ elif page == "💬 Seller Support":
 
 elif page.startswith("Chat"):
 
-    portal_header("Team Chat")
-
-    # Opening the chat clears the red unread-chat badge.
+    portal_header("Team chat")
     mark_chat_notifications_read()
 
-    st.markdown('<div class="tech-title">Techloom Group Chat</div>', unsafe_allow_html=True)
+    st.markdown('<div class="tech-title">Team chat</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="tech-subtitle">'
-        'Shared team conversation for quick updates, files, images and coordination.'
-        '</div>',
+        '<div class="tech-subtitle">Fast team coordination. Keep task-specific decisions inside the task workspace so they stay attached to the work.</div>',
         unsafe_allow_html=True
     )
 
-    top_a, top_b, top_c = st.columns([2, 1, 1])
+    team_people = load_team_profiles()
+    online_count = max(1, len(team_people))
 
-    with top_a:
+    chat_h1, chat_h2, chat_h3 = st.columns([2.3, 1, 1])
+    with chat_h1:
         st.markdown(
-            '<div class="workspace-hero">'
-            '<div class="workspace-hero-title">💬 Team channel</div>'
-            '<div class="workspace-hero-copy">'
-            'Chat refreshes automatically every 2 seconds. '
-            'New messages create an unread badge and notification for teammates.'
-            '</div></div>',
+            """
+            <div class="chat-channel-v13">
+              <div class="chat-channel-icon-v13">#</div>
+              <div>
+                <b>general</b>
+                <span>Company-wide operations & quick coordination</span>
+              </div>
+            </div>
+            """,
             unsafe_allow_html=True
         )
+    with chat_h2:
+        st.metric("Team", online_count)
+    with chat_h3:
+        st.metric("Unread", get_unread_chat_count())
 
-    with top_b:
-        st.metric("Unread Chat", get_unread_chat_count())
-
-    with top_c:
-        st.metric("Refresh", "2 sec")
-
-    upload_col, caption_col = st.columns([1, 2])
-
-    with upload_col:
-        chat_file = st.file_uploader(
-            "📎 Attach image or file",
-            type=[
-                "png", "jpg", "jpeg", "webp", "gif",
-                "pdf", "doc", "docx", "xls", "xlsx",
-                "csv", "txt", "zip"
-            ],
-            key="chat_attachment"
-        )
-
-    with caption_col:
-        chat_caption = st.text_input(
-            "Caption (optional)",
-            placeholder="Add a short note about the attachment...",
-            key="chat_attachment_caption"
-        )
-
-        if chat_file is not None:
-            st.caption(
-                f"Selected: {chat_file.name} • "
-                f"{human_file_size(chat_file.size)}"
+    attach_expander = st.expander("Attach a file or image", expanded=False)
+    with attach_expander:
+        upload_col, caption_col = st.columns([1, 2])
+        with upload_col:
+            chat_file = st.file_uploader(
+                "Choose attachment",
+                type=["png","jpg","jpeg","webp","gif","pdf","doc","docx","xls","xlsx","csv","txt","zip"],
+                key="chat_attachment"
             )
+        with caption_col:
+            chat_caption = st.text_input(
+                "Caption",
+                placeholder="Add context so the file is understandable later…",
+                key="chat_attachment_caption"
+            )
+            if chat_file is not None:
+                st.caption(f"{chat_file.name} · {human_file_size(chat_file.size)}")
+                if st.button("Send attachment", type="primary", use_container_width=True, key="send_chat_attachment"):
+                    if send_chat_attachment(chat_file, chat_caption):
+                        st.success("Attachment sent.")
+                        st.rerun()
 
-            if st.button(
-                "📤 Send Attachment",
-                type="primary",
-                use_container_width=True,
-                key="send_chat_attachment"
-            ):
-                if send_chat_attachment(chat_file, chat_caption):
-                    st.success("Attachment sent.")
-                    st.rerun()
-
-    st.divider()
-
+    st.markdown('<div class="chat-feed-label-v13"><span>RECENT CONVERSATION</span><span>Auto refresh · 2 sec</span></div>', unsafe_allow_html=True)
     render_group_chat_messages()
 
-    chat_text = st.chat_input("Message the Techloom team…")
-
+    chat_text = st.chat_input("Message #general…")
     if chat_text:
         if send_chat_message(chat_text):
             st.rerun()
@@ -6112,29 +6446,55 @@ elif page == "🧰 Task Workspace":
 
 elif page == "Direct Messages":
 
-    portal_header("Direct Messages")
-    st.markdown('<div class="tech-title">Direct Messages</div>', unsafe_allow_html=True)
-    st.caption("Private one-to-one team chat.")
+    portal_header("Direct messages")
+    st.markdown('<div class="tech-title">Direct messages</div>', unsafe_allow_html=True)
+    st.markdown('<div class="tech-subtitle">Private one-to-one conversations for quick coordination.</div>', unsafe_allow_html=True)
 
     people = [p for p in load_team_profiles() if str(p.get("id")) != str(current_user_id)]
     if not people:
         st.info("No other users found.")
     else:
-        labels = {f"{p.get('name')} • {p.get('department','')}": p for p in people}
-        selected_label = st.selectbox("Chat with", list(labels.keys()))
-        person = labels[selected_label]
+        labels = {f"{p.get('name')} · {p.get('department','Team')}": p for p in people}
 
-        messages = load_direct_messages(person.get("id"))
-        for msg in messages:
-            with st.chat_message("user" if str(msg.get("sender_id")) == str(current_user_id) else "assistant"):
-                st.markdown(f"**{msg.get('sender_name','')}**")
-                st.write(msg.get("message",""))
-                st.caption(msg.get("created_at",""))
+        dm_left, dm_right = st.columns([1, 3], gap="large")
+        with dm_left:
+            st.markdown('<div class="dm-panel-title-v13">People</div>', unsafe_allow_html=True)
+            selected_label = st.radio("Choose a teammate", list(labels.keys()), label_visibility="collapsed")
+            person = labels[selected_label]
+            st.markdown(
+                f"""
+                <div class="dm-person-v13">
+                  <span class="dm-person-avatar-v13">{safe_html((person.get('name') or 'U')[:1].upper())}</span>
+                  <div><b>{safe_html(person.get('name'))}</b><span>{safe_html(person.get('department'),'Team')}</span></div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-        dm = st.chat_input(f"Message {person.get('name')}…")
-        if dm:
-            if send_direct_message(person.get("id"), person.get("name"), dm):
-                st.rerun()
+        with dm_right:
+            st.markdown(
+                f"""
+                <div class="dm-conversation-head-v13">
+                  <div><b>{safe_html(person.get('name'))}</b><span>Private conversation</span></div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            messages = load_direct_messages(person.get("id"))
+            if not messages:
+                st.info(f"No messages with {person.get('name')} yet.")
+            for msg in messages:
+                with st.chat_message("user" if str(msg.get("sender_id")) == str(current_user_id) else "assistant"):
+                    st.markdown(f"**{msg.get('sender_name','')}**")
+                    st.write(msg.get("message",""))
+                    parsed = parse_timestamp(msg.get("created_at"))
+                    if parsed:
+                        st.caption(parsed.astimezone(PK_TZ).strftime("%d %b · %I:%M %p"))
+
+            dm = st.chat_input(f"Message {person.get('name')}…")
+            if dm:
+                if send_direct_message(person.get("id"), person.get("name"), dm):
+                    st.rerun()
 
 
 # ============================================================
