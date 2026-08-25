@@ -38,551 +38,573 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-:root{
-  --bg:#ffffff;
-  --sidebar:#f7f7f5;
-  --line:#e8e8e4;
-  --text:#252524;
-  --muted:#7b7b75;
-  --soft:#efefec;
-  --blue:#2383e2;
-  --blue-soft:#edf5fc;
-  --green:#2f7a48;
-  --green-soft:#eef8f0;
-  --amber:#996b20;
-  --amber-soft:#fbf3df;
-  --red:#b54a4a;
-  --red-soft:#fff0f0;
+:root {
+    --brand-900: #082e28;
+    --brand-700: #0b5f56;
+    --brand-600: #0e7d70;
+    --brand-500: #159c8c;
+    --brand-100: #e7f6f3;
+    --gold: #b3811f;
+    --gold-soft: #faf2e0;
+    --success: #1f9d63;
+    --success-soft: #eafbf2;
+    --danger: #d64545;
+    --danger-soft: #fdeeee;
+    --ink: #11162a;
+    --ink-soft: #454b63;
+    --muted: #767c92;
+    --line: #e8eaf1;
+    --line-soft: #f0f1f6;
+    --panel: #ffffff;
+    --page-bg: #f8f9fc;
+    --sidebar-bg: linear-gradient(195deg, #0a352f 0%, #0e544c 55%, #0a3f39 100%);
+    --sidebar-bg-fallback: #0b4a43;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --shadow-xs: 0 1px 2px rgba(17,22,42,.05);
+    --shadow-sm: 0 2px 8px rgba(17,22,42,.06);
+    --shadow-md: 0 6px 18px rgba(17,22,42,.08);
+    --shadow-lg: 0 16px 40px rgba(17,22,42,.12);
+
+    /* legacy aliases kept so nothing else in the app breaks */
+    --teal: var(--brand-600);
+    --teal-light: var(--brand-500);
+    --amber: var(--gold);
+    --amber-soft: var(--gold-soft);
+    --green: var(--success);
+    --red: var(--danger);
 }
 
-html,body,[class*="css"]{
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, sans-serif;
 }
 
-.stApp{
-  background:var(--bg);
-  color:var(--text);
+h1, h2, h3, h4, .tech-title, .section-title, .task-board-title,
+.workspace-hero-title, .attendance-date, .login-heading, .login-card-title,
+.sidebar-logo {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
-/* Main content tighter and more app-like */
-.block-container{
-  max-width:1280px;
-  padding:1.15rem 1.55rem 3rem 1.55rem;
+/* ------------------------------------------------------------
+   APP BACKGROUND
+   ------------------------------------------------------------ */
+.stApp {
+    background: var(--page-bg);
+    color: var(--ink);
 }
 
-/* Hide Streamlit chrome as much as possible */
-header[data-testid="stHeader"]{
-  background:transparent;
+.block-container {
+    max-width: 1460px;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
 }
-[data-testid="stToolbar"]{
-  visibility:hidden;
-  height:0;
-}
-#MainMenu{visibility:hidden;}
-footer{visibility:hidden;}
 
-/* ============================================================
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d7dae5; border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: #c1c5d6; }
+
+/* ------------------------------------------------------------
    SIDEBAR
-   ============================================================ */
-[data-testid="stSidebar"]{
-  background:var(--sidebar);
-  border-right:1px solid var(--line);
-  width:230px !important;
-  min-width:230px !important;
-}
-[data-testid="stSidebar"] [data-testid="stSidebarContent"]{
-  padding:.7rem .65rem .7rem .65rem;
-}
-.side-brand{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  height:38px;
-  padding:0 6px;
-  margin-bottom:5px;
-}
-.brand-mark{
-  width:24px;
-  height:24px;
-  border-radius:7px;
-  background:#252524;
-  color:#fff;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:10px;
-  font-weight:800;
-}
-.side-brand strong{
-  font-size:13px;
-  font-weight:750;
-  color:#252524;
-}
-.side-user{
-  padding:8px 9px;
-  margin:6px 0 8px;
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fff;
-}
-.side-user b{
-  display:block;
-  font-size:11px;
-  color:#252524;
-}
-.side-user small{
-  display:block;
-  margin-top:3px;
-  font-size:9.5px;
-  color:#8c8c86;
+   ------------------------------------------------------------ */
+[data-testid="stSidebar"] {
+    background: var(--sidebar-bg-fallback);
+    background: var(--sidebar-bg);
+    border-right: none;
+    min-width: 300px;
 }
 
-/* radio circles completely gone */
-[data-testid="stSidebar"] [role="radiogroup"]{
-  gap:1px;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label{
-  width:100%;
-  min-height:31px;
-  padding:5px 7px !important;
-  margin:0;
-  border-radius:6px;
-  display:flex;
-  align-items:center;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{
-  background:#ecece9;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){
-  background:#e9e9e6;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label p{
-  color:#50504c !important;
-  font-size:11.3px !important;
-  font-weight:520 !important;
-  margin:0 !important;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p{
-  color:#252524 !important;
-  font-weight:700 !important;
-}
-[data-testid="stSidebar"] [data-baseweb="radio"],
-[data-testid="stSidebar"] input[type="radio"],
-[data-testid="stSidebar"] [role="radio"] > div:first-child{
-  display:none !important;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child{
-  display:none !important;
-}
-[data-testid="stSidebar"] .stButton > button{
-  width:100%;
-  min-height:31px;
-  padding:5px 8px;
-  border-radius:6px !important;
-  border:1px solid #deded9 !important;
-  background:#fff !important;
-  color:#444 !important;
-  box-shadow:none !important;
-  font-size:10.5px !important;
-}
-[data-testid="stSidebar"] .stButton > button:hover{
-  background:#efefec !important;
-}
-.sidebar-section{
-  padding:11px 7px 4px;
-  color:#9a9a94;
-  font-size:8.5px;
-  font-weight:750;
-  letter-spacing:.08em;
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    padding: 1.4rem 1rem 1.1rem 1rem;
 }
 
-/* ============================================================
-   TOPBAR
-   ============================================================ */
-.portal-topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  min-height:43px;
-  margin:0 0 18px 0;
-  padding:0 1px 10px 1px;
-  border-bottom:1px solid #efefec;
-}
-.crumb{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  color:#5a5a56;
-  font-size:11px;
-  font-weight:620;
-}
-.crumb-mark{
-  font-size:9px;
-  color:#75756f;
-}
-.top-user{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  color:#666660;
-  font-size:10.5px;
-}
-.top-avatar{
-  width:25px;
-  height:25px;
-  border-radius:50%;
-  background:#2f80ed;
-  color:#fff;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:9px;
-  font-weight:800;
-}
-.notify-dot{
-  width:25px;
-  height:25px;
-  border-radius:6px;
-  border:1px solid #e6e6e2;
-  background:#f7f7f5;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:10px;
-  color:#666;
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] div {
+    color: #ffffff;
 }
 
-/* ============================================================
-   TYPOGRAPHY / PAGE HEADERS
-   ============================================================ */
-.eyebrow{
-  display:block;
-  margin-bottom:8px;
-  color:#94948e;
-  font-size:8.5px;
-  font-weight:750;
-  letter-spacing:.1em;
-}
-.page-head-new{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:20px;
-  margin-bottom:16px;
-}
-.page-head-new h1{
-  margin:0 0 4px;
-  color:#252524;
-  font-size:29px;
-  line-height:1.05;
-  letter-spacing:-.045em;
-  font-weight:760;
-}
-.page-head-new p{
-  margin:0;
-  color:#7e7e78;
-  font-size:11px;
-}
-.tech-title,.page-title{
-  color:#252524;
-  font-size:29px;
-  font-weight:760;
-  letter-spacing:-.045em;
-  line-height:1.05;
-}
-.tech-subtitle,.page-subtitle{
-  color:#7e7e78;
-  font-size:10.8px;
-  margin-top:5px;
-  margin-bottom:16px;
-}
-.section-title{
-  font-size:12px;
-  font-weight:700;
-  color:#343432;
-  margin:8px 0 8px;
+[data-testid="stSidebar"] .stCaption,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+    color: rgba(255,255,255,.68) !important;
 }
 
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
-.dashboard-hero{
-  border:0;
-  padding:0;
-  margin-bottom:14px;
-  background:transparent;
-}
-.dashboard-hero-title{
-  font-size:29px;
-  line-height:1.05;
-  letter-spacing:-.045em;
-  font-weight:760;
-  color:#252524;
-}
-.dashboard-hero-copy{
-  font-size:11px;
-  color:#7e7e78;
-  margin-top:5px;
-}
-.hero-date{
-  text-align:right;
-  font-size:10px;
-  color:#85857f;
-  line-height:1.45;
-}
-.today-strip{
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#fafaf8;
-  padding:10px 12px;
-  margin:0 0 12px;
-  font-size:10.5px;
-  color:#696963;
-}
-.today-strip b{
-  color:#30302e;
-  font-size:11px;
-}
-.announcement-mini{
-  border:1px solid #f1d6d6;
-  background:#fff7f7;
-  color:#8e4a4a;
-  border-radius:8px;
-  padding:9px 11px;
-  font-size:10.5px;
-  margin-bottom:12px;
+.sidebar-logo {
+    font-size: 21px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -.3px;
+    color: #ffffff;
+    margin-top: .3rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Compact KPI cards */
-div[data-testid="stMetric"]{
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#fff;
-  min-height:78px;
-  padding:11px 12px 9px;
-  box-shadow:none;
-}
-div[data-testid="stMetric"] [data-testid="stMetricLabel"] p{
-  font-size:9px !important;
-  font-weight:650 !important;
-  color:#7f7f79 !important;
-  margin-bottom:2px !important;
-}
-div[data-testid="stMetric"] [data-testid="stMetricValue"]{
-  font-size:24px !important;
-  color:#252524 !important;
-  font-weight:720 !important;
-  letter-spacing:-.04em;
+.sidebar-subtitle {
+    font-size: 11.5px;
+    color: rgba(255,255,255,.66) !important;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,.14);
 }
 
-/* ============================================================
-   PANELS / CARDS
-   ============================================================ */
-.panel,.workspace-hero,.task-board-header{
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#fff;
-  padding:14px;
-  box-shadow:none;
-}
-.attention-card,.work-card,.task-card{
-  border:1px solid #e6e6e2;
-  border-radius:7px;
-  background:#fff;
-  padding:9px 10px;
-  margin-bottom:6px;
-  box-shadow:0 1px 1px rgba(0,0,0,.02);
-}
-.attention-card:hover,.work-card:hover,.task-card:hover{
-  border-color:#d5d5d0;
-  background:#fdfdfc;
-}
-.attention-card-title,.work-card-title,.task-card-title{
-  color:#2b2b29;
-  font-size:11.5px;
-  line-height:1.35;
-  font-weight:650;
-}
-.attention-card-meta,.work-meta,.task-meta{
-  color:#8b8b85;
-  font-size:9.3px;
-  line-height:1.5;
-  margin-top:3px;
-}
-.status-chip,.status-pill{
-  display:inline-flex;
-  align-items:center;
-  padding:2px 5px;
-  border-radius:4px;
-  font-size:8.5px;
-  font-weight:650;
-  margin-right:3px;
-  border:0;
-  background:#eee;
-  color:#555;
-}
-.priority-urgent{background:#ffe6e6;color:#a63d3d}
-.priority-high{background:#fff0d7;color:#986814}
-.priority-normal{background:#e8f2fb;color:#3475aa}
-.priority-low{background:#f0f0ed;color:#777}
-
-/* ============================================================
-   BOARD
-   ============================================================ */
-.kanban-column-title{
-  font-size:9.5px;
-  font-weight:700;
-  color:#6e6e68;
-  margin-bottom:6px;
-}
-.kanban-count{
-  float:right;
-  color:#aaa;
-}
-[data-testid="column"]{
-  min-width:0;
+[data-testid="stSidebar"] [role="radiogroup"] {
+    gap: 2px;
 }
 
-/* ============================================================
-   FORMS / INPUTS / BUTTONS
-   ============================================================ */
-[data-baseweb="input"]>div,
-[data-baseweb="textarea"]>div,
-[data-baseweb="select"]>div{
-  min-height:36px;
-  background:#fff !important;
-  border:1px solid #deded9 !important;
-  border-radius:7px !important;
-}
-[data-baseweb="input"]>div:focus-within,
-[data-baseweb="textarea"]>div:focus-within,
-[data-baseweb="select"]>div:focus-within{
-  border-color:#8db9e8 !important;
-  box-shadow:0 0 0 3px rgba(35,131,226,.09) !important;
-}
-.stTextInput label p,.stTextArea label p,.stSelectbox label p,.stDateInput label p,
-.stNumberInput label p,.stFileUploader label p,.stMultiSelect label p{
-  font-size:9.5px !important;
-  color:#696963 !important;
-  font-weight:600 !important;
-}
-.stButton>button,.stFormSubmitButton>button,.stDownloadButton>button,.stLinkButton>a{
-  min-height:33px;
-  border-radius:7px !important;
-  border:1px solid #deded9;
-  background:#fff;
-  font-size:10px;
-  font-weight:600;
-  box-shadow:none;
-}
-button[kind="primary"],.stFormSubmitButton button[kind="primary"]{
-  background:var(--blue) !important;
-  border-color:var(--blue) !important;
-  color:#fff !important;
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    padding: 9px 12px !important;
+    margin: 1px 0;
+    background: transparent;
+    transition: background .15s ease, transform .1s ease;
 }
 
-/* ============================================================
-   TABLES / TABS / EXPANDERS
-   ============================================================ */
-button[data-baseweb="tab"]{
-  padding:6px 8px !important;
-  font-size:10px !important;
-  color:#797973 !important;
-}
-button[data-baseweb="tab"][aria-selected="true"]{
-  color:#252524 !important;
-  font-weight:700 !important;
-}
-[data-baseweb="tab-highlight"]{
-  height:1.5px !important;
-  background:#252524 !important;
-}
-[data-testid="stDataFrame"],[data-testid="stTable"]{
-  border:1px solid var(--line);
-  border-radius:8px;
-  overflow:hidden;
-  background:#fff;
-}
-[data-testid="stExpander"]{
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fff;
-  margin-bottom:6px;
-}
-[data-testid="stAlert"]{
-  border-radius:8px;
-  padding-top:.55rem !important;
-  padding-bottom:.55rem !important;
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+    background: rgba(255,255,255,.08);
 }
 
-/* ============================================================
-   ATTENDANCE
-   ============================================================ */
-.attendance-hero{
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#fafaf8;
-  padding:14px;
-  margin-bottom:10px;
-}
-.attendance-eyebrow{
-  color:#92928c;
-  font-size:8.5px;
-  font-weight:750;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-.attendance-date{
-  color:#252524;
-  font-size:24px;
-  font-weight:730;
-  letter-spacing:-.04em;
-  margin-top:4px;
-}
-.attendance-day,.attendance-note{
-  color:#85857f;
-  font-size:9.5px;
-}
-.attendance-status-card{
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fff;
-  padding:11px;
-  min-height:90px;
-}
-.attendance-label{
-  color:#85857f;
-  font-size:8.5px;
-  font-weight:750;
-  text-transform:uppercase;
-  letter-spacing:.04em;
-}
-.attendance-value{
-  color:#252524;
-  font-size:17px;
-  font-weight:700;
-  margin-top:5px;
-}
-.attendance-rules{
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fafaf8;
-  padding:9px 10px;
-  color:#666660;
-  font-size:9.5px;
+[data-testid="stSidebar"] [data-testid="stRadio"] label p {
+    color: rgba(255,255,255,.86) !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    line-height: 1.25 !important;
 }
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
-@media(max-width:900px){
-  .block-container{padding:1rem .8rem 2.5rem}
-  .page-head-new{align-items:flex-start;flex-direction:column}
-  .page-head-new h1,.tech-title,.page-title,.dashboard-hero-title{font-size:26px}
-  [data-testid="stSidebar"]{width:220px!important;min-width:220px!important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(0,0,0,.18);
 }
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
+    color: var(--brand-700) !important;
+    font-weight: 700 !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
+[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
+[data-testid="stSidebar"] input[type="radio"] {
+    display: none !important;
+}
+
+[data-testid="stSidebar"] .stButton > button {
+    width: 100%;
+    background: rgba(255,255,255,.08) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,.22) !important;
+    box-shadow: none !important;
+    margin-top: 6px;
+    border-radius: 10px !important;
+}
+
+[data-testid="stSidebar"] .stButton > button p,
+[data-testid="stSidebar"] .stButton > button span {
+    color: #ffffff !important;
+    font-weight: 650 !important;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(255,255,255,.16) !important;
+    border-color: rgba(255,255,255,.36) !important;
+}
+
+/* ------------------------------------------------------------
+   TITLES & TEXT
+   ------------------------------------------------------------ */
+.tech-title {
+    font-size: clamp(24px, 2.4vw, 33px);
+    line-height: 1.18;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.tech-subtitle {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-bottom: 22px;
+}
+
+.section-title {
+    font-size: 16px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -.1px;
+    margin-top: 10px;
+    margin-bottom: 12px;
+}
+
+.stApp p, .stApp label, .stApp li { color: var(--ink-soft); }
+.stApp h1, .stApp h2, .stApp h3, .stApp h4 { color: var(--ink); font-weight: 700; }
+
+/* ------------------------------------------------------------
+   METRIC CARDS
+   ------------------------------------------------------------ */
+div[data-testid="stMetric"] {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    padding: 16px 18px 14px 18px;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-xs);
+    min-height: 104px;
+    transition: box-shadow .15s ease, transform .12s ease;
+}
+
+div[data-testid="stMetric"]:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
+    color: var(--muted) !important;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: var(--ink) !important;
+    font-weight: 750;
+    letter-spacing: -.6px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ------------------------------------------------------------
+   TASK CARDS
+   ------------------------------------------------------------ */
+.task-card {
+    background: var(--panel);
+    padding: 14px 18px 14px 16px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--gold);
+    margin-bottom: 9px;
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow .15s ease, transform .12s ease;
+}
+
+.task-card:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.task-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 5px;
+}
+
+.task-meta {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-top: 3px;
+}
+
+/* ------------------------------------------------------------
+   BUTTONS
+   ------------------------------------------------------------ */
+.stButton > button, .stFormSubmitButton > button {
+    border-radius: var(--r-sm) !important;
+    min-height: 42px;
+    font-weight: 600;
+    border: 1px solid #dfe2ea;
+    box-shadow: none;
+    transition: all .14s ease;
+}
+
+.stButton > button:hover, .stFormSubmitButton > button:hover {
+    border-color: #c7cbdb;
+    box-shadow: var(--shadow-xs);
+    transform: translateY(-1px);
+}
+
+button[kind="primary"] {
+    background: var(--brand-700) !important;
+    border: none !important;
+}
+
+button[kind="primary"]:hover {
+    background: var(--brand-900) !important;
+}
+
+/* ------------------------------------------------------------
+   INPUTS
+   ------------------------------------------------------------ */
+[data-baseweb="input"] > div,
+[data-baseweb="textarea"] > div,
+[data-baseweb="select"] > div {
+    border-radius: var(--r-sm) !important;
+    border-color: #dde0e8 !important;
+    background: #ffffff !important;
+}
+
+[data-baseweb="input"] input,
+[data-baseweb="textarea"] textarea,
+[data-baseweb="select"] input,
+[data-baseweb="select"] div {
+    color: var(--ink) !important;
+}
+
+[data-baseweb="input"] > div:focus-within,
+[data-baseweb="textarea"] > div:focus-within,
+[data-baseweb="select"] > div:focus-within {
+    border-color: var(--brand-600) !important;
+    box-shadow: 0 0 0 3px rgba(14,125,112,.14) !important;
+}
+
+/* ------------------------------------------------------------
+   EXPANDERS
+   ------------------------------------------------------------ */
+[data-testid="stExpander"] {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-xs);
+    margin-bottom: 10px;
+}
+
+/* ------------------------------------------------------------
+   TABLES
+   ------------------------------------------------------------ */
+[data-testid="stDataFrame"], [data-testid="stTable"] {
+    background: #ffffff;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid var(--line);
+}
+
+[data-testid="stDataFrame"] * {
+    color: #2c3142;
+}
+
+/* ------------------------------------------------------------
+   ALERTS
+   ------------------------------------------------------------ */
+[data-testid="stAlert"] {
+    border-radius: var(--r-sm);
+    border-width: 1px;
+    box-shadow: var(--shadow-xs);
+}
+
+[data-testid="stAlert"] p {
+    color: #1e2333 !important;
+    font-weight: 500;
+}
+
+/* ------------------------------------------------------------
+   TABS
+   ------------------------------------------------------------ */
+button[data-baseweb="tab"] {
+    font-weight: 600;
+    color: var(--muted);
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: var(--brand-700) !important;
+}
+
+[data-baseweb="tab-highlight"] {
+    background-color: var(--brand-600) !important;
+}
+
+/* ------------------------------------------------------------
+   MISC
+   ------------------------------------------------------------ */
+hr { border-color: var(--line) !important; }
+
+.login-shell {
+    min-height: 77vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-hero { padding: 30px 6px 20px 6px; }
+
+.login-kicker {
+    display: inline-block;
+    padding: 6px 13px;
+    border-radius: 999px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    margin-bottom: 14px;
+}
+
+.login-heading {
+    font-size: clamp(30px, 3.8vw, 48px);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -1.3px;
+    color: var(--ink);
+    max-width: 720px;
+}
+
+.login-copy {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 590px;
+    margin-top: 16px;
+}
+
+.login-card-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 3px;
+}
+
+.login-card-copy {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+    .block-container { padding-top: 1.2rem; padding-left: 1rem; padding-right: 1rem; }
+    .tech-title { font-size: 24px; }
+}
+
+.workspace-hero {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 20px 22px;
+    background: linear-gradient(135deg, var(--brand-100) 0%, #ffffff 55%, var(--gold-soft) 100%);
+    margin-bottom: 18px;
+}
+.workspace-hero-title { font-size: 15px; font-weight: 750; color: var(--ink); }
+.workspace-hero-copy { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+.status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--success-soft);
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.chat-bubble {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+    margin: 6px 0;
+    background: #fff;
+}
+
+footer { visibility: hidden; }
+
+/* ------------------------------------------------------------
+   TASK EXPERIENCE
+   ------------------------------------------------------------ */
+.task-board-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:18px 20px;
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:linear-gradient(135deg,#ffffff 0%,#f6faf9 100%);
+    margin-bottom:14px;
+}
+.task-board-title { font-size:19px; font-weight:800; color:var(--ink); }
+.task-board-copy { color:var(--muted); font-size:13px; margin-top:3px; }
+.work-card {
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    background:#fff;
+    padding:14px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow-xs);
+    transition: box-shadow .15s ease, transform .12s ease;
+}
+.work-card:hover { box-shadow:var(--shadow-md); transform: translateY(-1px); }
+.work-card-title { font-weight:750; font-size:14px; color:var(--ink); margin-bottom:6px; }
+.work-meta { font-size:12px; color:var(--muted); line-height:1.6; }
+.status-chip {
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    border:1px solid #e1e5ea;
+    background:#f8fafc;
+    color:#334155;
+    margin-right:5px;
+}
+.priority-urgent { background:var(--danger-soft); color:#be123c; border-color:#fecdd3; }
+.priority-high { background:var(--gold-soft); color:#a4650f; border-color:#f1d9ad; }
+.priority-normal { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.priority-low { background:#f8fafc; color:#64748b; border-color:#e2e8f0; }
+.kanban-column-title { font-size:13px; font-weight:800; color:#334155; margin-bottom:8px; }
+.kanban-count { float:right; font-weight:700; color:var(--muted); }
+
+/* ------------------------------------------------------------
+   ATTENDANCE EXPERIENCE
+   ------------------------------------------------------------ */
+.attendance-hero {
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:linear-gradient(135deg,#ffffff 0%,#f4faf8 100%);
+    padding:20px 22px;
+    margin:6px 0 18px 0;
+    box-shadow:0 4px 16px rgba(14,125,112,.07);
+}
+.attendance-eyebrow {
+    font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--brand-700); margin-bottom:6px;
+}
+.attendance-date { font-size:27px; font-weight:800; color:var(--ink); line-height:1.15; }
+.attendance-day { font-size:14px; color:var(--muted); margin-top:5px; }
+.attendance-status-card {
+    border:1px solid var(--line); border-radius:var(--r-lg); background:#fff;
+    padding:16px; min-height:126px; box-shadow:var(--shadow-sm);
+}
+.attendance-label { font-size:11px; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+.attendance-value { font-size:20px; font-weight:800; color:var(--ink); margin-top:7px; }
+.attendance-note { font-size:12px; color:var(--muted); margin-top:6px; }
+.attendance-rules {
+    padding:12px 14px; border:1px solid #dce9e6; border-radius:var(--r-md);
+    background:#f8fffd; color:#35504b; font-size:12px; line-height:1.7;
+}
+
+/* ------------------------------------------------------------
+   NEW: small utility classes available for future pages
+   ------------------------------------------------------------ */
+.empty-state {
+    text-align:center; padding:36px 20px; color:var(--muted);
+    border:1px dashed var(--line); border-radius:var(--r-lg); background:#fbfcfe;
+}
+.skeleton {
+    background: linear-gradient(90deg,#eef0f5 25%,#f7f8fb 37%,#eef0f5 63%);
+    background-size: 400% 100%; animation: skeleton-loading 1.4s ease infinite;
+    border-radius: var(--r-sm); height: 14px;
+}
+@keyframes skeleton-loading { 0% {background-position:100% 50%;} 100% {background-position:0 50%;} }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -919,6 +941,7 @@ def is_manager():
     ]
 
 
+@st.cache_data(ttl=20, show_spinner=False)
 def load_all_tasks():
 
     try:
@@ -1093,6 +1116,7 @@ def update_task_status(
 # TEAM / NOTIFICATION / CHAT HELPERS
 # ============================================================
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_team_profiles():
     """Return basic team directory data through a controlled Supabase RPC."""
     try:
@@ -1168,7 +1192,7 @@ def play_notification_tone():
     st.markdown(
         """
         <audio autoplay style="display:none">
-            <source src="data:audio/wav;base64,PLACEHOLDER_AUDIO_BASE64" type="audio/wav">
+            <source src="data:audio/wav;base64,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" type="audio/wav">
         </audio>
         """,
         unsafe_allow_html=True
@@ -1768,6 +1792,7 @@ def update_presence():
         pass
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def load_presence():
     try:
         result = (
@@ -2043,6 +2068,7 @@ def attach_file_to_task(task_id, uploaded_file):
         return False
 
 
+@st.cache_data(ttl=30, show_spinner=False)
 def load_task_attachments(task_id):
     try:
         return (
@@ -2056,6 +2082,7 @@ def load_task_attachments(task_id):
         return []
 
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_task_templates():
     try:
         return (
@@ -2174,6 +2201,7 @@ def to_excel_bytes(sheets):
     return output.getvalue()
 
 
+@st.cache_data(ttl=30, show_spinner=False)
 def load_announcements(active_only=True):
     try:
         q = supabase.table("announcements").select("*")
@@ -2184,6 +2212,7 @@ def load_announcements(active_only=True):
         return []
 
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_knowledge_items():
     try:
         return (
@@ -2908,134 +2937,6 @@ def display_value(value, fallback="—"):
     value = str(value).strip()
     return value if value else fallback
 
-
-def portal_header(page_name="Techloom HQ"):
-    unread = 0
-    try:
-        unread = len(get_unread_notifications())
-    except Exception:
-        pass
-    initial = (name or "U")[:1].upper()
-    st.markdown(
-        f"""
-        <div class="portal-topbar">
-          <div class="crumb"><span class="crumb-mark">◢</span><span>{page_name}</span></div>
-          <div class="top-user">
-            <span class="notify-dot">▤</span>
-            <span class="top-avatar">{initial}</span>
-            <span>{name}</span>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-def sprint_tasks():
-    tasks = load_all_tasks() if is_manager() else load_my_tasks()
-    cutoff = datetime.now(PK_TZ).date() + timedelta(days=7)
-    result = []
-    for task in tasks:
-        if task.get("status") in ["Completed", "Approved"]:
-            continue
-        due = parse_timestamp(task.get("due_date")) if task.get("due_date") else None
-        if not due or due.astimezone(PK_TZ).date() <= cutoff:
-            result.append(task)
-    return result
-
-
-def load_personal_note():
-    try:
-        rows = (
-            supabase.table("personal_notes")
-            .select("*")
-            .eq("user_id", current_user_id)
-            .limit(1)
-            .execute()
-        ).data or []
-        return rows[0].get("content", "") if rows else ""
-    except Exception:
-        return ""
-
-
-def save_personal_note(content):
-    try:
-        supabase.table("personal_notes").upsert({
-            "user_id": current_user_id,
-            "content": content,
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }, on_conflict="user_id").execute()
-        return True
-    except Exception as error:
-        st.error(error)
-        return False
-
-
-def upload_hub_file(uploaded_file):
-    meta = upload_private_file("data-hub", uploaded_file, "shared")
-    if not meta:
-        return False
-    try:
-        supabase.table("shared_files").insert({
-            "uploader_id": current_user_id,
-            "uploader_name": name,
-            "file_path": meta["path"],
-            "file_name": meta["name"],
-            "file_type": meta["type"],
-            "file_size": meta["size"]
-        }).execute()
-        return True
-    except Exception as error:
-        st.error(error)
-        return False
-
-
-def load_hub_files():
-    try:
-        return (
-            supabase.table("shared_files")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(100)
-            .execute()
-        ).data or []
-    except Exception:
-        return []
-
-
-def upload_secure_portal_file(uploaded_file, allowed_user_ids):
-    meta = upload_private_file("secure-files", uploaded_file, "secure")
-    if not meta:
-        return False
-    try:
-        created = supabase.table("secure_files").insert({
-            "owner_id": current_user_id,
-            "owner_name": name,
-            "file_path": meta["path"],
-            "file_name": meta["name"],
-            "file_type": meta["type"],
-            "file_size": meta["size"]
-        }).execute()
-        file_id = created.data[0]["id"] if created.data else None
-        if file_id:
-            for uid in allowed_user_ids:
-                supabase.table("secure_file_access").insert({
-                    "file_id": file_id,
-                    "user_id": uid
-                }).execute()
-        return True
-    except Exception as error:
-        st.error(error)
-        return False
-
-
-def load_secure_portal_files():
-    try:
-        result = supabase.rpc("get_accessible_secure_files").execute()
-        return result.data or []
-    except Exception:
-        return []
-
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -3043,278 +2944,394 @@ def load_secure_portal_files():
 with st.sidebar:
 
     st.markdown(
-        """
-        <div class="side-brand">
-          <span class="brand-mark">T</span>
-          <strong>Techloom</strong>
-        </div>
-        """,
+        '<div class="sidebar-logo">'
+        '◈ TECHLOOM TASK'
+        '</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
-        f"""
-        <div class="side-user">
-          <b>{name}</b>
-          <small>{role} • {department}</small>
-        </div>
-        """,
+        '<div class="sidebar-subtitle">'
+        'Work Smart. Stay Organized.'
+        '</div>',
         unsafe_allow_html=True
     )
 
+    st.write(f"### {name}")
+
+    st.caption(role)
+    st.caption(department)
+
+    st.divider()
+
     chat_unread_count = get_unread_chat_count()
-    chat_label = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
+    group_chat_label = (
+        f"💬 Group Chat  🔴 {chat_unread_count}"
+        if chat_unread_count > 0
+        else "💬 Group Chat"
+    )
+
+    # ----------------------------
+    # NAVIGATION
+    # ----------------------------
+
+    common_tools = [
+        "🔎 Global Search",
+        "🧰 Task Workspace",
+        "👥 Team Attendance",
+        "💬 Direct Messages",
+        "📆 Calendar",
+        "📣 Announcements",
+        "📚 Knowledge Base",
+        group_chat_label,
+        "🔔 Notifications",
+        "⚙️ Settings"
+    ]
 
     if is_manager():
         menu_options = [
-            "Company HQ",
-            "My Tasks",
-            "Current Sprint",
-            "Timeline",
-            "Attendance",
-            "Team",
-            chat_label,
-            "Direct Messages",
-            "Data Hub",
-            "Knowledge Base",
-            "My Notes",
-            "Secure Folder",
-            "Settings",
+            "🏠 Dashboard",
+            "📋 Team Tasks",
+            "➕ Create Task",
+            "✅ Approvals",
+            "👥 Team Overview",
+            "🟢 Team Status",
+            "⏱ Attendance",
+            "📅 Attendance Report",
+            "📊 Reports",
+            "🧩 Task Templates",
+            "🔁 Recurring Tasks",
+            "🛡 Permissions",
+            "🧾 Audit Log",
+            "🛡 Compliance",
+        ] + common_tools + [
+            "📜 Activity"
         ]
+
+    elif name == "Talha":
+        menu_options = [
+            "🏠 Dashboard",
+            "📋 My Tasks",
+            "⏱ Attendance",
+            "🟠 Temu",
+            "🛡 Compliance",
+            "📨 Appeals",
+            "💬 Seller Support",
+        ] + common_tools + [
+            "📜 Activity"
+        ]
+
+    elif name == "Junaid":
+        menu_options = [
+            "🏠 Dashboard",
+            "📋 My Tasks",
+            "⏱ Attendance",
+            "🛒 Amazon",
+            "🛍 eBay",
+            "📦 Listing Uploads",
+        ] + common_tools + [
+            "📜 Activity"
+        ]
+
     else:
         menu_options = [
-            "Company HQ",
-            "My Tasks",
-            "Current Sprint",
-            "Timeline",
-            "Attendance",
-            "Team",
-            chat_label,
-            "Direct Messages",
-            "Data Hub",
-            "Knowledge Base",
-            "My Notes",
-            "Secure Folder",
-            "Settings",
+            "🏠 Dashboard",
+            "📋 My Tasks",
+            "⏱ Attendance",
+        ] + common_tools + [
+            "📜 Activity"
         ]
 
     page = st.radio(
         "Navigation",
         menu_options,
-        label_visibility="collapsed",
-        key="main_portal_nav"
+        label_visibility="collapsed"
     )
 
-    st.write("")
-    if is_manager():
-        if st.button("＋ New task", type="primary", use_container_width=True, key="sidebar_new_task"):
-            st.session_state["force_create_task"] = True
+    st.divider()
 
-    if st.button("Sign out", use_container_width=True, key="portal_logout"):
+    if st.session_state.get("notification_sound_enabled", False):
+        st.caption("🔊 Notification sound is ON")
+        if st.button(
+            "Test Sound",
+            key="test_notification_sound",
+            use_container_width=True
+        ):
+            play_notification_tone()
+    else:
+        if st.button(
+            "🔊 Enable Notification Sound",
+            key="enable_notification_sound",
+            use_container_width=True
+        ):
+            enable_notification_sound()
+            st.success("Sound enabled for this session.")
+
+    render_notification_monitor()
+
+    st.divider()
+
+    if st.button(
+        "🚪 Logout",
+        use_container_width=True
+    ):
+
         logout()
 
-# sidebar quick-create override
-if st.session_state.pop("force_create_task", False):
-    page = "Create Task"
 
 # ============================================================
 # DASHBOARD
 # ============================================================
 
-if page == "Company HQ":
+if page == "🏠 Dashboard":
 
-    portal_header("Techloom HQ")
-
-    current_day = datetime.now(PK_TZ)
-    tasks = load_all_tasks() if is_manager() else load_my_tasks()
-
-    active_statuses = {
-        "New",
-        "In Progress",
-        "Waiting on Information",
-        "Waiting on Platform",
-        "Submitted for Review",
-        "Changes Requested"
-    }
-
-    active_tasks = [
-        t for t in tasks
-        if t.get("status", "New") in active_statuses
-        and not t.get("archived", False)
-    ]
-
-    def _due_local(task):
-        if not task.get("due_date"):
-            return None
-        parsed = parse_timestamp(task.get("due_date"))
-        return parsed.astimezone(PK_TZ) if parsed else None
-
-    today = current_day.date()
-    due_today = [t for t in active_tasks if _due_local(t) and _due_local(t).date() == today]
-    overdue = [t for t in active_tasks if _due_local(t) and _due_local(t).date() < today]
-    urgent = [t for t in active_tasks if t.get("priority") == "Urgent"]
-    review = [t for t in active_tasks if t.get("status") == "Submitted for Review"]
+    render_team_shoutout_bar()
 
     st.markdown(
-        f"""
-        <div class="dashboard-hero">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
-            <div>
-              <div class="dashboard-hero-title">Dashboard</div>
-              <div class="dashboard-hero-copy">Your live workspace for today.</div>
-            </div>
-            <div class="hero-date">{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}</div>
-          </div>
-        </div>
-        """,
+        f'<div class="tech-title">'
+        f'Welcome, {name} 👋'
+        f'</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
-        f"""
-        <div class="today-strip">
-          <b>Today at Techloom</b> &nbsp; · &nbsp;
-          {len(due_today)} due today &nbsp; · &nbsp;
-          {len(overdue)} overdue &nbsp; · &nbsp;
-          {len(review)} awaiting review
-        </div>
-        """,
+        f'<div class="tech-subtitle">'
+        f'{department} • {role}'
+        f'</div>',
         unsafe_allow_html=True
     )
 
-    # Compact announcement: show only latest active one
-    try:
-        ann = (
-            supabase.table("announcements")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(1)
-            .execute()
-        ).data or []
-    except Exception:
-        ann = []
+    tasks = tasks_for_current_user()
 
-    if ann:
-        latest = ann[0]
+    today_date = datetime.now(PK_TZ).date()
+    due_today_count = 0
+    overdue_count = 0
+
+    for task_item in tasks:
+        due_value = task_item.get("due_date")
+        if due_value and task_item.get("status") not in ["Completed", "Approved"]:
+            try:
+                due_dt = datetime.fromisoformat(str(due_value).replace("Z", "+00:00"))
+                due_day = due_dt.date()
+                if due_day == today_date:
+                    due_today_count += 1
+                elif due_day < today_date:
+                    overdue_count += 1
+            except Exception:
+                pass
+
+    unread_dashboard = len(get_unread_notifications(limit=100))
+
+    st.markdown(
+        '<div class="workspace-hero">'
+        f'<div class="workspace-hero-title">Today at Techloom</div>'
+        f'<div class="workspace-hero-copy">'
+        f'{due_today_count} due today • {overdue_count} overdue • '
+        f'{unread_dashboard} unread notification(s)'
+        f'</div></div>',
+        unsafe_allow_html=True
+    )
+
+    pinned_announcements = [a for a in load_announcements() if a.get("pinned")]
+    for announcement in pinned_announcements[:2]:
+        tone = "error" if announcement.get("urgent") else "info"
+        message = f"📣 **{announcement.get('title', 'Announcement')}** — {announcement.get('body', '')}"
+        if tone == "error":
+            st.error(message)
+        else:
+            st.info(message)
+
+    total_count = len(tasks)
+
+    new_count = 0
+    progress_count = 0
+    review_count = 0
+    changes_count = 0
+    completed_count = 0
+
+    for task in tasks:
+
+        status = task.get(
+            "status",
+            ""
+        )
+
+        if status == "New":
+            new_count += 1
+
+        elif status == "In Progress":
+            progress_count += 1
+
+        elif status == "Submitted for Review":
+            review_count += 1
+
+        elif status == "Changes Requested":
+            changes_count += 1
+
+        elif status in [
+            "Completed",
+            "Approved"
+        ]:
+            completed_count += 1
+
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+
+    c1.metric(
+        "📋 Total Tasks",
+        total_count
+    )
+
+    c2.metric(
+        "🆕 New",
+        new_count
+    )
+
+    c3.metric(
+        "🕒 In Progress",
+        progress_count
+    )
+
+    c4.metric(
+        "📤 For Review",
+        review_count
+    )
+
+    c5.metric(
+        "🔄 Changes",
+        changes_count
+    )
+
+    c6.metric(
+        "✅ Done",
+        completed_count
+    )
+
+    st.write("")
+
+    st.markdown(
+        '<div class="section-title">'
+        'Today\'s Attendance'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    render_today_attendance()
+
+    st.write("")
+
+    left, right = st.columns(
+        [2.7, 1]
+    )
+
+    # --------------------------------------------------------
+    # RECENT TASKS
+    # --------------------------------------------------------
+
+    with left:
+
         st.markdown(
-            f"""
-            <div class="announcement-mini">
-              📣 <b>{display_value(latest.get("title"))}</b> — {display_value(latest.get("body"))}
-            </div>
-            """,
+            '<div class="section-title">'
+            'Recent Tasks'
+            '</div>',
             unsafe_allow_html=True
         )
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Active", len(active_tasks))
-    m2.metric("Due Today", len(due_today))
-    m3.metric("Urgent", len(urgent))
-    m4.metric("For Review", len(review))
+        if not tasks:
 
-    st.write("")
+            st.info(
+                "No tasks available."
+            )
 
-    left, right = st.columns([1.55, 1])
+        else:
 
-    with left:
-        st.markdown('<div class="section-title">Priority work</div>', unsafe_allow_html=True)
+            for task in tasks[:7]:
 
-        priority = []
-        seen = set()
-        for group in [overdue, urgent, due_today, review, active_tasks]:
-            for task in group:
-                tid = task.get("id")
-                if tid not in seen:
-                    priority.append(task)
-                    seen.add(tid)
+                title = task.get(
+                    "title",
+                    "Untitled Task"
+                )
 
-        if priority:
-            for idx, task in enumerate(priority[:6]):
-                due = _due_local(task)
-                due_label = due.strftime("%d %b") if due else "No due date"
+                platform = task.get(
+                    "platform",
+                    "N/A"
+                )
+
+                task_type = task.get(
+                    "task_type",
+                    "Task"
+                )
+
+                assigned_to = task.get(
+                    "assigned_to",
+                    "N/A"
+                )
+
+                priority = task.get(
+                    "priority",
+                    "Normal"
+                )
+
+                status = task.get(
+                    "status",
+                    "New"
+                )
+
+                task_html = (
+                    '<div class="task-card">'
+                    f'<div class="task-card-title">{title}</div>'
+                    f'<div class="task-meta">{platform} &nbsp; • &nbsp; '
+                    f'{task_type} &nbsp; • &nbsp; Assigned to: {assigned_to}</div>'
+                    f'<div class="task-meta">Priority: <b>{priority}</b> '
+                    f'&nbsp; • &nbsp; Status: <b>{status}</b></div>'
+                    '</div>'
+                )
+
                 st.markdown(
-                    f"""
-                    <div class="attention-card">
-                      <div class="attention-card-title">{display_value(task.get("title"))}</div>
-                      <div class="attention-card-meta">
-                        {display_value(task.get("platform"))} ·
-                        {display_value(task.get("status"))} ·
-                        {display_value(task.get("priority"))} ·
-                        {due_label}
-                      </div>
-                    </div>
-                    """,
+                    task_html,
                     unsafe_allow_html=True
                 )
-        else:
-            st.caption("Nothing urgent right now.")
+
+    # --------------------------------------------------------
+    # QUICK OVERVIEW
+    # --------------------------------------------------------
 
     with right:
-        st.markdown('<div class="section-title">Team today</div>', unsafe_allow_html=True)
 
-        try:
-            today_att = today_team_attendance()
-        except Exception:
-            today_att = []
+        st.markdown(
+            '<div class="section-title">'
+            'Quick Overview'
+            '</div>',
+            unsafe_allow_html=True
+        )
 
-        att_map = {r.get("employee_name"): r for r in today_att}
+        st.info(
+            f"🕒 Active tasks: "
+            f"{new_count + progress_count}"
+        )
 
-        for person in load_team_profiles()[:8]:
-            person_name = person.get("name")
-            rec = att_map.get(person_name)
+        st.info(
+            f"📤 Waiting review: "
+            f"{review_count}"
+        )
 
-            if rec:
-                status = f"{late_status(rec.get('check_in'))} · {format_pk_time(rec.get('check_in'))}"
-            else:
-                status = "Not marked"
+        st.info(
+            f"🔄 Changes requested: "
+            f"{changes_count}"
+        )
 
-            st.markdown(
-                f"""
-                <div class="attention-card">
-                  <div class="attention-card-title">{display_value(person_name)}</div>
-                  <div class="attention-card-meta">{status}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        st.success(
+            f"✅ Completed / Approved: "
+            f"{completed_count}"
+        )
 
-    st.write("")
-    st.markdown('<div class="section-title">Recent activity</div>', unsafe_allow_html=True)
-
-    try:
-        activity = (
-            supabase.table("task_activity")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(6)
-            .execute()
-        ).data or []
-    except Exception:
-        activity = []
-
-    if activity:
-        for item in activity:
-            st.markdown(
-                f"""
-                <div class="attention-card">
-                  <div class="attention-card-title">
-                    {display_value(item.get("user_name"), "User")} · {display_value(item.get("action"))}
-                  </div>
-                  <div class="attention-card-meta">
-                    {display_value(item.get("details"))} · {display_value(item.get("created_at"))}
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
 
 # ============================================================
 # MY TASKS / TEAM TASKS — WORK INBOX + KANBAN
 # ============================================================
 
-elif page == "My Tasks":
+elif page in ["📋 My Tasks","📋 Team Tasks"]:
 
-    portal_header("Tasks")
-    is_team_view = is_manager() and st.toggle("Team view", value=False, key="task_team_view_toggle")
+    is_team_view = page == "📋 Team Tasks"
     tasks = load_all_tasks() if is_team_view else load_my_tasks()
 
     st.markdown(
@@ -3454,7 +3471,7 @@ elif page == "My Tasks":
 # CREATE TASK
 # ============================================================
 
-elif page == "Create Task":
+elif page == "➕ Create Task":
 
     if not is_manager():
         st.error("You do not have permission to create tasks.")
@@ -3639,7 +3656,7 @@ elif page == "Create Task":
 # APPROVALS
 # ============================================================
 
-elif page == "✓ Approvals":
+elif page == "✅ Approvals":
 
     if not is_manager():
         st.error("Management access only.")
@@ -3791,9 +3808,7 @@ elif page == "✓ Approvals":
 # ATTENDANCE
 # ============================================================
 
-elif page == "Attendance":
-
-    portal_header("Attendance")
+elif page == "⏱ Attendance":
 
     now_local = datetime.now(PK_TZ)
     attendance_date = now_local.date()
@@ -4122,9 +4137,7 @@ elif page == "📅 Attendance Report":
 # TEAM OVERVIEW
 # ============================================================
 
-elif page == "Team":
-
-    portal_header("Team")
+elif page == "👥 Team Overview":
 
     if not is_manager():
 
@@ -4461,9 +4474,7 @@ elif page == "💬 Seller Support":
 # GROUP CHAT
 # ============================================================
 
-elif page.startswith("Chat"):
-
-    portal_header("Team Chat")
+elif page.startswith("💬 Group Chat"):
 
     # Opening the chat clears the red unread-chat badge.
     mark_chat_notifications_read()
@@ -4586,208 +4597,6 @@ elif page == "🔔 Notifications":
                 if stamp:
                     st.caption(stamp)
 
-
-
-
-# ============================================================
-# CURRENT SPRINT
-# ============================================================
-
-elif page == "Current Sprint":
-    portal_header("Current Sprint")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">WEEKLY FOCUS</span>'
-        '<h1>Current sprint</h1><p>Incomplete work due within the next seven days, plus tasks without a deadline.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
-    tasks = sprint_tasks()
-    if not tasks:
-        st.success("No sprint work is currently pending.")
-    else:
-        columns = [
-            ("To-do", ["New"]),
-            ("In progress", ["In Progress"]),
-            ("Waiting / review", ["Waiting on Information","Waiting on Platform","Submitted for Review","Changes Requested"]),
-            ("Complete", ["Completed","Approved"]),
-        ]
-        board = st.columns(4)
-        for idx, (label, statuses) in enumerate(columns):
-            with board[idx]:
-                group = [t for t in tasks if t.get("status") in statuses]
-                st.markdown(
-                    f'<div class="kanban-column-title">{label}<span class="kanban-count">{len(group)}</span></div>',
-                    unsafe_allow_html=True
-                )
-                for j, task in enumerate(group):
-                    render_task_card(task, f"sprint_{idx}_{j}")
-
-
-# ============================================================
-# TIMELINE
-# ============================================================
-
-elif page == "Timeline":
-    portal_header("Timeline")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">WORK HISTORY</span>'
-        '<h1>Timeline</h1><p>A chronological view of task changes, submissions and team activity.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
-    try:
-        q = (
-            supabase.table("task_activity")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(120)
-        )
-        if not is_manager():
-            q = q.eq("user_id", current_user_id)
-        rows = q.execute().data or []
-    except Exception:
-        rows = []
-
-    if not rows:
-        st.info("No timeline activity yet.")
-    else:
-        for item in rows:
-            st.markdown(
-                f"""
-                <div class="attention-card">
-                  <div class="attention-card-title">
-                    {display_value(item.get("user_name"), "User")} — {display_value(item.get("action"))}
-                  </div>
-                  <div class="attention-card-meta">
-                    {display_value(item.get("details"))} • {display_value(item.get("created_at"))}
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-
-# ============================================================
-# DATA HUB
-# ============================================================
-
-elif page == "Data Hub":
-    portal_header("Data Hub")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">SHARED FILES</span>'
-        '<h1>Data Hub</h1><p>Company files available to every authenticated team member.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
-    upload = st.file_uploader(
-        "Share a file with the team",
-        type=["pdf","doc","docx","xls","xlsx","csv","txt","png","jpg","jpeg","webp","zip"],
-        key="hub_file"
-    )
-    if upload and st.button("Upload to Data Hub", type="primary", key="hub_upload"):
-        if upload_hub_file(upload):
-            st.success("File shared.")
-            st.rerun()
-
-    st.write("")
-    files = load_hub_files()
-    if not files:
-        st.info("No shared files yet.")
-    else:
-        for f in files:
-            url = signed_file_url("data-hub", f.get("file_path"))
-            with st.container(border=True):
-                c1, c2 = st.columns([4,1])
-                with c1:
-                    st.markdown(f"**{display_value(f.get('file_name'))}**")
-                    st.caption(
-                        f"{display_value(f.get('uploader_name'))} • "
-                        f"{human_file_size(f.get('file_size'))} • "
-                        f"{display_value(f.get('created_at'))}"
-                    )
-                with c2:
-                    if url:
-                        st.link_button("Open", url, use_container_width=True)
-
-
-# ============================================================
-# MY NOTES
-# ============================================================
-
-elif page == "My Notes":
-    portal_header("My Notes")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">PRIVATE</span>'
-        '<h1>My notes</h1><p>A personal scratchpad visible only to your account.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-    note = load_personal_note()
-    content = st.text_area(
-        "Notes",
-        value=note,
-        height=440,
-        label_visibility="collapsed",
-        placeholder="Start writing…"
-    )
-    if st.button("Save note", type="primary"):
-        if save_personal_note(content):
-            st.success("Note saved.")
-
-
-# ============================================================
-# SECURE FOLDER
-# ============================================================
-
-elif page == "Secure Folder":
-    portal_header("Secure Folder")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">RESTRICTED FILES</span>'
-        '<h1>Secure Folder</h1><p>Upload sensitive work files and choose who may access them.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
-    team = [p for p in load_team_profiles() if str(p.get("id")) != str(current_user_id)]
-    label_to_id = {f"{p.get('name')} • {p.get('department','')}": p.get("id") for p in team}
-
-    secure_upload = st.file_uploader(
-        "Secure file",
-        type=["pdf","doc","docx","xls","xlsx","csv","txt","png","jpg","jpeg","webp","zip"],
-        key="secure_portal_upload"
-    )
-    allowed_labels = st.multiselect(
-        "Give access to",
-        list(label_to_id.keys()),
-        key="secure_portal_allowed"
-    )
-    if secure_upload and st.button("Upload securely", type="primary", key="secure_upload_btn"):
-        ids = [label_to_id[x] for x in allowed_labels]
-        if upload_secure_portal_file(secure_upload, ids):
-            st.success("Secure file uploaded.")
-            st.rerun()
-
-    st.write("")
-    secure_rows = load_secure_portal_files()
-    if not secure_rows:
-        st.info("No accessible secure files.")
-    else:
-        for f in secure_rows:
-            url = signed_file_url("secure-files", f.get("file_path"))
-            with st.container(border=True):
-                c1, c2 = st.columns([4,1])
-                with c1:
-                    st.markdown(f"**{display_value(f.get('file_name'))}**")
-                    st.caption(
-                        f"Owner: {display_value(f.get('owner_name'))} • "
-                        f"{human_file_size(f.get('file_size'))}"
-                    )
-                with c2:
-                    if url:
-                        st.link_button("Download", url, use_container_width=True)
 
 
 # ============================================================
@@ -4978,9 +4787,7 @@ elif page == "🧰 Task Workspace":
 # DIRECT MESSAGES
 # ============================================================
 
-elif page == "Direct Messages":
-
-    portal_header("Direct Messages")
+elif page == "💬 Direct Messages":
     st.markdown('<div class="tech-title">Direct Messages</div>', unsafe_allow_html=True)
     st.caption("Private one-to-one team chat.")
 
@@ -5049,9 +4856,7 @@ elif page == "📆 Calendar":
 # ANNOUNCEMENTS
 # ============================================================
 
-elif page == "Announcements":
-
-    portal_header("Announcements")
+elif page == "📣 Announcements":
     st.markdown('<div class="tech-title">Announcements</div>', unsafe_allow_html=True)
     st.caption("Pinned management messages for the whole team.")
 
@@ -5100,9 +4905,7 @@ elif page == "Announcements":
 # KNOWLEDGE BASE
 # ============================================================
 
-elif page == "Knowledge Base":
-
-    portal_header("Knowledge Base")
+elif page == "📚 Knowledge Base":
     st.markdown('<div class="tech-title">Knowledge & SOPs</div>', unsafe_allow_html=True)
     st.caption("Marketplace procedures, compliance notes, SOPs and internal references.")
 
@@ -5152,9 +4955,7 @@ elif page == "Knowledge Base":
 # TEAM ATTENDANCE — EVERYONE CAN VIEW + EXPORT
 # ============================================================
 
-elif page == "Team Attendance":
-
-    portal_header("Team Attendance")
+elif page == "👥 Team Attendance":
     st.markdown('<div class="tech-title">Team Attendance</div>', unsafe_allow_html=True)
     st.info("Official attendance tracking starts on 25 Aug 2026. Earlier dates are not counted as absent.")
     st.caption(
@@ -5299,9 +5100,7 @@ elif page == "🟢 Team Status":
 # REPORTS
 # ============================================================
 
-elif page == "Reports":
-
-    portal_header("Reports")
+elif page == "📊 Reports":
     if not is_manager():
         st.error("Management access only.")
         st.stop()
@@ -5561,9 +5360,7 @@ elif page == "🧾 Audit Log":
 # SETTINGS
 # ============================================================
 
-elif page == "Settings":
-
-    portal_header("Settings")
+elif page == "⚙️ Settings":
     st.markdown('<div class="tech-title">Settings</div>', unsafe_allow_html=True)
     prefs = get_user_preferences()
 
