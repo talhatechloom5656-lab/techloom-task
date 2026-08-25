@@ -621,30 +621,30 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"]{font-size:22px!importa
 .stButton>button,.stFormSubmitButton>button{min-height:33px!important;border-radius:7px!important;font-size:10px!important}
 
 
-/* ===== DASHBOARD CHAT SHORTCUT ===== */
-.chat-shortcut-card{
+/* ===== DASHBOARD DIRECT MESSAGE SHORTCUT ===== */
+.dm-shortcut-card{
     border:1px solid #e6e6e2;
-    border-radius:10px;
+    border-radius:9px;
     background:#fff;
-    padding:10px 11px;
+    padding:9px 10px;
     display:flex;
     align-items:center;
     gap:9px;
-    min-height:55px;
+    min-height:54px;
 }
-.chat-shortcut-icon{
+.dm-shortcut-icon{
     position:relative;
     width:34px;
     height:34px;
-    border-radius:10px;
+    border-radius:9px;
     display:flex;
     align-items:center;
     justify-content:center;
     background:#eef6fd;
-    font-size:17px;
+    font-size:16px;
     flex:none;
 }
-.chat-unread-badge{
+.dm-unread-badge{
     position:absolute;
     right:-5px;
     top:-6px;
@@ -661,12 +661,12 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"]{font-size:22px!importa
     font-size:8px;
     font-weight:800;
 }
-.chat-shortcut-title{
+.dm-shortcut-title{
     color:#2b2b29;
     font-size:10.5px;
     font-weight:700;
 }
-.chat-shortcut-copy{
+.dm-shortcut-copy{
     color:#8a8a84;
     font-size:8.8px;
     margin-top:2px;
@@ -3125,9 +3125,24 @@ def load_secure_portal_files():
     except Exception:
         return []
 
-def go_to_chat():
-    """Open Team Chat from the dashboard shortcut."""
-    st.session_state["main_portal_nav"] = "Chat"
+def get_unread_direct_message_count():
+    """Count unread direct messages for the signed-in user."""
+    try:
+        result = (
+            supabase.table("direct_messages")
+            .select("id", count="exact")
+            .eq("recipient_id", current_user_id)
+            .eq("is_read", False)
+            .execute()
+        )
+        return int(result.count or 0)
+    except Exception:
+        return 0
+
+
+def go_to_direct_messages():
+    """Open Direct Messages from the dashboard shortcut."""
+    st.session_state["main_portal_nav"] = "Direct Messages"
 
 
 # ============================================================
@@ -3157,7 +3172,7 @@ with st.sidebar:
     )
 
     chat_unread_count = get_unread_chat_count()
-    chat_label = "Chat"
+    chat_label = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
 
     if is_manager():
         menu_options = [
@@ -3276,42 +3291,42 @@ if page == "Company HQ":
         unsafe_allow_html=True
     )
 
-    # Front-page chat shortcut with live unread badge.
-    unread_chat = get_unread_chat_count()
+    # Front-page Direct Messages shortcut with unread badge.
+    try:
+        dm_unread = get_unread_direct_message_count()
+    except Exception:
+        dm_unread = 0
 
-    chat_space, chat_widget = st.columns([4.8, 1.2])
+    dm_space, dm_widget = st.columns([4.8, 1.2])
 
-    with chat_widget:
-        badge_html = (
-            f'<span class="chat-unread-badge">{unread_chat if unread_chat < 100 else "99+"}</span>'
-            if unread_chat > 0 else ""
+    with dm_widget:
+        badge = (
+            f'<span class="dm-unread-badge">{dm_unread if dm_unread < 100 else "99+"}</span>'
+            if dm_unread > 0 else ""
         )
-        chat_copy = (
-            f"{unread_chat} unread message{'s' if unread_chat != 1 else ''}"
-            if unread_chat > 0 else "No unread messages"
+        dm_copy = (
+            f"{dm_unread} unread message{'s' if dm_unread != 1 else ''}"
+            if dm_unread > 0 else "No unread messages"
         )
 
-        st.markdown(
-            f"""
-            <div class="chat-shortcut-card">
-                <div class="chat-shortcut-icon">
-                    💬
-                    {badge_html}
-                </div>
-                <div>
-                    <div class="chat-shortcut-title">Team Chat</div>
-                    <div class="chat-shortcut-copy">{chat_copy}</div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
+        dm_html = (
+            '<div class="dm-shortcut-card">'
+            '<div class="dm-shortcut-icon">✉'
+            f'{badge}'
+            '</div>'
+            '<div>'
+            '<div class="dm-shortcut-title">Direct Messages</div>'
+            f'<div class="dm-shortcut-copy">{dm_copy}</div>'
+            '</div>'
+            '</div>'
         )
+        st.markdown(dm_html, unsafe_allow_html=True)
 
         st.button(
-            "Open Chat",
-            key="dashboard_open_chat",
+            "Open Messages",
+            key="dashboard_open_direct_messages",
             use_container_width=True,
-            on_click=go_to_chat
+            on_click=go_to_direct_messages
         )
 
     # Compact announcement: show only latest active one
