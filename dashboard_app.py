@@ -38,551 +38,573 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-:root{
-  --bg:#ffffff;
-  --sidebar:#f7f7f5;
-  --line:#e8e8e4;
-  --text:#252524;
-  --muted:#7b7b75;
-  --soft:#efefec;
-  --blue:#2383e2;
-  --blue-soft:#edf5fc;
-  --green:#2f7a48;
-  --green-soft:#eef8f0;
-  --amber:#996b20;
-  --amber-soft:#fbf3df;
-  --red:#b54a4a;
-  --red-soft:#fff0f0;
+:root {
+    --brand-900: #082e28;
+    --brand-700: #0b5f56;
+    --brand-600: #0e7d70;
+    --brand-500: #159c8c;
+    --brand-100: #e7f6f3;
+    --gold: #b3811f;
+    --gold-soft: #faf2e0;
+    --success: #1f9d63;
+    --success-soft: #eafbf2;
+    --danger: #d64545;
+    --danger-soft: #fdeeee;
+    --ink: #11162a;
+    --ink-soft: #454b63;
+    --muted: #767c92;
+    --line: #e8eaf1;
+    --line-soft: #f0f1f6;
+    --panel: #ffffff;
+    --page-bg: #f8f9fc;
+    --sidebar-bg: linear-gradient(195deg, #0a352f 0%, #0e544c 55%, #0a3f39 100%);
+    --sidebar-bg-fallback: #0b4a43;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --shadow-xs: 0 1px 2px rgba(17,22,42,.05);
+    --shadow-sm: 0 2px 8px rgba(17,22,42,.06);
+    --shadow-md: 0 6px 18px rgba(17,22,42,.08);
+    --shadow-lg: 0 16px 40px rgba(17,22,42,.12);
+
+    /* legacy aliases kept so nothing else in the app breaks */
+    --teal: var(--brand-600);
+    --teal-light: var(--brand-500);
+    --amber: var(--gold);
+    --amber-soft: var(--gold-soft);
+    --green: var(--success);
+    --red: var(--danger);
 }
 
-html,body,[class*="css"]{
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, sans-serif;
 }
 
-.stApp{
-  background:var(--bg);
-  color:var(--text);
+h1, h2, h3, h4, .tech-title, .section-title, .task-board-title,
+.workspace-hero-title, .attendance-date, .login-heading, .login-card-title,
+.sidebar-logo {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
-/* Main content tighter and more app-like */
-.block-container{
-  max-width:1280px;
-  padding:1.15rem 1.55rem 3rem 1.55rem;
+/* ------------------------------------------------------------
+   APP BACKGROUND
+   ------------------------------------------------------------ */
+.stApp {
+    background: var(--page-bg);
+    color: var(--ink);
 }
 
-/* Hide Streamlit chrome as much as possible */
-header[data-testid="stHeader"]{
-  background:transparent;
+.block-container {
+    max-width: 1460px;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
 }
-[data-testid="stToolbar"]{
-  visibility:hidden;
-  height:0;
-}
-#MainMenu{visibility:hidden;}
-footer{visibility:hidden;}
 
-/* ============================================================
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d7dae5; border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: #c1c5d6; }
+
+/* ------------------------------------------------------------
    SIDEBAR
-   ============================================================ */
-[data-testid="stSidebar"]{
-  background:var(--sidebar);
-  border-right:1px solid var(--line);
-  width:230px !important;
-  min-width:230px !important;
-}
-[data-testid="stSidebar"] [data-testid="stSidebarContent"]{
-  padding:.7rem .65rem .7rem .65rem;
-}
-.side-brand{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  height:38px;
-  padding:0 6px;
-  margin-bottom:5px;
-}
-.brand-mark{
-  width:24px;
-  height:24px;
-  border-radius:7px;
-  background:#252524;
-  color:#fff;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:10px;
-  font-weight:800;
-}
-.side-brand strong{
-  font-size:13px;
-  font-weight:750;
-  color:#252524;
-}
-.side-user{
-  padding:8px 9px;
-  margin:6px 0 8px;
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fff;
-}
-.side-user b{
-  display:block;
-  font-size:11px;
-  color:#252524;
-}
-.side-user small{
-  display:block;
-  margin-top:3px;
-  font-size:9.5px;
-  color:#8c8c86;
+   ------------------------------------------------------------ */
+[data-testid="stSidebar"] {
+    background: var(--sidebar-bg-fallback);
+    background: var(--sidebar-bg);
+    border-right: none;
+    min-width: 300px;
 }
 
-/* radio circles completely gone */
-[data-testid="stSidebar"] [role="radiogroup"]{
-  gap:1px;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label{
-  width:100%;
-  min-height:31px;
-  padding:5px 7px !important;
-  margin:0;
-  border-radius:6px;
-  display:flex;
-  align-items:center;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{
-  background:#ecece9;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){
-  background:#e9e9e6;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label p{
-  color:#50504c !important;
-  font-size:11.3px !important;
-  font-weight:520 !important;
-  margin:0 !important;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p{
-  color:#252524 !important;
-  font-weight:700 !important;
-}
-[data-testid="stSidebar"] [data-baseweb="radio"],
-[data-testid="stSidebar"] input[type="radio"],
-[data-testid="stSidebar"] [role="radio"] > div:first-child{
-  display:none !important;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child{
-  display:none !important;
-}
-[data-testid="stSidebar"] .stButton > button{
-  width:100%;
-  min-height:31px;
-  padding:5px 8px;
-  border-radius:6px !important;
-  border:1px solid #deded9 !important;
-  background:#fff !important;
-  color:#444 !important;
-  box-shadow:none !important;
-  font-size:10.5px !important;
-}
-[data-testid="stSidebar"] .stButton > button:hover{
-  background:#efefec !important;
-}
-.sidebar-section{
-  padding:11px 7px 4px;
-  color:#9a9a94;
-  font-size:8.5px;
-  font-weight:750;
-  letter-spacing:.08em;
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+    padding: 1.4rem 1rem 1.1rem 1rem;
 }
 
-/* ============================================================
-   TOPBAR
-   ============================================================ */
-.portal-topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  min-height:43px;
-  margin:0 0 18px 0;
-  padding:0 1px 10px 1px;
-  border-bottom:1px solid #efefec;
-}
-.crumb{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  color:#5a5a56;
-  font-size:11px;
-  font-weight:620;
-}
-.crumb-mark{
-  font-size:9px;
-  color:#75756f;
-}
-.top-user{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  color:#666660;
-  font-size:10.5px;
-}
-.top-avatar{
-  width:25px;
-  height:25px;
-  border-radius:50%;
-  background:#2f80ed;
-  color:#fff;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:9px;
-  font-weight:800;
-}
-.notify-dot{
-  width:25px;
-  height:25px;
-  border-radius:6px;
-  border:1px solid #e6e6e2;
-  background:#f7f7f5;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:10px;
-  color:#666;
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] div {
+    color: #ffffff;
 }
 
-/* ============================================================
-   TYPOGRAPHY / PAGE HEADERS
-   ============================================================ */
-.eyebrow{
-  display:block;
-  margin-bottom:8px;
-  color:#94948e;
-  font-size:8.5px;
-  font-weight:750;
-  letter-spacing:.1em;
-}
-.page-head-new{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:20px;
-  margin-bottom:16px;
-}
-.page-head-new h1{
-  margin:0 0 4px;
-  color:#252524;
-  font-size:29px;
-  line-height:1.05;
-  letter-spacing:-.045em;
-  font-weight:760;
-}
-.page-head-new p{
-  margin:0;
-  color:#7e7e78;
-  font-size:11px;
-}
-.tech-title,.page-title{
-  color:#252524;
-  font-size:29px;
-  font-weight:760;
-  letter-spacing:-.045em;
-  line-height:1.05;
-}
-.tech-subtitle,.page-subtitle{
-  color:#7e7e78;
-  font-size:10.8px;
-  margin-top:5px;
-  margin-bottom:16px;
-}
-.section-title{
-  font-size:12px;
-  font-weight:700;
-  color:#343432;
-  margin:8px 0 8px;
+[data-testid="stSidebar"] .stCaption,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+    color: rgba(255,255,255,.68) !important;
 }
 
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
-.dashboard-hero{
-  border:0;
-  padding:0;
-  margin-bottom:14px;
-  background:transparent;
-}
-.dashboard-hero-title{
-  font-size:29px;
-  line-height:1.05;
-  letter-spacing:-.045em;
-  font-weight:760;
-  color:#252524;
-}
-.dashboard-hero-copy{
-  font-size:11px;
-  color:#7e7e78;
-  margin-top:5px;
-}
-.hero-date{
-  text-align:right;
-  font-size:10px;
-  color:#85857f;
-  line-height:1.45;
-}
-.today-strip{
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#fafaf8;
-  padding:10px 12px;
-  margin:0 0 12px;
-  font-size:10.5px;
-  color:#696963;
-}
-.today-strip b{
-  color:#30302e;
-  font-size:11px;
-}
-.announcement-mini{
-  border:1px solid #f1d6d6;
-  background:#fff7f7;
-  color:#8e4a4a;
-  border-radius:8px;
-  padding:9px 11px;
-  font-size:10.5px;
-  margin-bottom:12px;
+.sidebar-logo {
+    font-size: 21px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -.3px;
+    color: #ffffff;
+    margin-top: .3rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Compact KPI cards */
-div[data-testid="stMetric"]{
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#fff;
-  min-height:78px;
-  padding:11px 12px 9px;
-  box-shadow:none;
-}
-div[data-testid="stMetric"] [data-testid="stMetricLabel"] p{
-  font-size:9px !important;
-  font-weight:650 !important;
-  color:#7f7f79 !important;
-  margin-bottom:2px !important;
-}
-div[data-testid="stMetric"] [data-testid="stMetricValue"]{
-  font-size:24px !important;
-  color:#252524 !important;
-  font-weight:720 !important;
-  letter-spacing:-.04em;
+.sidebar-subtitle {
+    font-size: 11.5px;
+    color: rgba(255,255,255,.66) !important;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,.14);
 }
 
-/* ============================================================
-   PANELS / CARDS
-   ============================================================ */
-.panel,.workspace-hero,.task-board-header{
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#fff;
-  padding:14px;
-  box-shadow:none;
-}
-.attention-card,.work-card,.task-card{
-  border:1px solid #e6e6e2;
-  border-radius:7px;
-  background:#fff;
-  padding:9px 10px;
-  margin-bottom:6px;
-  box-shadow:0 1px 1px rgba(0,0,0,.02);
-}
-.attention-card:hover,.work-card:hover,.task-card:hover{
-  border-color:#d5d5d0;
-  background:#fdfdfc;
-}
-.attention-card-title,.work-card-title,.task-card-title{
-  color:#2b2b29;
-  font-size:11.5px;
-  line-height:1.35;
-  font-weight:650;
-}
-.attention-card-meta,.work-meta,.task-meta{
-  color:#8b8b85;
-  font-size:9.3px;
-  line-height:1.5;
-  margin-top:3px;
-}
-.status-chip,.status-pill{
-  display:inline-flex;
-  align-items:center;
-  padding:2px 5px;
-  border-radius:4px;
-  font-size:8.5px;
-  font-weight:650;
-  margin-right:3px;
-  border:0;
-  background:#eee;
-  color:#555;
-}
-.priority-urgent{background:#ffe6e6;color:#a63d3d}
-.priority-high{background:#fff0d7;color:#986814}
-.priority-normal{background:#e8f2fb;color:#3475aa}
-.priority-low{background:#f0f0ed;color:#777}
-
-/* ============================================================
-   BOARD
-   ============================================================ */
-.kanban-column-title{
-  font-size:9.5px;
-  font-weight:700;
-  color:#6e6e68;
-  margin-bottom:6px;
-}
-.kanban-count{
-  float:right;
-  color:#aaa;
-}
-[data-testid="column"]{
-  min-width:0;
+[data-testid="stSidebar"] [role="radiogroup"] {
+    gap: 2px;
 }
 
-/* ============================================================
-   FORMS / INPUTS / BUTTONS
-   ============================================================ */
-[data-baseweb="input"]>div,
-[data-baseweb="textarea"]>div,
-[data-baseweb="select"]>div{
-  min-height:36px;
-  background:#fff !important;
-  border:1px solid #deded9 !important;
-  border-radius:7px !important;
-}
-[data-baseweb="input"]>div:focus-within,
-[data-baseweb="textarea"]>div:focus-within,
-[data-baseweb="select"]>div:focus-within{
-  border-color:#8db9e8 !important;
-  box-shadow:0 0 0 3px rgba(35,131,226,.09) !important;
-}
-.stTextInput label p,.stTextArea label p,.stSelectbox label p,.stDateInput label p,
-.stNumberInput label p,.stFileUploader label p,.stMultiSelect label p{
-  font-size:9.5px !important;
-  color:#696963 !important;
-  font-weight:600 !important;
-}
-.stButton>button,.stFormSubmitButton>button,.stDownloadButton>button,.stLinkButton>a{
-  min-height:33px;
-  border-radius:7px !important;
-  border:1px solid #deded9;
-  background:#fff;
-  font-size:10px;
-  font-weight:600;
-  box-shadow:none;
-}
-button[kind="primary"],.stFormSubmitButton button[kind="primary"]{
-  background:var(--blue) !important;
-  border-color:var(--blue) !important;
-  color:#fff !important;
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    padding: 9px 12px !important;
+    margin: 1px 0;
+    background: transparent;
+    transition: background .15s ease, transform .1s ease;
 }
 
-/* ============================================================
-   TABLES / TABS / EXPANDERS
-   ============================================================ */
-button[data-baseweb="tab"]{
-  padding:6px 8px !important;
-  font-size:10px !important;
-  color:#797973 !important;
-}
-button[data-baseweb="tab"][aria-selected="true"]{
-  color:#252524 !important;
-  font-weight:700 !important;
-}
-[data-baseweb="tab-highlight"]{
-  height:1.5px !important;
-  background:#252524 !important;
-}
-[data-testid="stDataFrame"],[data-testid="stTable"]{
-  border:1px solid var(--line);
-  border-radius:8px;
-  overflow:hidden;
-  background:#fff;
-}
-[data-testid="stExpander"]{
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fff;
-  margin-bottom:6px;
-}
-[data-testid="stAlert"]{
-  border-radius:8px;
-  padding-top:.55rem !important;
-  padding-bottom:.55rem !important;
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+    background: rgba(255,255,255,.08);
 }
 
-/* ============================================================
-   ATTENDANCE
-   ============================================================ */
-.attendance-hero{
-  border:1px solid var(--line);
-  border-radius:9px;
-  background:#fafaf8;
-  padding:14px;
-  margin-bottom:10px;
-}
-.attendance-eyebrow{
-  color:#92928c;
-  font-size:8.5px;
-  font-weight:750;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-.attendance-date{
-  color:#252524;
-  font-size:24px;
-  font-weight:730;
-  letter-spacing:-.04em;
-  margin-top:4px;
-}
-.attendance-day,.attendance-note{
-  color:#85857f;
-  font-size:9.5px;
-}
-.attendance-status-card{
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fff;
-  padding:11px;
-  min-height:90px;
-}
-.attendance-label{
-  color:#85857f;
-  font-size:8.5px;
-  font-weight:750;
-  text-transform:uppercase;
-  letter-spacing:.04em;
-}
-.attendance-value{
-  color:#252524;
-  font-size:17px;
-  font-weight:700;
-  margin-top:5px;
-}
-.attendance-rules{
-  border:1px solid var(--line);
-  border-radius:8px;
-  background:#fafaf8;
-  padding:9px 10px;
-  color:#666660;
-  font-size:9.5px;
+[data-testid="stSidebar"] [data-testid="stRadio"] label p {
+    color: rgba(255,255,255,.86) !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    line-height: 1.25 !important;
 }
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
-@media(max-width:900px){
-  .block-container{padding:1rem .8rem 2.5rem}
-  .page-head-new{align-items:flex-start;flex-direction:column}
-  .page-head-new h1,.tech-title,.page-title,.dashboard-hero-title{font-size:26px}
-  [data-testid="stSidebar"]{width:220px!important;min-width:220px!important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(0,0,0,.18);
 }
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
+    color: var(--brand-700) !important;
+    font-weight: 700 !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
+[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
+[data-testid="stSidebar"] input[type="radio"] {
+    display: none !important;
+}
+
+[data-testid="stSidebar"] .stButton > button {
+    width: 100%;
+    background: rgba(255,255,255,.08) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,.22) !important;
+    box-shadow: none !important;
+    margin-top: 6px;
+    border-radius: 10px !important;
+}
+
+[data-testid="stSidebar"] .stButton > button p,
+[data-testid="stSidebar"] .stButton > button span {
+    color: #ffffff !important;
+    font-weight: 650 !important;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(255,255,255,.16) !important;
+    border-color: rgba(255,255,255,.36) !important;
+}
+
+/* ------------------------------------------------------------
+   TITLES & TEXT
+   ------------------------------------------------------------ */
+.tech-title {
+    font-size: clamp(24px, 2.4vw, 33px);
+    line-height: 1.18;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.tech-subtitle {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-bottom: 22px;
+}
+
+.section-title {
+    font-size: 16px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -.1px;
+    margin-top: 10px;
+    margin-bottom: 12px;
+}
+
+.stApp p, .stApp label, .stApp li { color: var(--ink-soft); }
+.stApp h1, .stApp h2, .stApp h3, .stApp h4 { color: var(--ink); font-weight: 700; }
+
+/* ------------------------------------------------------------
+   METRIC CARDS
+   ------------------------------------------------------------ */
+div[data-testid="stMetric"] {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    padding: 16px 18px 14px 18px;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-xs);
+    min-height: 104px;
+    transition: box-shadow .15s ease, transform .12s ease;
+}
+
+div[data-testid="stMetric"]:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
+    color: var(--muted) !important;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: var(--ink) !important;
+    font-weight: 750;
+    letter-spacing: -.6px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ------------------------------------------------------------
+   TASK CARDS
+   ------------------------------------------------------------ */
+.task-card {
+    background: var(--panel);
+    padding: 14px 18px 14px 16px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--gold);
+    margin-bottom: 9px;
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow .15s ease, transform .12s ease;
+}
+
+.task-card:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.task-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 5px;
+}
+
+.task-meta {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-top: 3px;
+}
+
+/* ------------------------------------------------------------
+   BUTTONS
+   ------------------------------------------------------------ */
+.stButton > button, .stFormSubmitButton > button {
+    border-radius: var(--r-sm) !important;
+    min-height: 42px;
+    font-weight: 600;
+    border: 1px solid #dfe2ea;
+    box-shadow: none;
+    transition: all .14s ease;
+}
+
+.stButton > button:hover, .stFormSubmitButton > button:hover {
+    border-color: #c7cbdb;
+    box-shadow: var(--shadow-xs);
+    transform: translateY(-1px);
+}
+
+button[kind="primary"] {
+    background: var(--brand-700) !important;
+    border: none !important;
+}
+
+button[kind="primary"]:hover {
+    background: var(--brand-900) !important;
+}
+
+/* ------------------------------------------------------------
+   INPUTS
+   ------------------------------------------------------------ */
+[data-baseweb="input"] > div,
+[data-baseweb="textarea"] > div,
+[data-baseweb="select"] > div {
+    border-radius: var(--r-sm) !important;
+    border-color: #dde0e8 !important;
+    background: #ffffff !important;
+}
+
+[data-baseweb="input"] input,
+[data-baseweb="textarea"] textarea,
+[data-baseweb="select"] input,
+[data-baseweb="select"] div {
+    color: var(--ink) !important;
+}
+
+[data-baseweb="input"] > div:focus-within,
+[data-baseweb="textarea"] > div:focus-within,
+[data-baseweb="select"] > div:focus-within {
+    border-color: var(--brand-600) !important;
+    box-shadow: 0 0 0 3px rgba(14,125,112,.14) !important;
+}
+
+/* ------------------------------------------------------------
+   EXPANDERS
+   ------------------------------------------------------------ */
+[data-testid="stExpander"] {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-xs);
+    margin-bottom: 10px;
+}
+
+/* ------------------------------------------------------------
+   TABLES
+   ------------------------------------------------------------ */
+[data-testid="stDataFrame"], [data-testid="stTable"] {
+    background: #ffffff;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid var(--line);
+}
+
+[data-testid="stDataFrame"] * {
+    color: #2c3142;
+}
+
+/* ------------------------------------------------------------
+   ALERTS
+   ------------------------------------------------------------ */
+[data-testid="stAlert"] {
+    border-radius: var(--r-sm);
+    border-width: 1px;
+    box-shadow: var(--shadow-xs);
+}
+
+[data-testid="stAlert"] p {
+    color: #1e2333 !important;
+    font-weight: 500;
+}
+
+/* ------------------------------------------------------------
+   TABS
+   ------------------------------------------------------------ */
+button[data-baseweb="tab"] {
+    font-weight: 600;
+    color: var(--muted);
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: var(--brand-700) !important;
+}
+
+[data-baseweb="tab-highlight"] {
+    background-color: var(--brand-600) !important;
+}
+
+/* ------------------------------------------------------------
+   MISC
+   ------------------------------------------------------------ */
+hr { border-color: var(--line) !important; }
+
+.login-shell {
+    min-height: 77vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-hero { padding: 30px 6px 20px 6px; }
+
+.login-kicker {
+    display: inline-block;
+    padding: 6px 13px;
+    border-radius: 999px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    margin-bottom: 14px;
+}
+
+.login-heading {
+    font-size: clamp(30px, 3.8vw, 48px);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -1.3px;
+    color: var(--ink);
+    max-width: 720px;
+}
+
+.login-copy {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 590px;
+    margin-top: 16px;
+}
+
+.login-card-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 3px;
+}
+
+.login-card-copy {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+    .block-container { padding-top: 1.2rem; padding-left: 1rem; padding-right: 1rem; }
+    .tech-title { font-size: 24px; }
+}
+
+.workspace-hero {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 20px 22px;
+    background: linear-gradient(135deg, var(--brand-100) 0%, #ffffff 55%, var(--gold-soft) 100%);
+    margin-bottom: 18px;
+}
+.workspace-hero-title { font-size: 15px; font-weight: 750; color: var(--ink); }
+.workspace-hero-copy { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+.status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--success-soft);
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.chat-bubble {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+    margin: 6px 0;
+    background: #fff;
+}
+
+footer { visibility: hidden; }
+
+/* ------------------------------------------------------------
+   TASK EXPERIENCE
+   ------------------------------------------------------------ */
+.task-board-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:18px 20px;
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:linear-gradient(135deg,#ffffff 0%,#f6faf9 100%);
+    margin-bottom:14px;
+}
+.task-board-title { font-size:19px; font-weight:800; color:var(--ink); }
+.task-board-copy { color:var(--muted); font-size:13px; margin-top:3px; }
+.work-card {
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    background:#fff;
+    padding:14px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow-xs);
+    transition: box-shadow .15s ease, transform .12s ease;
+}
+.work-card:hover { box-shadow:var(--shadow-md); transform: translateY(-1px); }
+.work-card-title { font-weight:750; font-size:14px; color:var(--ink); margin-bottom:6px; }
+.work-meta { font-size:12px; color:var(--muted); line-height:1.6; }
+.status-chip {
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    border:1px solid #e1e5ea;
+    background:#f8fafc;
+    color:#334155;
+    margin-right:5px;
+}
+.priority-urgent { background:var(--danger-soft); color:#be123c; border-color:#fecdd3; }
+.priority-high { background:var(--gold-soft); color:#a4650f; border-color:#f1d9ad; }
+.priority-normal { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.priority-low { background:#f8fafc; color:#64748b; border-color:#e2e8f0; }
+.kanban-column-title { font-size:13px; font-weight:800; color:#334155; margin-bottom:8px; }
+.kanban-count { float:right; font-weight:700; color:var(--muted); }
+
+/* ------------------------------------------------------------
+   ATTENDANCE EXPERIENCE
+   ------------------------------------------------------------ */
+.attendance-hero {
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:linear-gradient(135deg,#ffffff 0%,#f4faf8 100%);
+    padding:20px 22px;
+    margin:6px 0 18px 0;
+    box-shadow:0 4px 16px rgba(14,125,112,.07);
+}
+.attendance-eyebrow {
+    font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--brand-700); margin-bottom:6px;
+}
+.attendance-date { font-size:27px; font-weight:800; color:var(--ink); line-height:1.15; }
+.attendance-day { font-size:14px; color:var(--muted); margin-top:5px; }
+.attendance-status-card {
+    border:1px solid var(--line); border-radius:var(--r-lg); background:#fff;
+    padding:16px; min-height:126px; box-shadow:var(--shadow-sm);
+}
+.attendance-label { font-size:11px; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+.attendance-value { font-size:20px; font-weight:800; color:var(--ink); margin-top:7px; }
+.attendance-note { font-size:12px; color:var(--muted); margin-top:6px; }
+.attendance-rules {
+    padding:12px 14px; border:1px solid #dce9e6; border-radius:var(--r-md);
+    background:#f8fffd; color:#35504b; font-size:12px; line-height:1.7;
+}
+
+/* ------------------------------------------------------------
+   NEW: small utility classes available for future pages
+   ------------------------------------------------------------ */
+.empty-state {
+    text-align:center; padding:36px 20px; color:var(--muted);
+    border:1px dashed var(--line); border-radius:var(--r-lg); background:#fbfcfe;
+}
+.skeleton {
+    background: linear-gradient(90deg,#eef0f5 25%,#f7f8fb 37%,#eef0f5 63%);
+    background-size: 400% 100%; animation: skeleton-loading 1.4s ease infinite;
+    border-radius: var(--r-sm); height: 14px;
+}
+@keyframes skeleton-loading { 0% {background-position:100% 50%;} 100% {background-position:0 50%;} }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -919,6 +941,7 @@ def is_manager():
     ]
 
 
+@st.cache_data(ttl=20, show_spinner=False)
 def load_all_tasks():
 
     try:
@@ -1093,6 +1116,7 @@ def update_task_status(
 # TEAM / NOTIFICATION / CHAT HELPERS
 # ============================================================
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_team_profiles():
     """Return basic team directory data through a controlled Supabase RPC."""
     try:
@@ -1768,6 +1792,7 @@ def update_presence():
         pass
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def load_presence():
     try:
         result = (
@@ -2043,6 +2068,7 @@ def attach_file_to_task(task_id, uploaded_file):
         return False
 
 
+@st.cache_data(ttl=30, show_spinner=False)
 def load_task_attachments(task_id):
     try:
         return (
@@ -2056,6 +2082,7 @@ def load_task_attachments(task_id):
         return []
 
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_task_templates():
     try:
         return (
@@ -2174,6 +2201,7 @@ def to_excel_bytes(sheets):
     return output.getvalue()
 
 
+@st.cache_data(ttl=30, show_spinner=False)
 def load_announcements(active_only=True):
     try:
         q = supabase.table("announcements").select("*")
@@ -2184,6 +2212,7 @@ def load_announcements(active_only=True):
         return []
 
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_knowledge_items():
     try:
         return (
@@ -2908,134 +2937,6 @@ def display_value(value, fallback="—"):
     value = str(value).strip()
     return value if value else fallback
 
-
-def portal_header(page_name="Techloom HQ"):
-    unread = 0
-    try:
-        unread = len(get_unread_notifications())
-    except Exception:
-        pass
-    initial = (name or "U")[:1].upper()
-    st.markdown(
-        f"""
-        <div class="portal-topbar">
-          <div class="crumb"><span class="crumb-mark">◢</span><span>{page_name}</span></div>
-          <div class="top-user">
-            <span class="notify-dot">▤</span>
-            <span class="top-avatar">{initial}</span>
-            <span>{name}</span>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-def sprint_tasks():
-    tasks = load_all_tasks() if is_manager() else load_my_tasks()
-    cutoff = datetime.now(PK_TZ).date() + timedelta(days=7)
-    result = []
-    for task in tasks:
-        if task.get("status") in ["Completed", "Approved"]:
-            continue
-        due = parse_timestamp(task.get("due_date")) if task.get("due_date") else None
-        if not due or due.astimezone(PK_TZ).date() <= cutoff:
-            result.append(task)
-    return result
-
-
-def load_personal_note():
-    try:
-        rows = (
-            supabase.table("personal_notes")
-            .select("*")
-            .eq("user_id", current_user_id)
-            .limit(1)
-            .execute()
-        ).data or []
-        return rows[0].get("content", "") if rows else ""
-    except Exception:
-        return ""
-
-
-def save_personal_note(content):
-    try:
-        supabase.table("personal_notes").upsert({
-            "user_id": current_user_id,
-            "content": content,
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }, on_conflict="user_id").execute()
-        return True
-    except Exception as error:
-        st.error(error)
-        return False
-
-
-def upload_hub_file(uploaded_file):
-    meta = upload_private_file("data-hub", uploaded_file, "shared")
-    if not meta:
-        return False
-    try:
-        supabase.table("shared_files").insert({
-            "uploader_id": current_user_id,
-            "uploader_name": name,
-            "file_path": meta["path"],
-            "file_name": meta["name"],
-            "file_type": meta["type"],
-            "file_size": meta["size"]
-        }).execute()
-        return True
-    except Exception as error:
-        st.error(error)
-        return False
-
-
-def load_hub_files():
-    try:
-        return (
-            supabase.table("shared_files")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(100)
-            .execute()
-        ).data or []
-    except Exception:
-        return []
-
-
-def upload_secure_portal_file(uploaded_file, allowed_user_ids):
-    meta = upload_private_file("secure-files", uploaded_file, "secure")
-    if not meta:
-        return False
-    try:
-        created = supabase.table("secure_files").insert({
-            "owner_id": current_user_id,
-            "owner_name": name,
-            "file_path": meta["path"],
-            "file_name": meta["name"],
-            "file_type": meta["type"],
-            "file_size": meta["size"]
-        }).execute()
-        file_id = created.data[0]["id"] if created.data else None
-        if file_id:
-            for uid in allowed_user_ids:
-                supabase.table("secure_file_access").insert({
-                    "file_id": file_id,
-                    "user_id": uid
-                }).execute()
-        return True
-    except Exception as error:
-        st.error(error)
-        return False
-
-
-def load_secure_portal_files():
-    try:
-        result = supabase.rpc("get_accessible_secure_files").execute()
-        return result.data or []
-    except Exception:
-        return []
-
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -3043,278 +2944,394 @@ def load_secure_portal_files():
 with st.sidebar:
 
     st.markdown(
-        """
-        <div class="side-brand">
-          <span class="brand-mark">T</span>
-          <strong>Techloom</strong>
-        </div>
-        """,
+        '<div class="sidebar-logo">'
+        '◈ TECHLOOM TASK'
+        '</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
-        f"""
-        <div class="side-user">
-          <b>{name}</b>
-          <small>{role} • {department}</small>
-        </div>
-        """,
+        '<div class="sidebar-subtitle">'
+        'Work Smart. Stay Organized.'
+        '</div>',
         unsafe_allow_html=True
     )
 
+    st.write(f"### {name}")
+
+    st.caption(role)
+    st.caption(department)
+
+    st.divider()
+
     chat_unread_count = get_unread_chat_count()
-    chat_label = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
+    group_chat_label = (
+        f"💬 Group Chat  🔴 {chat_unread_count}"
+        if chat_unread_count > 0
+        else "💬 Group Chat"
+    )
+
+    # ----------------------------
+    # NAVIGATION
+    # ----------------------------
+
+    common_tools = [
+        "🔎 Global Search",
+        "🧰 Task Workspace",
+        "👥 Team Attendance",
+        "💬 Direct Messages",
+        "📆 Calendar",
+        "📣 Announcements",
+        "📚 Knowledge Base",
+        group_chat_label,
+        "🔔 Notifications",
+        "⚙️ Settings"
+    ]
 
     if is_manager():
         menu_options = [
-            "Company HQ",
-            "My Tasks",
-            "Current Sprint",
-            "Timeline",
-            "Attendance",
-            "Team",
-            chat_label,
-            "Direct Messages",
-            "Data Hub",
-            "Knowledge Base",
-            "My Notes",
-            "Secure Folder",
-            "Settings",
+            "🏠 Dashboard",
+            "📋 Team Tasks",
+            "➕ Create Task",
+            "✅ Approvals",
+            "👥 Team Overview",
+            "🟢 Team Status",
+            "⏱ Attendance",
+            "📅 Attendance Report",
+            "📊 Reports",
+            "🧩 Task Templates",
+            "🔁 Recurring Tasks",
+            "🛡 Permissions",
+            "🧾 Audit Log",
+            "🛡 Compliance",
+        ] + common_tools + [
+            "📜 Activity"
         ]
+
+    elif name == "Talha":
+        menu_options = [
+            "🏠 Dashboard",
+            "📋 My Tasks",
+            "⏱ Attendance",
+            "🟠 Temu",
+            "🛡 Compliance",
+            "📨 Appeals",
+            "💬 Seller Support",
+        ] + common_tools + [
+            "📜 Activity"
+        ]
+
+    elif name == "Junaid":
+        menu_options = [
+            "🏠 Dashboard",
+            "📋 My Tasks",
+            "⏱ Attendance",
+            "🛒 Amazon",
+            "🛍 eBay",
+            "📦 Listing Uploads",
+        ] + common_tools + [
+            "📜 Activity"
+        ]
+
     else:
         menu_options = [
-            "Company HQ",
-            "My Tasks",
-            "Current Sprint",
-            "Timeline",
-            "Attendance",
-            "Team",
-            chat_label,
-            "Direct Messages",
-            "Data Hub",
-            "Knowledge Base",
-            "My Notes",
-            "Secure Folder",
-            "Settings",
+            "🏠 Dashboard",
+            "📋 My Tasks",
+            "⏱ Attendance",
+        ] + common_tools + [
+            "📜 Activity"
         ]
 
     page = st.radio(
         "Navigation",
         menu_options,
-        label_visibility="collapsed",
-        key="main_portal_nav"
+        label_visibility="collapsed"
     )
 
-    st.write("")
-    if is_manager():
-        if st.button("＋ New task", type="primary", use_container_width=True, key="sidebar_new_task"):
-            st.session_state["force_create_task"] = True
+    st.divider()
 
-    if st.button("Sign out", use_container_width=True, key="portal_logout"):
+    if st.session_state.get("notification_sound_enabled", False):
+        st.caption("🔊 Notification sound is ON")
+        if st.button(
+            "Test Sound",
+            key="test_notification_sound",
+            use_container_width=True
+        ):
+            play_notification_tone()
+    else:
+        if st.button(
+            "🔊 Enable Notification Sound",
+            key="enable_notification_sound",
+            use_container_width=True
+        ):
+            enable_notification_sound()
+            st.success("Sound enabled for this session.")
+
+    render_notification_monitor()
+
+    st.divider()
+
+    if st.button(
+        "🚪 Logout",
+        use_container_width=True
+    ):
+
         logout()
 
-# sidebar quick-create override
-if st.session_state.pop("force_create_task", False):
-    page = "Create Task"
 
 # ============================================================
 # DASHBOARD
 # ============================================================
 
-if page == "Company HQ":
+if page == "🏠 Dashboard":
 
-    portal_header("Techloom HQ")
-
-    current_day = datetime.now(PK_TZ)
-    tasks = load_all_tasks() if is_manager() else load_my_tasks()
-
-    active_statuses = {
-        "New",
-        "In Progress",
-        "Waiting on Information",
-        "Waiting on Platform",
-        "Submitted for Review",
-        "Changes Requested"
-    }
-
-    active_tasks = [
-        t for t in tasks
-        if t.get("status", "New") in active_statuses
-        and not t.get("archived", False)
-    ]
-
-    def _due_local(task):
-        if not task.get("due_date"):
-            return None
-        parsed = parse_timestamp(task.get("due_date"))
-        return parsed.astimezone(PK_TZ) if parsed else None
-
-    today = current_day.date()
-    due_today = [t for t in active_tasks if _due_local(t) and _due_local(t).date() == today]
-    overdue = [t for t in active_tasks if _due_local(t) and _due_local(t).date() < today]
-    urgent = [t for t in active_tasks if t.get("priority") == "Urgent"]
-    review = [t for t in active_tasks if t.get("status") == "Submitted for Review"]
+    render_team_shoutout_bar()
 
     st.markdown(
-        f"""
-        <div class="dashboard-hero">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
-            <div>
-              <div class="dashboard-hero-title">Dashboard</div>
-              <div class="dashboard-hero-copy">Your live workspace for today.</div>
-            </div>
-            <div class="hero-date">{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}</div>
-          </div>
-        </div>
-        """,
+        f'<div class="tech-title">'
+        f'Welcome, {name} 👋'
+        f'</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
-        f"""
-        <div class="today-strip">
-          <b>Today at Techloom</b> &nbsp; · &nbsp;
-          {len(due_today)} due today &nbsp; · &nbsp;
-          {len(overdue)} overdue &nbsp; · &nbsp;
-          {len(review)} awaiting review
-        </div>
-        """,
+        f'<div class="tech-subtitle">'
+        f'{department} • {role}'
+        f'</div>',
         unsafe_allow_html=True
     )
 
-    # Compact announcement: show only latest active one
-    try:
-        ann = (
-            supabase.table("announcements")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(1)
-            .execute()
-        ).data or []
-    except Exception:
-        ann = []
+    tasks = tasks_for_current_user()
 
-    if ann:
-        latest = ann[0]
+    today_date = datetime.now(PK_TZ).date()
+    due_today_count = 0
+    overdue_count = 0
+
+    for task_item in tasks:
+        due_value = task_item.get("due_date")
+        if due_value and task_item.get("status") not in ["Completed", "Approved"]:
+            try:
+                due_dt = datetime.fromisoformat(str(due_value).replace("Z", "+00:00"))
+                due_day = due_dt.date()
+                if due_day == today_date:
+                    due_today_count += 1
+                elif due_day < today_date:
+                    overdue_count += 1
+            except Exception:
+                pass
+
+    unread_dashboard = len(get_unread_notifications(limit=100))
+
+    st.markdown(
+        '<div class="workspace-hero">'
+        f'<div class="workspace-hero-title">Today at Techloom</div>'
+        f'<div class="workspace-hero-copy">'
+        f'{due_today_count} due today • {overdue_count} overdue • '
+        f'{unread_dashboard} unread notification(s)'
+        f'</div></div>',
+        unsafe_allow_html=True
+    )
+
+    pinned_announcements = [a for a in load_announcements() if a.get("pinned")]
+    for announcement in pinned_announcements[:2]:
+        tone = "error" if announcement.get("urgent") else "info"
+        message = f"📣 **{announcement.get('title', 'Announcement')}** — {announcement.get('body', '')}"
+        if tone == "error":
+            st.error(message)
+        else:
+            st.info(message)
+
+    total_count = len(tasks)
+
+    new_count = 0
+    progress_count = 0
+    review_count = 0
+    changes_count = 0
+    completed_count = 0
+
+    for task in tasks:
+
+        status = task.get(
+            "status",
+            ""
+        )
+
+        if status == "New":
+            new_count += 1
+
+        elif status == "In Progress":
+            progress_count += 1
+
+        elif status == "Submitted for Review":
+            review_count += 1
+
+        elif status == "Changes Requested":
+            changes_count += 1
+
+        elif status in [
+            "Completed",
+            "Approved"
+        ]:
+            completed_count += 1
+
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+
+    c1.metric(
+        "📋 Total Tasks",
+        total_count
+    )
+
+    c2.metric(
+        "🆕 New",
+        new_count
+    )
+
+    c3.metric(
+        "🕒 In Progress",
+        progress_count
+    )
+
+    c4.metric(
+        "📤 For Review",
+        review_count
+    )
+
+    c5.metric(
+        "🔄 Changes",
+        changes_count
+    )
+
+    c6.metric(
+        "✅ Done",
+        completed_count
+    )
+
+    st.write("")
+
+    st.markdown(
+        '<div class="section-title">'
+        'Today\'s Attendance'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    render_today_attendance()
+
+    st.write("")
+
+    left, right = st.columns(
+        [2.7, 1]
+    )
+
+    # --------------------------------------------------------
+    # RECENT TASKS
+    # --------------------------------------------------------
+
+    with left:
+
         st.markdown(
-            f"""
-            <div class="announcement-mini">
-              📣 <b>{display_value(latest.get("title"))}</b> — {display_value(latest.get("body"))}
-            </div>
-            """,
+            '<div class="section-title">'
+            'Recent Tasks'
+            '</div>',
             unsafe_allow_html=True
         )
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Active", len(active_tasks))
-    m2.metric("Due Today", len(due_today))
-    m3.metric("Urgent", len(urgent))
-    m4.metric("For Review", len(review))
+        if not tasks:
 
-    st.write("")
+            st.info(
+                "No tasks available."
+            )
 
-    left, right = st.columns([1.55, 1])
+        else:
 
-    with left:
-        st.markdown('<div class="section-title">Priority work</div>', unsafe_allow_html=True)
+            for task in tasks[:7]:
 
-        priority = []
-        seen = set()
-        for group in [overdue, urgent, due_today, review, active_tasks]:
-            for task in group:
-                tid = task.get("id")
-                if tid not in seen:
-                    priority.append(task)
-                    seen.add(tid)
+                title = task.get(
+                    "title",
+                    "Untitled Task"
+                )
 
-        if priority:
-            for idx, task in enumerate(priority[:6]):
-                due = _due_local(task)
-                due_label = due.strftime("%d %b") if due else "No due date"
+                platform = task.get(
+                    "platform",
+                    "N/A"
+                )
+
+                task_type = task.get(
+                    "task_type",
+                    "Task"
+                )
+
+                assigned_to = task.get(
+                    "assigned_to",
+                    "N/A"
+                )
+
+                priority = task.get(
+                    "priority",
+                    "Normal"
+                )
+
+                status = task.get(
+                    "status",
+                    "New"
+                )
+
+                task_html = (
+                    '<div class="task-card">'
+                    f'<div class="task-card-title">{title}</div>'
+                    f'<div class="task-meta">{platform} &nbsp; • &nbsp; '
+                    f'{task_type} &nbsp; • &nbsp; Assigned to: {assigned_to}</div>'
+                    f'<div class="task-meta">Priority: <b>{priority}</b> '
+                    f'&nbsp; • &nbsp; Status: <b>{status}</b></div>'
+                    '</div>'
+                )
+
                 st.markdown(
-                    f"""
-                    <div class="attention-card">
-                      <div class="attention-card-title">{display_value(task.get("title"))}</div>
-                      <div class="attention-card-meta">
-                        {display_value(task.get("platform"))} ·
-                        {display_value(task.get("status"))} ·
-                        {display_value(task.get("priority"))} ·
-                        {due_label}
-                      </div>
-                    </div>
-                    """,
+                    task_html,
                     unsafe_allow_html=True
                 )
-        else:
-            st.caption("Nothing urgent right now.")
+
+    # --------------------------------------------------------
+    # QUICK OVERVIEW
+    # --------------------------------------------------------
 
     with right:
-        st.markdown('<div class="section-title">Team today</div>', unsafe_allow_html=True)
 
-        try:
-            today_att = today_team_attendance()
-        except Exception:
-            today_att = []
+        st.markdown(
+            '<div class="section-title">'
+            'Quick Overview'
+            '</div>',
+            unsafe_allow_html=True
+        )
 
-        att_map = {r.get("employee_name"): r for r in today_att}
+        st.info(
+            f"🕒 Active tasks: "
+            f"{new_count + progress_count}"
+        )
 
-        for person in load_team_profiles()[:8]:
-            person_name = person.get("name")
-            rec = att_map.get(person_name)
+        st.info(
+            f"📤 Waiting review: "
+            f"{review_count}"
+        )
 
-            if rec:
-                status = f"{late_status(rec.get('check_in'))} · {format_pk_time(rec.get('check_in'))}"
-            else:
-                status = "Not marked"
+        st.info(
+            f"🔄 Changes requested: "
+            f"{changes_count}"
+        )
 
-            st.markdown(
-                f"""
-                <div class="attention-card">
-                  <div class="attention-card-title">{display_value(person_name)}</div>
-                  <div class="attention-card-meta">{status}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        st.success(
+            f"✅ Completed / Approved: "
+            f"{completed_count}"
+        )
 
-    st.write("")
-    st.markdown('<div class="section-title">Recent activity</div>', unsafe_allow_html=True)
-
-    try:
-        activity = (
-            supabase.table("task_activity")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(6)
-            .execute()
-        ).data or []
-    except Exception:
-        activity = []
-
-    if activity:
-        for item in activity:
-            st.markdown(
-                f"""
-                <div class="attention-card">
-                  <div class="attention-card-title">
-                    {display_value(item.get("user_name"), "User")} · {display_value(item.get("action"))}
-                  </div>
-                  <div class="attention-card-meta">
-                    {display_value(item.get("details"))} · {display_value(item.get("created_at"))}
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
 
 # ============================================================
 # MY TASKS / TEAM TASKS — WORK INBOX + KANBAN
 # ============================================================
 
-elif page == "My Tasks":
+elif page in ["📋 My Tasks","📋 Team Tasks"]:
 
-    portal_header("Tasks")
-    is_team_view = is_manager() and st.toggle("Team view", value=False, key="task_team_view_toggle")
+    is_team_view = page == "📋 Team Tasks"
     tasks = load_all_tasks() if is_team_view else load_my_tasks()
 
     st.markdown(
@@ -3454,7 +3471,7 @@ elif page == "My Tasks":
 # CREATE TASK
 # ============================================================
 
-elif page == "Create Task":
+elif page == "➕ Create Task":
 
     if not is_manager():
         st.error("You do not have permission to create tasks.")
@@ -3639,7 +3656,7 @@ elif page == "Create Task":
 # APPROVALS
 # ============================================================
 
-elif page == "✓ Approvals":
+elif page == "✅ Approvals":
 
     if not is_manager():
         st.error("Management access only.")
@@ -3791,9 +3808,7 @@ elif page == "✓ Approvals":
 # ATTENDANCE
 # ============================================================
 
-elif page == "Attendance":
-
-    portal_header("Attendance")
+elif page == "⏱ Attendance":
 
     now_local = datetime.now(PK_TZ)
     attendance_date = now_local.date()
@@ -4122,9 +4137,7 @@ elif page == "📅 Attendance Report":
 # TEAM OVERVIEW
 # ============================================================
 
-elif page == "Team":
-
-    portal_header("Team")
+elif page == "👥 Team Overview":
 
     if not is_manager():
 
@@ -4461,9 +4474,7 @@ elif page == "💬 Seller Support":
 # GROUP CHAT
 # ============================================================
 
-elif page.startswith("Chat"):
-
-    portal_header("Team Chat")
+elif page.startswith("💬 Group Chat"):
 
     # Opening the chat clears the red unread-chat badge.
     mark_chat_notifications_read()
@@ -4586,208 +4597,6 @@ elif page == "🔔 Notifications":
                 if stamp:
                     st.caption(stamp)
 
-
-
-
-# ============================================================
-# CURRENT SPRINT
-# ============================================================
-
-elif page == "Current Sprint":
-    portal_header("Current Sprint")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">WEEKLY FOCUS</span>'
-        '<h1>Current sprint</h1><p>Incomplete work due within the next seven days, plus tasks without a deadline.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
-    tasks = sprint_tasks()
-    if not tasks:
-        st.success("No sprint work is currently pending.")
-    else:
-        columns = [
-            ("To-do", ["New"]),
-            ("In progress", ["In Progress"]),
-            ("Waiting / review", ["Waiting on Information","Waiting on Platform","Submitted for Review","Changes Requested"]),
-            ("Complete", ["Completed","Approved"]),
-        ]
-        board = st.columns(4)
-        for idx, (label, statuses) in enumerate(columns):
-            with board[idx]:
-                group = [t for t in tasks if t.get("status") in statuses]
-                st.markdown(
-                    f'<div class="kanban-column-title">{label}<span class="kanban-count">{len(group)}</span></div>',
-                    unsafe_allow_html=True
-                )
-                for j, task in enumerate(group):
-                    render_task_card(task, f"sprint_{idx}_{j}")
-
-
-# ============================================================
-# TIMELINE
-# ============================================================
-
-elif page == "Timeline":
-    portal_header("Timeline")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">WORK HISTORY</span>'
-        '<h1>Timeline</h1><p>A chronological view of task changes, submissions and team activity.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
-    try:
-        q = (
-            supabase.table("task_activity")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(120)
-        )
-        if not is_manager():
-            q = q.eq("user_id", current_user_id)
-        rows = q.execute().data or []
-    except Exception:
-        rows = []
-
-    if not rows:
-        st.info("No timeline activity yet.")
-    else:
-        for item in rows:
-            st.markdown(
-                f"""
-                <div class="attention-card">
-                  <div class="attention-card-title">
-                    {display_value(item.get("user_name"), "User")} — {display_value(item.get("action"))}
-                  </div>
-                  <div class="attention-card-meta">
-                    {display_value(item.get("details"))} • {display_value(item.get("created_at"))}
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-
-# ============================================================
-# DATA HUB
-# ============================================================
-
-elif page == "Data Hub":
-    portal_header("Data Hub")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">SHARED FILES</span>'
-        '<h1>Data Hub</h1><p>Company files available to every authenticated team member.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
-    upload = st.file_uploader(
-        "Share a file with the team",
-        type=["pdf","doc","docx","xls","xlsx","csv","txt","png","jpg","jpeg","webp","zip"],
-        key="hub_file"
-    )
-    if upload and st.button("Upload to Data Hub", type="primary", key="hub_upload"):
-        if upload_hub_file(upload):
-            st.success("File shared.")
-            st.rerun()
-
-    st.write("")
-    files = load_hub_files()
-    if not files:
-        st.info("No shared files yet.")
-    else:
-        for f in files:
-            url = signed_file_url("data-hub", f.get("file_path"))
-            with st.container(border=True):
-                c1, c2 = st.columns([4,1])
-                with c1:
-                    st.markdown(f"**{display_value(f.get('file_name'))}**")
-                    st.caption(
-                        f"{display_value(f.get('uploader_name'))} • "
-                        f"{human_file_size(f.get('file_size'))} • "
-                        f"{display_value(f.get('created_at'))}"
-                    )
-                with c2:
-                    if url:
-                        st.link_button("Open", url, use_container_width=True)
-
-
-# ============================================================
-# MY NOTES
-# ============================================================
-
-elif page == "My Notes":
-    portal_header("My Notes")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">PRIVATE</span>'
-        '<h1>My notes</h1><p>A personal scratchpad visible only to your account.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-    note = load_personal_note()
-    content = st.text_area(
-        "Notes",
-        value=note,
-        height=440,
-        label_visibility="collapsed",
-        placeholder="Start writing…"
-    )
-    if st.button("Save note", type="primary"):
-        if save_personal_note(content):
-            st.success("Note saved.")
-
-
-# ============================================================
-# SECURE FOLDER
-# ============================================================
-
-elif page == "Secure Folder":
-    portal_header("Secure Folder")
-    st.markdown(
-        '<div class="page-head-new"><div><span class="eyebrow">RESTRICTED FILES</span>'
-        '<h1>Secure Folder</h1><p>Upload sensitive work files and choose who may access them.</p>'
-        '</div></div>',
-        unsafe_allow_html=True
-    )
-
-    team = [p for p in load_team_profiles() if str(p.get("id")) != str(current_user_id)]
-    label_to_id = {f"{p.get('name')} • {p.get('department','')}": p.get("id") for p in team}
-
-    secure_upload = st.file_uploader(
-        "Secure file",
-        type=["pdf","doc","docx","xls","xlsx","csv","txt","png","jpg","jpeg","webp","zip"],
-        key="secure_portal_upload"
-    )
-    allowed_labels = st.multiselect(
-        "Give access to",
-        list(label_to_id.keys()),
-        key="secure_portal_allowed"
-    )
-    if secure_upload and st.button("Upload securely", type="primary", key="secure_upload_btn"):
-        ids = [label_to_id[x] for x in allowed_labels]
-        if upload_secure_portal_file(secure_upload, ids):
-            st.success("Secure file uploaded.")
-            st.rerun()
-
-    st.write("")
-    secure_rows = load_secure_portal_files()
-    if not secure_rows:
-        st.info("No accessible secure files.")
-    else:
-        for f in secure_rows:
-            url = signed_file_url("secure-files", f.get("file_path"))
-            with st.container(border=True):
-                c1, c2 = st.columns([4,1])
-                with c1:
-                    st.markdown(f"**{display_value(f.get('file_name'))}**")
-                    st.caption(
-                        f"Owner: {display_value(f.get('owner_name'))} • "
-                        f"{human_file_size(f.get('file_size'))}"
-                    )
-                with c2:
-                    if url:
-                        st.link_button("Download", url, use_container_width=True)
 
 
 # ============================================================
@@ -4978,9 +4787,7 @@ elif page == "🧰 Task Workspace":
 # DIRECT MESSAGES
 # ============================================================
 
-elif page == "Direct Messages":
-
-    portal_header("Direct Messages")
+elif page == "💬 Direct Messages":
     st.markdown('<div class="tech-title">Direct Messages</div>', unsafe_allow_html=True)
     st.caption("Private one-to-one team chat.")
 
@@ -5049,9 +4856,7 @@ elif page == "📆 Calendar":
 # ANNOUNCEMENTS
 # ============================================================
 
-elif page == "Announcements":
-
-    portal_header("Announcements")
+elif page == "📣 Announcements":
     st.markdown('<div class="tech-title">Announcements</div>', unsafe_allow_html=True)
     st.caption("Pinned management messages for the whole team.")
 
@@ -5100,9 +4905,7 @@ elif page == "Announcements":
 # KNOWLEDGE BASE
 # ============================================================
 
-elif page == "Knowledge Base":
-
-    portal_header("Knowledge Base")
+elif page == "📚 Knowledge Base":
     st.markdown('<div class="tech-title">Knowledge & SOPs</div>', unsafe_allow_html=True)
     st.caption("Marketplace procedures, compliance notes, SOPs and internal references.")
 
@@ -5152,9 +4955,7 @@ elif page == "Knowledge Base":
 # TEAM ATTENDANCE — EVERYONE CAN VIEW + EXPORT
 # ============================================================
 
-elif page == "Team Attendance":
-
-    portal_header("Team Attendance")
+elif page == "👥 Team Attendance":
     st.markdown('<div class="tech-title">Team Attendance</div>', unsafe_allow_html=True)
     st.info("Official attendance tracking starts on 25 Aug 2026. Earlier dates are not counted as absent.")
     st.caption(
@@ -5299,9 +5100,7 @@ elif page == "🟢 Team Status":
 # REPORTS
 # ============================================================
 
-elif page == "Reports":
-
-    portal_header("Reports")
+elif page == "📊 Reports":
     if not is_manager():
         st.error("Management access only.")
         st.stop()
@@ -5561,9 +5360,7 @@ elif page == "🧾 Audit Log":
 # SETTINGS
 # ============================================================
 
-elif page == "Settings":
-
-    portal_header("Settings")
+elif page == "⚙️ Settings":
     st.markdown('<div class="tech-title">Settings</div>', unsafe_allow_html=True)
     prefs = get_user_preferences()
 
