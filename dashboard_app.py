@@ -584,96 +584,92 @@ button[data-baseweb="tab"][aria-selected="true"]{
   [data-testid="stSidebar"]{width:220px!important;min-width:220px!important}
 }
 
-/* ===== FINAL COMPACT PORTAL PATCH ===== */
+/* ===== STABLE V4 SIDEBAR / DASHBOARD PATCH ===== */
 
-/* Remove any remaining Streamlit radio controls / navigation label */
-[data-testid="stSidebar"] [data-testid="stRadio"] > label > div:first-child,
-[data-testid="stSidebar"] [data-testid="stRadio"] [data-baseweb="radio"],
-[data-testid="stSidebar"] [role="radio"] > div:first-child,
-[data-testid="stSidebar"] input[type="radio"],
-[data-testid="stSidebar"] [data-testid="stRadio"] svg {
-    display:none !important;
-    width:0 !important;
-    height:0 !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
+/* Sidebar navigation is button-based: no radio widget, no rerun loop. */
+.sidebar-section {
+    padding: 11px 7px 4px !important;
+    color: #9b9b95 !important;
+    font-size: 8px !important;
+    font-weight: 800 !important;
+    letter-spacing: .09em !important;
+    text-transform: uppercase;
 }
-[data-testid="stSidebar"] [data-testid="stRadio"] label {
-    grid-template-columns:1fr !important;
-    gap:0 !important;
+.sidebar-divider {
+    height: 1px;
+    background: #e8e8e4;
+    margin: 8px 6px 4px;
 }
-[data-testid="stSidebar"] .stRadio > label,
-[data-testid="stSidebar"] .stRadio > div > label:first-child {
-    display:none !important;
+[data-testid="stSidebar"] .stButton > button {
+    justify-content: flex-start !important;
+    text-align: left !important;
+    width: 100% !important;
+    min-height: 31px !important;
+    padding: 5px 8px !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    font-size: 11px !important;
+    font-weight: 520 !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+    background: #e7e7e3 !important;
+    border-color: #e7e7e3 !important;
+    color: #252524 !important;
+    font-weight: 700 !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="secondary"] {
+    background: transparent !important;
+    border-color: transparent !important;
+    color: #50504c !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {
+    background: #ededeb !important;
+    border-color: #ededeb !important;
 }
 
-/* More compact app top spacing */
-.main .block-container {
-    padding-top:.55rem !important;
+/* New-task and sign-out buttons get their own compact treatment */
+[data-testid="stSidebar"] .stButton button[data-testid="baseButton-primary"] {
+    justify-content: center !important;
+}
+
+/* Smaller overall top whitespace */
+.block-container {
+    padding-top: .72rem !important;
 }
 .portal-topbar {
-    margin-top:0 !important;
-    margin-bottom:12px !important;
-    min-height:38px !important;
-    padding-bottom:8px !important;
-}
-.dashboard-hero {
-    margin-bottom:10px !important;
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
+    min-height: 38px !important;
+    padding-bottom: 8px !important;
 }
 
-/* Sidebar grouping */
-.sidebar-section {
-    padding:11px 7px 4px !important;
-    color:#9b9b95 !important;
-    font-size:8px !important;
-    font-weight:800 !important;
-    letter-spacing:.09em !important;
-    text-transform:uppercase;
+/* Compact KPI cards */
+div[data-testid="stMetric"] {
+    min-height: 72px !important;
+    padding: 9px 11px 8px !important;
 }
-.sidebar-divider{
-    height:1px;
-    background:#e8e8e4;
-    margin:9px 6px 3px;
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    font-size: 22px !important;
 }
 
-/* Selected row subtle */
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){
-    background:#e7e7e3 !important;
-    box-shadow:none !important;
+/* Compact chips */
+.task-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 8.5px;
+    font-weight: 700;
+    margin-right: 4px;
 }
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{
-    background:#ededeb !important;
-}
+.task-chip.platform { background:#eef3f7; color:#5d6b76; }
+.task-chip.status { background:#f1f1ef; color:#66635d; }
+.task-chip.urgent { background:#ffe8e8; color:#a74343; }
+.task-chip.high { background:#fff0d7; color:#936116; }
+.task-chip.normal { background:#e8f2fb; color:#3475aa; }
+.task-chip.low { background:#efefec; color:#777; }
 
-/* Shorter KPI cards */
-div[data-testid="stMetric"]{
-    min-height:70px !important;
-    padding:9px 11px 8px !important;
-}
-div[data-testid="stMetric"] [data-testid="stMetricValue"]{
-    font-size:22px !important;
-}
-
-/* Task chips */
-.task-chip{
-    display:inline-flex;
-    align-items:center;
-    padding:2px 6px;
-    border-radius:999px;
-    font-size:8.5px;
-    font-weight:700;
-    margin-right:4px;
-}
-.task-chip.platform{background:#eef3f7;color:#5d6b76}
-.task-chip.status{background:#f1f1ef;color:#66635d}
-.task-chip.urgent{background:#ffe8e8;color:#a74343}
-.task-chip.high{background:#fff0d7;color:#936116}
-.task-chip.normal{background:#e8f2fb;color:#3475aa}
-.task-chip.low{background:#efefec;color:#777}
-
-/* Attendance indicator */
-.presence-dot{
+.presence-dot {
     display:inline-block;
     width:7px;
     height:7px;
@@ -681,21 +677,15 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"]{
     margin-right:6px;
     vertical-align:middle;
 }
-.presence-good{background:#38a169}
-.presence-warn{background:#dd9b2b}
-.presence-bad{background:#d9534f}
-.presence-neutral{background:#b9b9b4}
+.presence-good { background:#38a169; }
+.presence-warn { background:#dd9b2b; }
+.presence-bad { background:#d9534f; }
+.presence-neutral { background:#b9b9b4; }
 
-/* compact announcement */
-.announcement-mini{
-    padding:7px 10px !important;
-    font-size:9.8px !important;
-    margin-bottom:10px !important;
-}
-
-/* Make task rows look clickable */
-.clickable-row{
-    cursor:pointer;
+.announcement-mini {
+    padding: 7px 10px !important;
+    font-size: 9.8px !important;
+    margin-bottom: 10px !important;
 }
 
 </style>
@@ -3177,60 +3167,46 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    chat_unread_count = get_unread_chat_count()
-    chat_label = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
-
     if "portal_page" not in st.session_state:
         st.session_state.portal_page = "Company HQ"
 
-    def sidebar_group(title, options, key):
-        st.markdown(f'<div class="sidebar-section">{title}</div>', unsafe_allow_html=True)
-        current = st.session_state.portal_page
-        default_index = options.index(current) if current in options else 0
-        choice = st.radio(
-            title,
-            options,
-            index=default_index,
-            label_visibility="collapsed",
-            key=key
+    chat_unread_count = get_unread_chat_count()
+    chat_text = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
+
+    def nav_button(label, target, key):
+        active = st.session_state.portal_page == target
+        clicked = st.button(
+            label,
+            key=key,
+            type="primary" if active else "secondary",
+            use_container_width=True
         )
-        if choice != current:
-            st.session_state.portal_page = choice
+        if clicked and not active:
+            st.session_state.portal_page = target
             st.rerun()
 
-    sidebar_group(
-        "Workspace",
-        ["Company HQ", "My Tasks", "Current Sprint", "Timeline"],
-        "nav_workspace"
-    )
+    st.markdown('<div class="sidebar-section">Workspace</div>', unsafe_allow_html=True)
+    nav_button("⌂ Company HQ", "Company HQ", "nav_company")
+    nav_button("☑ My Tasks", "My Tasks", "nav_tasks")
+    nav_button("⚑ Current Sprint", "Current Sprint", "nav_sprint")
+    nav_button("▤ Timeline", "Timeline", "nav_timeline")
 
-    sidebar_group(
-        "Team",
-        ["Attendance", "Team"],
-        "nav_team"
-    )
+    st.markdown('<div class="sidebar-section">Team</div>', unsafe_allow_html=True)
+    nav_button("◴ Attendance", "Attendance", "nav_attendance")
+    nav_button("♙ Team", "Team", "nav_team")
 
-    sidebar_group(
-        "Collaboration",
-        [chat_label, "Direct Messages"],
-        "nav_collab"
-    )
+    st.markdown('<div class="sidebar-section">Collaboration</div>', unsafe_allow_html=True)
+    nav_button(f"◌ {chat_text}", "Chat", "nav_chat")
+    nav_button("◍ Direct Messages", "Direct Messages", "nav_dm")
 
-    sidebar_group(
-        "Data",
-        ["Data Hub", "Knowledge Base", "My Notes", "Secure Folder"],
-        "nav_data"
-    )
+    st.markdown('<div class="sidebar-section">Data</div>', unsafe_allow_html=True)
+    nav_button("⇧ Data Hub", "Data Hub", "nav_data")
+    nav_button("▧ Knowledge Base", "Knowledge Base", "nav_kb")
+    nav_button("▧ My Notes", "My Notes", "nav_notes")
+    nav_button("▣ Secure Folder", "Secure Folder", "nav_secure")
 
-    sidebar_group(
-        "Account",
-        ["Settings"],
-        "nav_account"
-    )
-
-    page = st.session_state.portal_page
-    if page.startswith("Chat"):
-        page = "Chat"
+    st.markdown('<div class="sidebar-section">Account</div>', unsafe_allow_html=True)
+    nav_button("⚙ Settings", "Settings", "nav_settings")
 
     st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
 
@@ -3241,6 +3217,8 @@ with st.sidebar:
 
     if st.button("Sign out", use_container_width=True, key="portal_logout"):
         logout()
+
+page = st.session_state.get("portal_page", "Company HQ")
 
 # ============================================================
 # DASHBOARD
@@ -3280,10 +3258,11 @@ if page == "Company HQ":
     urgent = [t for t in active_tasks if t.get("priority") == "Urgent"]
     review = [t for t in active_tasks if t.get("status") == "Submitted for Review"]
 
-    hleft, hright = st.columns([8.5, 1.5])
-    with hleft:
+    head_left, head_right = st.columns([8.6, 1.4])
+
+    with head_left:
         st.markdown(
-            f"""
+            """
             <div class="dashboard-hero">
               <div class="dashboard-hero-title">Dashboard</div>
               <div class="dashboard-hero-copy">Your live workspace for today.</div>
@@ -3291,9 +3270,12 @@ if page == "Company HQ":
             """,
             unsafe_allow_html=True
         )
-    with hright:
+
+    with head_right:
         st.markdown(
-            f'<div class="hero-date" style="margin-bottom:7px">{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}</div>',
+            f'<div class="hero-date" style="margin-bottom:6px">'
+            f'{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}'
+            f'</div>',
             unsafe_allow_html=True
         )
         if is_manager():
@@ -3362,14 +3344,16 @@ if page == "Company HQ":
             for idx, task in enumerate(priority[:6]):
                 due = _due_local(task)
                 due_label = due.strftime("%d %b") if due else "No due date"
+
                 priority_value = display_value(task.get("priority"), "Normal")
                 priority_class = str(priority_value).lower()
 
-                row_left, row_right = st.columns([8.5, 1.5])
-                with row_left:
+                left_card, right_action = st.columns([8.5, 1.5])
+
+                with left_card:
                     st.markdown(
                         f"""
-                        <div class="attention-card clickable-row">
+                        <div class="attention-card">
                           <div class="attention-card-title">{display_value(task.get("title"))}</div>
                           <div class="attention-card-meta">
                             <span class="task-chip platform">{display_value(task.get("platform"))}</span>
@@ -3381,8 +3365,13 @@ if page == "Company HQ":
                         """,
                         unsafe_allow_html=True
                     )
-                with row_right:
-                    if st.button("Open", key=f"dash_open_{task.get('id')}_{idx}", use_container_width=True):
+
+                with right_action:
+                    if st.button(
+                        "Open",
+                        key=f"dash_open_{task.get('id')}_{idx}",
+                        use_container_width=True
+                    ):
                         st.session_state["selected_task_id"] = task.get("id")
                         st.session_state.portal_page = "My Tasks"
                         st.rerun()
@@ -3401,14 +3390,16 @@ if page == "Company HQ":
 
         unique_people = []
         seen_people = set()
+
         for person in load_team_profiles():
-            dedupe_key = (
-                str(person.get("id") or "").strip().lower()
-                or str(person.get("email") or "").strip().lower()
-                or str(person.get("name") or "").strip().lower()
-            )
+            person_name = str(person.get("name") or "").strip()
+            person_email = str(person.get("email") or "").strip().lower()
+            person_id = str(person.get("id") or "").strip()
+
+            dedupe_key = person_id or person_email or person_name.lower()
             if not dedupe_key or dedupe_key in seen_people:
                 continue
+
             seen_people.add(dedupe_key)
             unique_people.append(person)
 
@@ -3424,6 +3415,7 @@ if page == "Company HQ":
                     dot_class = "presence-warn"
                 else:
                     dot_class = "presence-bad"
+
                 status = f"{arrival} · {format_pk_time(rec.get('check_in'))}"
             else:
                 dot_class = "presence-neutral"
