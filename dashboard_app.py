@@ -2251,12 +2251,69 @@ ATTENDANCE_START_DATE = datetime(2026, 8, 25).date()  # Official first attendanc
 # HELPERS
 # ============================================================
 
-def is_manager():
+def normalized_role(value=None):
+    """Normalize profile role strings so harmless naming differences do not break permissions."""
+    raw = str(value if value is not None else role or "").strip().lower()
+    raw = re.sub(r"[^a-z0-9]+", " ", raw)
+    return " ".join(raw.split())
 
-    return role in [
-        "Admin",
-        "Team Lead"
-    ]
+
+def is_manager():
+    """
+    Management-level access.
+
+    Supports common role labels instead of depending on one exact database string.
+    """
+    return normalized_role() in {
+        "admin",
+        "administrator",
+        "team lead",
+        "team leader",
+        "teamlead",
+        "manager",
+        "operations manager",
+    }
+
+
+def role_feature_allowed(feature):
+    """
+    Read the role_permissions table when available.
+
+    This makes the Permissions page actually influence feature access instead
+    of being only a settings screen. If the table cannot be read because of
+    RLS or has no row, we fall back to the built-in role rules below.
+    """
+    try:
+        rows = (
+            supabase.table("role_permissions")
+            .select("allowed")
+            .eq("role", role)
+            .eq("feature", feature)
+            .limit(1)
+            .execute()
+        ).data or []
+
+        if rows:
+            return bool(rows[0].get("allowed"))
+    except Exception:
+        pass
+
+    return None
+
+
+def can_create_tasks():
+    """
+    Permission used by the sidebar and Create Task page.
+
+    Explicit role_permissions wins when configured; otherwise management roles
+    are allowed. This fixes users such as Aifa being blocked only because their
+    role label differs from the exact string 'Team Lead'.
+    """
+    configured = role_feature_allowed("create_task")
+    if configured is not None:
+        return configured
+
+    return is_manager()
 
 
 def load_all_tasks():
@@ -4594,7 +4651,7 @@ with st.sidebar:
     )
 
     st.write("")
-    if is_manager():
+    if can_create_tasks():
         if st.button("＋ New task", type="primary", use_container_width=True, key="sidebar_new_task"):
             st.session_state["force_create_task"] = True
 
@@ -5364,12 +5421,22 @@ elif page == "My Tasks":
 
 elif page == "Create Task":
 
-    if not is_manager():
-        st.error("You do not have permission to create tasks.")
+    if not can_create_tasks():
+        st.error(
+            "You do not have permission to create tasks. "
+            f"Your current profile role is: {role!r}."
+        )
+        st.caption(
+            "An Admin can enable the create_task permission for your role "
+            "from Role Permissions."
+        )
         st.stop()
 
     portal_header("Assign work")
     st.markdown('<div class="tech-title">Assign work</div>', unsafe_allow_html=True)
+    st.caption(
+        f"Signed in as {name} · Role: {role} · Task assignment permission: enabled"
+    )
     st.markdown(
         '<div class="tech-subtitle">Create a focused brief, balance team capacity and make the expected output obvious.</div>',
         unsafe_allow_html=True
@@ -5536,8 +5603,22 @@ elif page == "Create Task":
                     st.rerun()
 
                 except Exception as error:
+                    error_text = str(error)
                     st.error("Could not create task.")
-                    st.write(error)
+
+                    if (
+                        "42501" in error_text
+                        or "row-level security" in error_text.lower()
+                        or "permission denied" in error_text.lower()
+                    ):
+                        st.warning(
+                            "The portal permission check passed, but Supabase "
+                            "Row Level Security rejected the task insert. "
+                            "Run the supplied task-assignment RLS migration in "
+                            "Supabase SQL Editor."
+                        )
+
+                    st.code(error_text)
 
 
 # ============================================================
