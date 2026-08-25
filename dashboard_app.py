@@ -38,573 +38,207 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
-
-:root {
-    --brand-900: #082e28;
-    --brand-700: #0b5f56;
-    --brand-600: #0e7d70;
-    --brand-500: #159c8c;
-    --brand-100: #e7f6f3;
-    --gold: #b3811f;
-    --gold-soft: #faf2e0;
-    --success: #1f9d63;
-    --success-soft: #eafbf2;
-    --danger: #d64545;
-    --danger-soft: #fdeeee;
-    --ink: #11162a;
-    --ink-soft: #454b63;
-    --muted: #767c92;
-    --line: #e8eaf1;
-    --line-soft: #f0f1f6;
-    --panel: #ffffff;
-    --page-bg: #f8f9fc;
-    --sidebar-bg: linear-gradient(195deg, #0a352f 0%, #0e544c 55%, #0a3f39 100%);
-    --sidebar-bg-fallback: #0b4a43;
-    --r-sm: 8px;
-    --r-md: 12px;
-    --r-lg: 16px;
-    --shadow-xs: 0 1px 2px rgba(17,22,42,.05);
-    --shadow-sm: 0 2px 8px rgba(17,22,42,.06);
-    --shadow-md: 0 6px 18px rgba(17,22,42,.08);
-    --shadow-lg: 0 16px 40px rgba(17,22,42,.12);
-
-    /* legacy aliases kept so nothing else in the app breaks */
-    --teal: var(--brand-600);
-    --teal-light: var(--brand-500);
-    --amber: var(--gold);
-    --amber-soft: var(--gold-soft);
-    --green: var(--success);
-    --red: var(--danger);
-}
-
-html, body, [class*="css"] {
-    font-family: 'Inter', -apple-system, sans-serif;
-}
-
-h1, h2, h3, h4, .tech-title, .section-title, .task-board-title,
-.workspace-hero-title, .attendance-date, .login-heading, .login-card-title,
-.sidebar-logo {
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-}
-
-/* ------------------------------------------------------------
-   APP BACKGROUND
-   ------------------------------------------------------------ */
-.stApp {
-    background: var(--page-bg);
-    color: var(--ink);
-}
-
-.block-container {
-    max-width: 1460px;
-    padding-top: 2rem;
-    padding-bottom: 3rem;
-}
-
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d7dae5; border-radius: 20px; }
-::-webkit-scrollbar-thumb:hover { background: #c1c5d6; }
-
-/* ------------------------------------------------------------
-   SIDEBAR
-   ------------------------------------------------------------ */
-[data-testid="stSidebar"] {
-    background: var(--sidebar-bg-fallback);
-    background: var(--sidebar-bg);
-    border-right: none;
-    min-width: 300px;
-}
-
-[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    padding: 1.4rem 1rem 1.1rem 1rem;
-}
-
-[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] span,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] div {
-    color: #ffffff;
-}
-
-[data-testid="stSidebar"] .stCaption,
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-    color: rgba(255,255,255,.68) !important;
-}
-
-.sidebar-logo {
-    font-size: 21px;
-    line-height: 1.2;
-    font-weight: 800;
-    letter-spacing: -.3px;
-    color: #ffffff;
-    margin-top: .3rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.sidebar-subtitle {
-    font-size: 11.5px;
-    color: rgba(255,255,255,.66) !important;
-    letter-spacing: .3px;
-    text-transform: uppercase;
-    margin-top: 5px;
-    margin-bottom: 20px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid rgba(255,255,255,.14);
-}
-
-[data-testid="stSidebar"] [role="radiogroup"] {
-    gap: 2px;
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label {
-    width: 100%;
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    border-radius: 10px;
-    padding: 9px 12px !important;
-    margin: 1px 0;
-    background: transparent;
-    transition: background .15s ease, transform .1s ease;
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
-    background: rgba(255,255,255,.08);
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label p {
-    color: rgba(255,255,255,.86) !important;
-    font-weight: 600 !important;
-    font-size: 13.5px !important;
-    line-height: 1.25 !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
-    background: #ffffff;
-    box-shadow: 0 6px 16px rgba(0,0,0,.18);
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
-    color: var(--brand-700) !important;
-    font-weight: 700 !important;
-}
-
-[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
-[data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
-[data-testid="stSidebar"] input[type="radio"] {
-    display: none !important;
-}
-
-[data-testid="stSidebar"] .stButton > button {
-    width: 100%;
-    background: rgba(255,255,255,.08) !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255,255,255,.22) !important;
-    box-shadow: none !important;
-    margin-top: 6px;
-    border-radius: 10px !important;
-}
-
-[data-testid="stSidebar"] .stButton > button p,
-[data-testid="stSidebar"] .stButton > button span {
-    color: #ffffff !important;
-    font-weight: 650 !important;
-}
-
-[data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(255,255,255,.16) !important;
-    border-color: rgba(255,255,255,.36) !important;
-}
-
-/* ------------------------------------------------------------
-   TITLES & TEXT
-   ------------------------------------------------------------ */
-.tech-title {
-    font-size: clamp(24px, 2.4vw, 33px);
-    line-height: 1.18;
-    font-weight: 700;
-    letter-spacing: -.5px;
-    color: var(--ink);
-    margin-bottom: 4px;
-}
-
-.tech-subtitle {
-    font-size: 13.5px;
-    color: var(--muted);
-    margin-bottom: 22px;
-}
-
-.section-title {
-    font-size: 16px;
-    line-height: 1.2;
-    font-weight: 700;
-    color: var(--ink);
-    letter-spacing: -.1px;
-    margin-top: 10px;
-    margin-bottom: 12px;
-}
-
-.stApp p, .stApp label, .stApp li { color: var(--ink-soft); }
-.stApp h1, .stApp h2, .stApp h3, .stApp h4 { color: var(--ink); font-weight: 700; }
-
-/* ------------------------------------------------------------
-   METRIC CARDS
-   ------------------------------------------------------------ */
-div[data-testid="stMetric"] {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--gold);
-    padding: 16px 18px 14px 18px;
-    border-radius: var(--r-md);
-    box-shadow: var(--shadow-xs);
-    min-height: 104px;
-    transition: box-shadow .15s ease, transform .12s ease;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#ffffff;
+  --sidebar:#f7f7f5;
+  --line:#e9e9e6;
+  --text:#252524;
+  --muted:#787872;
+  --soft:#f2f2ef;
+  --blue:#2383e2;
+  --blue-soft:#eef6fd;
+  --green:#2e7241;
+  --green-soft:#edf8f0;
+  --amber:#9a6b20;
+  --amber-soft:#fbf3df;
+  --red:#b54848;
+  --red-soft:#fff0f0;
+  --shadow:0 6px 22px rgba(32,32,30,.06);
+}
+
+html,body,[class*="css"]{
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.stApp{background:var(--bg);color:var(--text)}
+.block-container{max-width:1360px;padding:2.1rem 2.2rem 4rem}
+
+/* sidebar */
+[data-testid="stSidebar"]{
+  background:var(--sidebar);
+  border-right:1px solid var(--line);
+}
+[data-testid="stSidebar"] [data-testid="stSidebarContent"]{padding:1rem .8rem}
+.side-brand{
+  display:flex;align-items:center;gap:9px;
+  height:44px;padding:0 7px;margin-bottom:5px
+}
+.brand-mark{
+  width:25px;height:25px;border-radius:8px;background:#20201f;color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:11px
+}
+.side-brand strong{font-size:14px;color:#252524;letter-spacing:-.02em}
+.side-user{
+  border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px;margin:8px 0 10px
+}
+.side-user b{display:block;font-size:12px;color:#252524}
+.side-user small{display:block;font-size:10px;color:#8b8b84;margin-top:3px}
+.nav-section{
+  font-size:9px;color:#9b9b95;padding:14px 8px 5px;
+  letter-spacing:.08em;font-weight:700
+}
+
+[data-testid="stSidebar"] [role="radiogroup"]{gap:2px}
+[data-testid="stSidebar"] [data-testid="stRadio"] label{
+  width:100%;min-height:34px;padding:6px 8px!important;border-radius:6px;margin:0
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{background:#ecece9}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){background:#e9e9e6}
+[data-testid="stSidebar"] [data-testid="stRadio"] label p{
+  color:#4d4d49!important;font-size:12px!important;font-weight:520!important
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p{
+  color:#252524!important;font-weight:650!important
+}
+[data-testid="stSidebar"] [data-baseweb="radio"]>div:first-child,
+[data-testid="stSidebar"] input[type="radio"]{display:none!important}
+[data-testid="stSidebar"] p,[data-testid="stSidebar"] span,[data-testid="stSidebar"] label{color:#555550}
+[data-testid="stSidebar"] .stButton>button{
+  width:100%;min-height:34px;border-radius:7px!important;background:#fff!important;
+  border:1px solid #dfdfdb!important;color:#333!important;box-shadow:none!important;font-size:11px
+}
+
+/* topbar */
+.portal-topbar{
+  position:relative;display:flex;justify-content:space-between;align-items:center;
+  margin:-.4rem 0 2.2rem;padding-bottom:14px;border-bottom:1px solid #f0f0ed
 }
+.crumb{display:flex;align-items:center;gap:8px;color:#5f5f59;font-size:12px;font-weight:600}
+.crumb-mark{font-size:11px}
+.top-user{display:flex;align-items:center;gap:8px;color:#686862;font-size:11px}
+.top-avatar{
+  width:27px;height:27px;border-radius:50%;background:#2f80ed;color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800
+}
+.notify-dot{
+  min-width:24px;height:24px;border-radius:6px;background:#f5f5f2;border:1px solid #e8e8e4;
+  display:inline-flex;align-items:center;justify-content:center;color:#666;font-size:11px
+}
+
+/* page */
+.eyebrow{display:block;font-size:9px;letter-spacing:.1em;color:#93938c;font-weight:800;margin-bottom:10px}
+.page-head-new{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:21px
+}
+.page-head-new h1{font-size:34px;letter-spacing:-.045em;margin:0 0 6px;color:#252524}
+.page-head-new p{color:var(--muted);margin:0;max-width:660px;font-size:12px}
+.page-title{font-size:34px;font-weight:760;letter-spacing:-.045em;color:#252524;line-height:1.05}
+.page-subtitle{font-size:12px;color:var(--muted);margin-top:6px}
+.tech-title{font-size:34px;font-weight:760;letter-spacing:-.045em;color:#252524}
+.tech-subtitle{font-size:12px;color:var(--muted);margin-bottom:20px}
+
+/* tabs */
+button[data-baseweb="tab"]{font-size:11px!important;color:#777!important;padding:8px 10px!important}
+button[data-baseweb="tab"][aria-selected="true"]{color:#222!important;font-weight:700!important}
+[data-baseweb="tab-highlight"]{background:#222!important;height:1.5px!important}
 
-div[data-testid="stMetric"]:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
+/* panels */
+.panel,.workspace-hero,.task-board-header,.attendance-hero{
+  border:1px solid var(--line);border-radius:11px;background:#fff;padding:18px;box-shadow:none
 }
+.workspace-hero-title,.task-board-title{font-size:14px;font-weight:700;color:#292927}
+.workspace-hero-copy,.task-board-copy{font-size:11px;color:#85857e;margin-top:4px}
 
-div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
-    color: var(--muted) !important;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: .4px;
+/* metrics */
+div[data-testid="stMetric"]{
+  border:1px solid var(--line);border-radius:10px;padding:16px;background:#fff;box-shadow:none;min-height:94px
 }
-
-div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: var(--ink) !important;
-    font-weight: 750;
-    letter-spacing: -.6px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-/* ------------------------------------------------------------
-   TASK CARDS
-   ------------------------------------------------------------ */
-.task-card {
-    background: var(--panel);
-    padding: 14px 18px 14px 16px;
-    border-radius: var(--r-sm);
-    border: 1px solid var(--line);
-    border-left: 4px solid var(--gold);
-    margin-bottom: 9px;
-    box-shadow: var(--shadow-xs);
-    transition: box-shadow .15s ease, transform .12s ease;
-}
-
-.task-card:hover {
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-1px);
-}
-
-.task-card-title {
-    font-size: 14.5px;
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 5px;
-}
-
-.task-meta {
-    color: var(--muted);
-    font-size: 12.5px;
-    margin-top: 3px;
-}
-
-/* ------------------------------------------------------------
-   BUTTONS
-   ------------------------------------------------------------ */
-.stButton > button, .stFormSubmitButton > button {
-    border-radius: var(--r-sm) !important;
-    min-height: 42px;
-    font-weight: 600;
-    border: 1px solid #dfe2ea;
-    box-shadow: none;
-    transition: all .14s ease;
-}
-
-.stButton > button:hover, .stFormSubmitButton > button:hover {
-    border-color: #c7cbdb;
-    box-shadow: var(--shadow-xs);
-    transform: translateY(-1px);
-}
-
-button[kind="primary"] {
-    background: var(--brand-700) !important;
-    border: none !important;
-}
-
-button[kind="primary"]:hover {
-    background: var(--brand-900) !important;
-}
-
-/* ------------------------------------------------------------
-   INPUTS
-   ------------------------------------------------------------ */
-[data-baseweb="input"] > div,
-[data-baseweb="textarea"] > div,
-[data-baseweb="select"] > div {
-    border-radius: var(--r-sm) !important;
-    border-color: #dde0e8 !important;
-    background: #ffffff !important;
-}
-
-[data-baseweb="input"] input,
-[data-baseweb="textarea"] textarea,
-[data-baseweb="select"] input,
-[data-baseweb="select"] div {
-    color: var(--ink) !important;
-}
-
-[data-baseweb="input"] > div:focus-within,
-[data-baseweb="textarea"] > div:focus-within,
-[data-baseweb="select"] > div:focus-within {
-    border-color: var(--brand-600) !important;
-    box-shadow: 0 0 0 3px rgba(14,125,112,.14) !important;
-}
-
-/* ------------------------------------------------------------
-   EXPANDERS
-   ------------------------------------------------------------ */
-[data-testid="stExpander"] {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--r-md);
-    overflow: hidden;
-    box-shadow: var(--shadow-xs);
-    margin-bottom: 10px;
-}
-
-/* ------------------------------------------------------------
-   TABLES
-   ------------------------------------------------------------ */
-[data-testid="stDataFrame"], [data-testid="stTable"] {
-    background: #ffffff;
-    border-radius: var(--r-md);
-    overflow: hidden;
-    border: 1px solid var(--line);
-}
-
-[data-testid="stDataFrame"] * {
-    color: #2c3142;
-}
-
-/* ------------------------------------------------------------
-   ALERTS
-   ------------------------------------------------------------ */
-[data-testid="stAlert"] {
-    border-radius: var(--r-sm);
-    border-width: 1px;
-    box-shadow: var(--shadow-xs);
-}
-
-[data-testid="stAlert"] p {
-    color: #1e2333 !important;
-    font-weight: 500;
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] p{
+  color:#81817b!important;font-size:10px!important;font-weight:650!important
 }
-
-/* ------------------------------------------------------------
-   TABS
-   ------------------------------------------------------------ */
-button[data-baseweb="tab"] {
-    font-weight: 600;
-    color: var(--muted);
+div[data-testid="stMetric"] [data-testid="stMetricValue"]{
+  color:#252524!important;font-size:28px!important;font-weight:730!important;letter-spacing:-.04em
 }
 
-button[data-baseweb="tab"][aria-selected="true"] {
-    color: var(--brand-700) !important;
+/* task board */
+.work-card,.task-card,.attention-card{
+  background:#fff;border:1px solid #e6e6e2;border-radius:8px;padding:11px;margin-bottom:7px;
+  box-shadow:0 1px 2px rgba(0,0,0,.02);transition:.15s ease
 }
-
-[data-baseweb="tab-highlight"] {
-    background-color: var(--brand-600) !important;
+.work-card:hover,.task-card:hover,.attention-card:hover{
+  transform:translateY(-1px);box-shadow:0 5px 16px rgba(0,0,0,.05);border-color:#d7d7d2
 }
-
-/* ------------------------------------------------------------
-   MISC
-   ------------------------------------------------------------ */
-hr { border-color: var(--line) !important; }
-
-.login-shell {
-    min-height: 77vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.work-card-title,.task-card-title,.attention-card-title{
+  display:block;font-size:12.5px;font-weight:650;line-height:1.35;color:#292927
 }
-
-.login-hero { padding: 30px 6px 20px 6px; }
-
-.login-kicker {
-    display: inline-block;
-    padding: 6px 13px;
-    border-radius: 999px;
-    background: var(--gold-soft);
-    color: var(--gold);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .3px;
-    margin-bottom: 14px;
+.work-meta,.task-meta,.attention-card-meta{font-size:10px;color:#8c8c86;line-height:1.55;margin-top:4px}
+.status-chip,.status-pill{
+  display:inline-flex;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:650;
+  background:#eee;color:#555;margin-right:3px;border:0
 }
-
-.login-heading {
-    font-size: clamp(30px, 3.8vw, 48px);
-    line-height: 1.1;
-    font-weight: 800;
-    letter-spacing: -1.3px;
-    color: var(--ink);
-    max-width: 720px;
+.priority-urgent{background:#ffe5e5;color:#a63d3d}
+.priority-high{background:#fff0d7;color:#956515}
+.priority-normal{background:#e8f2fb;color:#3574a7}
+.priority-low{background:#f0f0ed;color:#777}
+.kanban-column-title{
+  font-size:10px;font-weight:700;color:#696963;margin-bottom:7px;text-transform:none;letter-spacing:0
 }
+.kanban-count{float:right;color:#aaa}
+[data-testid="column"]{min-width:0}
 
-.login-copy {
-    font-size: 14.5px;
-    line-height: 1.7;
-    color: var(--muted);
-    max-width: 590px;
-    margin-top: 16px;
+/* forms */
+[data-baseweb="input"]>div,[data-baseweb="textarea"]>div,[data-baseweb="select"]>div{
+  border:1px solid #deded9!important;border-radius:7px!important;background:#fff!important;min-height:39px
 }
-
-.login-card-title {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--ink);
-    margin-bottom: 3px;
+[data-baseweb="input"]>div:focus-within,[data-baseweb="textarea"]>div:focus-within,[data-baseweb="select"]>div:focus-within{
+  border-color:#8db9e8!important;box-shadow:0 0 0 3px rgba(35,131,226,.10)!important
 }
-
-.login-card-copy {
-    color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 10px;
+.stTextInput label p,.stTextArea label p,.stSelectbox label p,.stDateInput label p,
+.stNumberInput label p,.stFileUploader label p{
+  font-size:10.5px!important;color:#666!important;font-weight:600!important
 }
 
-@media (max-width: 900px) {
-    .block-container { padding-top: 1.2rem; padding-left: 1rem; padding-right: 1rem; }
-    .tech-title { font-size: 24px; }
+/* buttons */
+.stButton>button,.stFormSubmitButton>button,.stDownloadButton>button,.stLinkButton>a{
+  border:1px solid #dfdfdb;border-radius:7px!important;background:#fff;min-height:36px;
+  font-size:11px;font-weight:600;box-shadow:none
 }
-
-.workspace-hero {
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
-    padding: 20px 22px;
-    background: linear-gradient(135deg, var(--brand-100) 0%, #ffffff 55%, var(--gold-soft) 100%);
-    margin-bottom: 18px;
+button[kind="primary"],.stFormSubmitButton button[kind="primary"]{
+  background:var(--blue)!important;border-color:var(--blue)!important;color:#fff!important
 }
-.workspace-hero-title { font-size: 15px; font-weight: 750; color: var(--ink); }
-.workspace-hero-copy { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
-.status-pill {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: var(--success-soft);
-    color: var(--success);
-    font-size: 11px;
-    font-weight: 700;
+/* tables */
+[data-testid="stDataFrame"],[data-testid="stTable"]{
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff
 }
 
-.chat-bubble {
-    border: 1px solid var(--line);
-    border-radius: var(--r-md);
-    padding: 10px 12px;
-    margin: 6px 0;
-    background: #fff;
-}
+/* attendance */
+.attendance-hero{background:linear-gradient(145deg,#fff,#f8f8f5);padding:20px}
+.attendance-eyebrow{font-size:9px;letter-spacing:.08em;color:#93938c;font-weight:700;text-transform:uppercase}
+.attendance-date{font-size:27px;font-weight:730;letter-spacing:-.04em;color:#252524;margin-top:5px}
+.attendance-day,.attendance-note{font-size:10.5px;color:#85857e}
+.attendance-status-card{border:1px solid var(--line);border-radius:10px;background:#fff;padding:14px;min-height:108px}
+.attendance-label{font-size:9px;color:#85857e;font-weight:750;text-transform:uppercase;letter-spacing:.04em}
+.attendance-value{font-size:18px;font-weight:700;color:#252524;margin-top:7px}
+.attendance-rules{border:1px solid var(--line);border-radius:8px;background:#fafaf8;color:#686862;padding:10px 12px;font-size:10px}
 
-footer { visibility: hidden; }
+/* expanders + alerts */
+[data-testid="stExpander"]{border:1px solid var(--line);border-radius:9px;background:#fff}
+[data-testid="stAlert"]{border-radius:8px}
 
-/* ------------------------------------------------------------
-   TASK EXPERIENCE
-   ------------------------------------------------------------ */
-.task-board-header {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:14px;
-    padding:18px 20px;
-    border:1px solid var(--line);
-    border-radius:var(--r-lg);
-    background:linear-gradient(135deg,#ffffff 0%,#f6faf9 100%);
-    margin-bottom:14px;
-}
-.task-board-title { font-size:19px; font-weight:800; color:var(--ink); }
-.task-board-copy { color:var(--muted); font-size:13px; margin-top:3px; }
-.work-card {
-    border:1px solid var(--line);
-    border-radius:var(--r-md);
-    background:#fff;
-    padding:14px;
-    margin-bottom:10px;
-    box-shadow:var(--shadow-xs);
-    transition: box-shadow .15s ease, transform .12s ease;
-}
-.work-card:hover { box-shadow:var(--shadow-md); transform: translateY(-1px); }
-.work-card-title { font-weight:750; font-size:14px; color:var(--ink); margin-bottom:6px; }
-.work-meta { font-size:12px; color:var(--muted); line-height:1.6; }
-.status-chip {
-    display:inline-block;
-    padding:4px 9px;
-    border-radius:999px;
-    font-size:11px;
-    font-weight:700;
-    border:1px solid #e1e5ea;
-    background:#f8fafc;
-    color:#334155;
-    margin-right:5px;
-}
-.priority-urgent { background:var(--danger-soft); color:#be123c; border-color:#fecdd3; }
-.priority-high { background:var(--gold-soft); color:#a4650f; border-color:#f1d9ad; }
-.priority-normal { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
-.priority-low { background:#f8fafc; color:#64748b; border-color:#e2e8f0; }
-.kanban-column-title { font-size:13px; font-weight:800; color:#334155; margin-bottom:8px; }
-.kanban-count { float:right; font-weight:700; color:var(--muted); }
+/* chat */
+[data-testid="stChatMessage"]{background:transparent!important;border:0!important}
 
-/* ------------------------------------------------------------
-   ATTENDANCE EXPERIENCE
-   ------------------------------------------------------------ */
-.attendance-hero {
-    border:1px solid var(--line);
-    border-radius:var(--r-lg);
-    background:linear-gradient(135deg,#ffffff 0%,#f4faf8 100%);
-    padding:20px 22px;
-    margin:6px 0 18px 0;
-    box-shadow:0 4px 16px rgba(14,125,112,.07);
-}
-.attendance-eyebrow {
-    font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--brand-700); margin-bottom:6px;
-}
-.attendance-date { font-size:27px; font-weight:800; color:var(--ink); line-height:1.15; }
-.attendance-day { font-size:14px; color:var(--muted); margin-top:5px; }
-.attendance-status-card {
-    border:1px solid var(--line); border-radius:var(--r-lg); background:#fff;
-    padding:16px; min-height:126px; box-shadow:var(--shadow-sm);
-}
-.attendance-label { font-size:11px; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
-.attendance-value { font-size:20px; font-weight:800; color:var(--ink); margin-top:7px; }
-.attendance-note { font-size:12px; color:var(--muted); margin-top:6px; }
-.attendance-rules {
-    padding:12px 14px; border:1px solid #dce9e6; border-radius:var(--r-md);
-    background:#f8fffd; color:#35504b; font-size:12px; line-height:1.7;
-}
+/* hide footer */
+footer{visibility:hidden}
 
-/* ------------------------------------------------------------
-   NEW: small utility classes available for future pages
-   ------------------------------------------------------------ */
-.empty-state {
-    text-align:center; padding:36px 20px; color:var(--muted);
-    border:1px dashed var(--line); border-radius:var(--r-lg); background:#fbfcfe;
+@media(max-width:900px){
+ .block-container{padding:1.2rem .9rem 3rem}
+ .page-head-new{align-items:flex-start;flex-direction:column}
+ .page-head-new h1,.page-title,.tech-title{font-size:29px}
+ .portal-topbar{margin-top:0}
 }
-.skeleton {
-    background: linear-gradient(90deg,#eef0f5 25%,#f7f8fb 37%,#eef0f5 63%);
-    background-size: 400% 100%; animation: skeleton-loading 1.4s ease infinite;
-    border-radius: var(--r-sm); height: 14px;
-}
-@keyframes skeleton-loading { 0% {background-position:100% 50%;} 100% {background-position:0 50%;} }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -941,7 +575,6 @@ def is_manager():
     ]
 
 
-@st.cache_data(ttl=20, show_spinner=False)
 def load_all_tasks():
 
     try:
@@ -1116,7 +749,6 @@ def update_task_status(
 # TEAM / NOTIFICATION / CHAT HELPERS
 # ============================================================
 
-@st.cache_data(ttl=60, show_spinner=False)
 def load_team_profiles():
     """Return basic team directory data through a controlled Supabase RPC."""
     try:
@@ -1792,7 +1424,6 @@ def update_presence():
         pass
 
 
-@st.cache_data(ttl=15, show_spinner=False)
 def load_presence():
     try:
         result = (
@@ -2068,7 +1699,6 @@ def attach_file_to_task(task_id, uploaded_file):
         return False
 
 
-@st.cache_data(ttl=30, show_spinner=False)
 def load_task_attachments(task_id):
     try:
         return (
@@ -2082,7 +1712,6 @@ def load_task_attachments(task_id):
         return []
 
 
-@st.cache_data(ttl=60, show_spinner=False)
 def load_task_templates():
     try:
         return (
@@ -2201,7 +1830,6 @@ def to_excel_bytes(sheets):
     return output.getvalue()
 
 
-@st.cache_data(ttl=30, show_spinner=False)
 def load_announcements(active_only=True):
     try:
         q = supabase.table("announcements").select("*")
@@ -2212,7 +1840,6 @@ def load_announcements(active_only=True):
         return []
 
 
-@st.cache_data(ttl=60, show_spinner=False)
 def load_knowledge_items():
     try:
         return (
@@ -2937,6 +2564,134 @@ def display_value(value, fallback="—"):
     value = str(value).strip()
     return value if value else fallback
 
+
+def portal_header(page_name="Techloom HQ"):
+    unread = 0
+    try:
+        unread = len(get_unread_notifications())
+    except Exception:
+        pass
+    initial = (name or "U")[:1].upper()
+    st.markdown(
+        f"""
+        <div class="portal-topbar">
+          <div class="crumb"><span class="crumb-mark">◢</span><span>{page_name}</span></div>
+          <div class="top-user">
+            <span class="notify-dot">▤</span>
+            <span class="top-avatar">{initial}</span>
+            <span>{name}</span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def sprint_tasks():
+    tasks = load_all_tasks() if is_manager() else load_my_tasks()
+    cutoff = datetime.now(PK_TZ).date() + timedelta(days=7)
+    result = []
+    for task in tasks:
+        if task.get("status") in ["Completed", "Approved"]:
+            continue
+        due = parse_timestamp(task.get("due_date")) if task.get("due_date") else None
+        if not due or due.astimezone(PK_TZ).date() <= cutoff:
+            result.append(task)
+    return result
+
+
+def load_personal_note():
+    try:
+        rows = (
+            supabase.table("personal_notes")
+            .select("*")
+            .eq("user_id", current_user_id)
+            .limit(1)
+            .execute()
+        ).data or []
+        return rows[0].get("content", "") if rows else ""
+    except Exception:
+        return ""
+
+
+def save_personal_note(content):
+    try:
+        supabase.table("personal_notes").upsert({
+            "user_id": current_user_id,
+            "content": content,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }, on_conflict="user_id").execute()
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def upload_hub_file(uploaded_file):
+    meta = upload_private_file("data-hub", uploaded_file, "shared")
+    if not meta:
+        return False
+    try:
+        supabase.table("shared_files").insert({
+            "uploader_id": current_user_id,
+            "uploader_name": name,
+            "file_path": meta["path"],
+            "file_name": meta["name"],
+            "file_type": meta["type"],
+            "file_size": meta["size"]
+        }).execute()
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def load_hub_files():
+    try:
+        return (
+            supabase.table("shared_files")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(100)
+            .execute()
+        ).data or []
+    except Exception:
+        return []
+
+
+def upload_secure_portal_file(uploaded_file, allowed_user_ids):
+    meta = upload_private_file("secure-files", uploaded_file, "secure")
+    if not meta:
+        return False
+    try:
+        created = supabase.table("secure_files").insert({
+            "owner_id": current_user_id,
+            "owner_name": name,
+            "file_path": meta["path"],
+            "file_name": meta["name"],
+            "file_type": meta["type"],
+            "file_size": meta["size"]
+        }).execute()
+        file_id = created.data[0]["id"] if created.data else None
+        if file_id:
+            for uid in allowed_user_ids:
+                supabase.table("secure_file_access").insert({
+                    "file_id": file_id,
+                    "user_id": uid
+                }).execute()
+        return True
+    except Exception as error:
+        st.error(error)
+        return False
+
+
+def load_secure_portal_files():
+    try:
+        result = supabase.rpc("get_accessible_secure_files").execute()
+        return result.data or []
+    except Exception:
+        return []
+
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -2944,102 +2699,70 @@ def display_value(value, fallback="—"):
 with st.sidebar:
 
     st.markdown(
-        '<div class="sidebar-logo">'
-        '◈ TECHLOOM TASK'
-        '</div>',
+        """
+        <div class="side-brand">
+          <span class="brand-mark">T</span>
+          <strong>Techloom</strong>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
     st.markdown(
-        '<div class="sidebar-subtitle">'
-        'Work Smart. Stay Organized.'
-        '</div>',
+        f"""
+        <div class="side-user">
+          <b>{name}</b>
+          <small>{role} • {department}</small>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-    st.write(f"### {name}")
-
-    st.caption(role)
-    st.caption(department)
-
-    st.divider()
-
     chat_unread_count = get_unread_chat_count()
     group_chat_label = (
-        f"💬 Group Chat  🔴 {chat_unread_count}"
-        if chat_unread_count > 0
-        else "💬 Group Chat"
+        f"Chat  • {chat_unread_count} unread"
+        if chat_unread_count > 0 else "Chat"
     )
-
-    # ----------------------------
-    # NAVIGATION
-    # ----------------------------
-
-    common_tools = [
-        "🔎 Global Search",
-        "🧰 Task Workspace",
-        "👥 Team Attendance",
-        "💬 Direct Messages",
-        "📆 Calendar",
-        "📣 Announcements",
-        "📚 Knowledge Base",
-        group_chat_label,
-        "🔔 Notifications",
-        "⚙️ Settings"
-    ]
 
     if is_manager():
         menu_options = [
-            "🏠 Dashboard",
-            "📋 Team Tasks",
-            "➕ Create Task",
-            "✅ Approvals",
-            "👥 Team Overview",
-            "🟢 Team Status",
-            "⏱ Attendance",
-            "📅 Attendance Report",
+            "⌂ Company HQ",
+            "◉ Dashboard",
+            "☑ Team Tasks",
+            "⚑ Current Sprint",
+            "▤ Timeline",
+            "＋ Create Task",
+            "✓ Approvals",
+            "◴ Attendance",
+            "♙ Team Attendance",
+            "♟ Team Overview",
+            "◌ " + group_chat_label,
+            "◍ Direct Messages",
+            "⇧ Data Hub",
+            "▧ My Notes",
+            "▣ Secure Folder",
+            "📚 Knowledge Base",
+            "📣 Announcements",
             "📊 Reports",
-            "🧩 Task Templates",
-            "🔁 Recurring Tasks",
-            "🛡 Permissions",
-            "🧾 Audit Log",
-            "🛡 Compliance",
-        ] + common_tools + [
-            "📜 Activity"
+            "⚙ Settings",
         ]
-
-    elif name == "Talha":
-        menu_options = [
-            "🏠 Dashboard",
-            "📋 My Tasks",
-            "⏱ Attendance",
-            "🟠 Temu",
-            "🛡 Compliance",
-            "📨 Appeals",
-            "💬 Seller Support",
-        ] + common_tools + [
-            "📜 Activity"
-        ]
-
-    elif name == "Junaid":
-        menu_options = [
-            "🏠 Dashboard",
-            "📋 My Tasks",
-            "⏱ Attendance",
-            "🛒 Amazon",
-            "🛍 eBay",
-            "📦 Listing Uploads",
-        ] + common_tools + [
-            "📜 Activity"
-        ]
-
     else:
         menu_options = [
-            "🏠 Dashboard",
-            "📋 My Tasks",
-            "⏱ Attendance",
-        ] + common_tools + [
-            "📜 Activity"
+            "⌂ Company HQ",
+            "◉ Dashboard",
+            "☑ My Tasks",
+            "⚑ Current Sprint",
+            "▤ Timeline",
+            "◴ Attendance",
+            "♙ Team Attendance",
+            "◌ " + group_chat_label,
+            "◍ Direct Messages",
+            "⇧ Data Hub",
+            "▧ My Notes",
+            "▣ Secure Folder",
+            "📚 Knowledge Base",
+            "📣 Announcements",
+            "⚙ Settings",
         ]
 
     page = st.radio(
@@ -3048,43 +2771,27 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    st.divider()
+    st.write("")
 
     if st.session_state.get("notification_sound_enabled", False):
-        st.caption("🔊 Notification sound is ON")
-        if st.button(
-            "Test Sound",
-            key="test_notification_sound",
-            use_container_width=True
-        ):
+        if st.button("🔊 Sound on", use_container_width=True, key="portal_sound_test"):
             play_notification_tone()
     else:
-        if st.button(
-            "🔊 Enable Notification Sound",
-            key="enable_notification_sound",
-            use_container_width=True
-        ):
+        if st.button("🔊 Enable sound", use_container_width=True, key="portal_sound_enable"):
             enable_notification_sound()
-            st.success("Sound enabled for this session.")
 
     render_notification_monitor()
 
-    st.divider()
-
-    if st.button(
-        "🚪 Logout",
-        use_container_width=True
-    ):
-
+    if st.button("Sign out", use_container_width=True, key="portal_logout"):
         logout()
-
 
 # ============================================================
 # DASHBOARD
 # ============================================================
 
-if page == "🏠 Dashboard":
+if page in ["⌂ Company HQ", "◉ Dashboard"]:
 
+    portal_header("Techloom HQ")
     render_team_shoutout_bar()
 
     st.markdown(
@@ -3329,9 +3036,10 @@ if page == "🏠 Dashboard":
 # MY TASKS / TEAM TASKS — WORK INBOX + KANBAN
 # ============================================================
 
-elif page in ["📋 My Tasks","📋 Team Tasks"]:
+elif page in ["☑ My Tasks","☑ Team Tasks"]:
 
-    is_team_view = page == "📋 Team Tasks"
+    portal_header("Tasks")
+    is_team_view = page == "☑ Team Tasks"
     tasks = load_all_tasks() if is_team_view else load_my_tasks()
 
     st.markdown(
@@ -3471,7 +3179,7 @@ elif page in ["📋 My Tasks","📋 Team Tasks"]:
 # CREATE TASK
 # ============================================================
 
-elif page == "➕ Create Task":
+elif page == "＋ Create Task":
 
     if not is_manager():
         st.error("You do not have permission to create tasks.")
@@ -3656,7 +3364,7 @@ elif page == "➕ Create Task":
 # APPROVALS
 # ============================================================
 
-elif page == "✅ Approvals":
+elif page == "✓ Approvals":
 
     if not is_manager():
         st.error("Management access only.")
@@ -3808,7 +3516,9 @@ elif page == "✅ Approvals":
 # ATTENDANCE
 # ============================================================
 
-elif page == "⏱ Attendance":
+elif page == "◴ Attendance":
+
+    portal_header("Attendance")
 
     now_local = datetime.now(PK_TZ)
     attendance_date = now_local.date()
@@ -4137,7 +3847,9 @@ elif page == "📅 Attendance Report":
 # TEAM OVERVIEW
 # ============================================================
 
-elif page == "👥 Team Overview":
+elif page == "♟ Team Overview":
+
+    portal_header("Team")
 
     if not is_manager():
 
@@ -4474,7 +4186,9 @@ elif page == "💬 Seller Support":
 # GROUP CHAT
 # ============================================================
 
-elif page.startswith("💬 Group Chat"):
+elif page.startswith("◌ Chat"):
+
+    portal_header("Team Chat")
 
     # Opening the chat clears the red unread-chat badge.
     mark_chat_notifications_read()
@@ -4597,6 +4311,208 @@ elif page == "🔔 Notifications":
                 if stamp:
                     st.caption(stamp)
 
+
+
+
+# ============================================================
+# CURRENT SPRINT
+# ============================================================
+
+elif page == "⚑ Current Sprint":
+    portal_header("Current Sprint")
+    st.markdown(
+        '<div class="page-head-new"><div><span class="eyebrow">WEEKLY FOCUS</span>'
+        '<h1>Current sprint</h1><p>Incomplete work due within the next seven days, plus tasks without a deadline.</p>'
+        '</div></div>',
+        unsafe_allow_html=True
+    )
+
+    tasks = sprint_tasks()
+    if not tasks:
+        st.success("No sprint work is currently pending.")
+    else:
+        columns = [
+            ("To-do", ["New"]),
+            ("In progress", ["In Progress"]),
+            ("Waiting / review", ["Waiting on Information","Waiting on Platform","Submitted for Review","Changes Requested"]),
+            ("Complete", ["Completed","Approved"]),
+        ]
+        board = st.columns(4)
+        for idx, (label, statuses) in enumerate(columns):
+            with board[idx]:
+                group = [t for t in tasks if t.get("status") in statuses]
+                st.markdown(
+                    f'<div class="kanban-column-title">{label}<span class="kanban-count">{len(group)}</span></div>',
+                    unsafe_allow_html=True
+                )
+                for j, task in enumerate(group):
+                    render_task_card(task, f"sprint_{idx}_{j}")
+
+
+# ============================================================
+# TIMELINE
+# ============================================================
+
+elif page == "▤ Timeline":
+    portal_header("Timeline")
+    st.markdown(
+        '<div class="page-head-new"><div><span class="eyebrow">WORK HISTORY</span>'
+        '<h1>Timeline</h1><p>A chronological view of task changes, submissions and team activity.</p>'
+        '</div></div>',
+        unsafe_allow_html=True
+    )
+
+    try:
+        q = (
+            supabase.table("task_activity")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(120)
+        )
+        if not is_manager():
+            q = q.eq("user_id", current_user_id)
+        rows = q.execute().data or []
+    except Exception:
+        rows = []
+
+    if not rows:
+        st.info("No timeline activity yet.")
+    else:
+        for item in rows:
+            st.markdown(
+                f"""
+                <div class="attention-card">
+                  <div class="attention-card-title">
+                    {display_value(item.get("user_name"), "User")} — {display_value(item.get("action"))}
+                  </div>
+                  <div class="attention-card-meta">
+                    {display_value(item.get("details"))} • {display_value(item.get("created_at"))}
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+
+# ============================================================
+# DATA HUB
+# ============================================================
+
+elif page == "⇧ Data Hub":
+    portal_header("Data Hub")
+    st.markdown(
+        '<div class="page-head-new"><div><span class="eyebrow">SHARED FILES</span>'
+        '<h1>Data Hub</h1><p>Company files available to every authenticated team member.</p>'
+        '</div></div>',
+        unsafe_allow_html=True
+    )
+
+    upload = st.file_uploader(
+        "Share a file with the team",
+        type=["pdf","doc","docx","xls","xlsx","csv","txt","png","jpg","jpeg","webp","zip"],
+        key="hub_file"
+    )
+    if upload and st.button("Upload to Data Hub", type="primary", key="hub_upload"):
+        if upload_hub_file(upload):
+            st.success("File shared.")
+            st.rerun()
+
+    st.write("")
+    files = load_hub_files()
+    if not files:
+        st.info("No shared files yet.")
+    else:
+        for f in files:
+            url = signed_file_url("data-hub", f.get("file_path"))
+            with st.container(border=True):
+                c1, c2 = st.columns([4,1])
+                with c1:
+                    st.markdown(f"**{display_value(f.get('file_name'))}**")
+                    st.caption(
+                        f"{display_value(f.get('uploader_name'))} • "
+                        f"{human_file_size(f.get('file_size'))} • "
+                        f"{display_value(f.get('created_at'))}"
+                    )
+                with c2:
+                    if url:
+                        st.link_button("Open", url, use_container_width=True)
+
+
+# ============================================================
+# MY NOTES
+# ============================================================
+
+elif page == "▧ My Notes":
+    portal_header("My Notes")
+    st.markdown(
+        '<div class="page-head-new"><div><span class="eyebrow">PRIVATE</span>'
+        '<h1>My notes</h1><p>A personal scratchpad visible only to your account.</p>'
+        '</div></div>',
+        unsafe_allow_html=True
+    )
+    note = load_personal_note()
+    content = st.text_area(
+        "Notes",
+        value=note,
+        height=440,
+        label_visibility="collapsed",
+        placeholder="Start writing…"
+    )
+    if st.button("Save note", type="primary"):
+        if save_personal_note(content):
+            st.success("Note saved.")
+
+
+# ============================================================
+# SECURE FOLDER
+# ============================================================
+
+elif page == "▣ Secure Folder":
+    portal_header("Secure Folder")
+    st.markdown(
+        '<div class="page-head-new"><div><span class="eyebrow">RESTRICTED FILES</span>'
+        '<h1>Secure Folder</h1><p>Upload sensitive work files and choose who may access them.</p>'
+        '</div></div>',
+        unsafe_allow_html=True
+    )
+
+    team = [p for p in load_team_profiles() if str(p.get("id")) != str(current_user_id)]
+    label_to_id = {f"{p.get('name')} • {p.get('department','')}": p.get("id") for p in team}
+
+    secure_upload = st.file_uploader(
+        "Secure file",
+        type=["pdf","doc","docx","xls","xlsx","csv","txt","png","jpg","jpeg","webp","zip"],
+        key="secure_portal_upload"
+    )
+    allowed_labels = st.multiselect(
+        "Give access to",
+        list(label_to_id.keys()),
+        key="secure_portal_allowed"
+    )
+    if secure_upload and st.button("Upload securely", type="primary", key="secure_upload_btn"):
+        ids = [label_to_id[x] for x in allowed_labels]
+        if upload_secure_portal_file(secure_upload, ids):
+            st.success("Secure file uploaded.")
+            st.rerun()
+
+    st.write("")
+    secure_rows = load_secure_portal_files()
+    if not secure_rows:
+        st.info("No accessible secure files.")
+    else:
+        for f in secure_rows:
+            url = signed_file_url("secure-files", f.get("file_path"))
+            with st.container(border=True):
+                c1, c2 = st.columns([4,1])
+                with c1:
+                    st.markdown(f"**{display_value(f.get('file_name'))}**")
+                    st.caption(
+                        f"Owner: {display_value(f.get('owner_name'))} • "
+                        f"{human_file_size(f.get('file_size'))}"
+                    )
+                with c2:
+                    if url:
+                        st.link_button("Download", url, use_container_width=True)
 
 
 # ============================================================
@@ -4787,7 +4703,9 @@ elif page == "🧰 Task Workspace":
 # DIRECT MESSAGES
 # ============================================================
 
-elif page == "💬 Direct Messages":
+elif page == "◍ Direct Messages":
+
+    portal_header("Direct Messages")
     st.markdown('<div class="tech-title">Direct Messages</div>', unsafe_allow_html=True)
     st.caption("Private one-to-one team chat.")
 
@@ -4857,6 +4775,8 @@ elif page == "📆 Calendar":
 # ============================================================
 
 elif page == "📣 Announcements":
+
+    portal_header("Announcements")
     st.markdown('<div class="tech-title">Announcements</div>', unsafe_allow_html=True)
     st.caption("Pinned management messages for the whole team.")
 
@@ -4906,6 +4826,8 @@ elif page == "📣 Announcements":
 # ============================================================
 
 elif page == "📚 Knowledge Base":
+
+    portal_header("Knowledge Base")
     st.markdown('<div class="tech-title">Knowledge & SOPs</div>', unsafe_allow_html=True)
     st.caption("Marketplace procedures, compliance notes, SOPs and internal references.")
 
@@ -4955,7 +4877,9 @@ elif page == "📚 Knowledge Base":
 # TEAM ATTENDANCE — EVERYONE CAN VIEW + EXPORT
 # ============================================================
 
-elif page == "👥 Team Attendance":
+elif page == "♙ Team Attendance":
+
+    portal_header("Team Attendance")
     st.markdown('<div class="tech-title">Team Attendance</div>', unsafe_allow_html=True)
     st.info("Official attendance tracking starts on 25 Aug 2026. Earlier dates are not counted as absent.")
     st.caption(
@@ -5101,6 +5025,8 @@ elif page == "🟢 Team Status":
 # ============================================================
 
 elif page == "📊 Reports":
+
+    portal_header("Reports")
     if not is_manager():
         st.error("Management access only.")
         st.stop()
@@ -5360,7 +5286,9 @@ elif page == "🧾 Audit Log":
 # SETTINGS
 # ============================================================
 
-elif page == "⚙️ Settings":
+elif page == "⚙ Settings":
+
+    portal_header("Settings")
     st.markdown('<div class="tech-title">Settings</div>', unsafe_allow_html=True)
     prefs = get_user_preferences()
 
