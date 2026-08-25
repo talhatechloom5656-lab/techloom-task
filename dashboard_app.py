@@ -583,111 +583,6 @@ button[data-baseweb="tab"][aria-selected="true"]{
   .page-head-new h1,.tech-title,.page-title,.dashboard-hero-title{font-size:26px}
   [data-testid="stSidebar"]{width:220px!important;min-width:220px!important}
 }
-
-/* ===== STABLE V4 SIDEBAR / DASHBOARD PATCH ===== */
-
-/* Sidebar navigation is button-based: no radio widget, no rerun loop. */
-.sidebar-section {
-    padding: 11px 7px 4px !important;
-    color: #9b9b95 !important;
-    font-size: 8px !important;
-    font-weight: 800 !important;
-    letter-spacing: .09em !important;
-    text-transform: uppercase;
-}
-.sidebar-divider {
-    height: 1px;
-    background: #e8e8e4;
-    margin: 8px 6px 4px;
-}
-[data-testid="stSidebar"] .stButton > button {
-    justify-content: flex-start !important;
-    text-align: left !important;
-    width: 100% !important;
-    min-height: 31px !important;
-    padding: 5px 8px !important;
-    border-radius: 6px !important;
-    box-shadow: none !important;
-    font-size: 11px !important;
-    font-weight: 520 !important;
-}
-[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-    background: #e7e7e3 !important;
-    border-color: #e7e7e3 !important;
-    color: #252524 !important;
-    font-weight: 700 !important;
-}
-[data-testid="stSidebar"] .stButton > button[kind="secondary"] {
-    background: transparent !important;
-    border-color: transparent !important;
-    color: #50504c !important;
-}
-[data-testid="stSidebar"] .stButton > button[kind="secondary"]:hover {
-    background: #ededeb !important;
-    border-color: #ededeb !important;
-}
-
-/* New-task and sign-out buttons get their own compact treatment */
-[data-testid="stSidebar"] .stButton button[data-testid="baseButton-primary"] {
-    justify-content: center !important;
-}
-
-/* Smaller overall top whitespace */
-.block-container {
-    padding-top: .72rem !important;
-}
-.portal-topbar {
-    margin-top: 0 !important;
-    margin-bottom: 12px !important;
-    min-height: 38px !important;
-    padding-bottom: 8px !important;
-}
-
-/* Compact KPI cards */
-div[data-testid="stMetric"] {
-    min-height: 72px !important;
-    padding: 9px 11px 8px !important;
-}
-div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    font-size: 22px !important;
-}
-
-/* Compact chips */
-.task-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 6px;
-    border-radius: 999px;
-    font-size: 8.5px;
-    font-weight: 700;
-    margin-right: 4px;
-}
-.task-chip.platform { background:#eef3f7; color:#5d6b76; }
-.task-chip.status { background:#f1f1ef; color:#66635d; }
-.task-chip.urgent { background:#ffe8e8; color:#a74343; }
-.task-chip.high { background:#fff0d7; color:#936116; }
-.task-chip.normal { background:#e8f2fb; color:#3475aa; }
-.task-chip.low { background:#efefec; color:#777; }
-
-.presence-dot {
-    display:inline-block;
-    width:7px;
-    height:7px;
-    border-radius:50%;
-    margin-right:6px;
-    vertical-align:middle;
-}
-.presence-good { background:#38a169; }
-.presence-warn { background:#dd9b2b; }
-.presence-bad { background:#d9534f; }
-.presence-neutral { background:#b9b9b4; }
-
-.announcement-mini {
-    padding: 7px 10px !important;
-    font-size: 9.8px !important;
-    margin-bottom: 10px !important;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -3167,58 +3062,60 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    if "portal_page" not in st.session_state:
-        st.session_state.portal_page = "Company HQ"
-
     chat_unread_count = get_unread_chat_count()
-    chat_text = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
-
-    def nav_button(label, target, key):
-        active = st.session_state.portal_page == target
-        clicked = st.button(
-            label,
-            key=key,
-            type="primary" if active else "secondary",
-            use_container_width=True
-        )
-        if clicked and not active:
-            st.session_state.portal_page = target
-            st.rerun()
-
-    st.markdown('<div class="sidebar-section">Workspace</div>', unsafe_allow_html=True)
-    nav_button("⌂ Company HQ", "Company HQ", "nav_company")
-    nav_button("☑ My Tasks", "My Tasks", "nav_tasks")
-    nav_button("⚑ Current Sprint", "Current Sprint", "nav_sprint")
-    nav_button("▤ Timeline", "Timeline", "nav_timeline")
-
-    st.markdown('<div class="sidebar-section">Team</div>', unsafe_allow_html=True)
-    nav_button("◴ Attendance", "Attendance", "nav_attendance")
-    nav_button("♙ Team", "Team", "nav_team")
-
-    st.markdown('<div class="sidebar-section">Collaboration</div>', unsafe_allow_html=True)
-    nav_button(f"◌ {chat_text}", "Chat", "nav_chat")
-    nav_button("◍ Direct Messages", "Direct Messages", "nav_dm")
-
-    st.markdown('<div class="sidebar-section">Data</div>', unsafe_allow_html=True)
-    nav_button("⇧ Data Hub", "Data Hub", "nav_data")
-    nav_button("▧ Knowledge Base", "Knowledge Base", "nav_kb")
-    nav_button("▧ My Notes", "My Notes", "nav_notes")
-    nav_button("▣ Secure Folder", "Secure Folder", "nav_secure")
-
-    st.markdown('<div class="sidebar-section">Account</div>', unsafe_allow_html=True)
-    nav_button("⚙ Settings", "Settings", "nav_settings")
-
-    st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+    chat_label = f"Chat · {chat_unread_count}" if chat_unread_count else "Chat"
 
     if is_manager():
+        menu_options = [
+            "Company HQ",
+            "My Tasks",
+            "Current Sprint",
+            "Timeline",
+            "Attendance",
+            "Team",
+            chat_label,
+            "Direct Messages",
+            "Data Hub",
+            "Knowledge Base",
+            "My Notes",
+            "Secure Folder",
+            "Settings",
+        ]
+    else:
+        menu_options = [
+            "Company HQ",
+            "My Tasks",
+            "Current Sprint",
+            "Timeline",
+            "Attendance",
+            "Team",
+            chat_label,
+            "Direct Messages",
+            "Data Hub",
+            "Knowledge Base",
+            "My Notes",
+            "Secure Folder",
+            "Settings",
+        ]
+
+    page = st.radio(
+        "Navigation",
+        menu_options,
+        label_visibility="collapsed",
+        key="main_portal_nav"
+    )
+
+    st.write("")
+    if is_manager():
         if st.button("＋ New task", type="primary", use_container_width=True, key="sidebar_new_task"):
-            st.session_state.portal_page = "Create Task"
-            st.rerun()
+            st.session_state["force_create_task"] = True
 
     if st.button("Sign out", use_container_width=True, key="portal_logout"):
         logout()
 
-page = st.session_state.get("portal_page", "Company HQ")
+# sidebar quick-create override
+if st.session_state.pop("force_create_task", False):
+    page = "Create Task"
 
 # ============================================================
 # DASHBOARD
@@ -3258,30 +3155,20 @@ if page == "Company HQ":
     urgent = [t for t in active_tasks if t.get("priority") == "Urgent"]
     review = [t for t in active_tasks if t.get("status") == "Submitted for Review"]
 
-    head_left, head_right = st.columns([8.6, 1.4])
-
-    with head_left:
-        st.markdown(
-            """
-            <div class="dashboard-hero">
+    st.markdown(
+        f"""
+        <div class="dashboard-hero">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
+            <div>
               <div class="dashboard-hero-title">Dashboard</div>
               <div class="dashboard-hero-copy">Your live workspace for today.</div>
             </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with head_right:
-        st.markdown(
-            f'<div class="hero-date" style="margin-bottom:6px">'
-            f'{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-        if is_manager():
-            if st.button("＋ New task", type="primary", use_container_width=True, key="dash_new_task"):
-                st.session_state.portal_page = "Create Task"
-                st.rerun()
+            <div class="hero-date">{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}</div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.markdown(
         f"""
@@ -3344,37 +3231,20 @@ if page == "Company HQ":
             for idx, task in enumerate(priority[:6]):
                 due = _due_local(task)
                 due_label = due.strftime("%d %b") if due else "No due date"
-
-                priority_value = display_value(task.get("priority"), "Normal")
-                priority_class = str(priority_value).lower()
-
-                left_card, right_action = st.columns([8.5, 1.5])
-
-                with left_card:
-                    st.markdown(
-                        f"""
-                        <div class="attention-card">
-                          <div class="attention-card-title">{display_value(task.get("title"))}</div>
-                          <div class="attention-card-meta">
-                            <span class="task-chip platform">{display_value(task.get("platform"))}</span>
-                            <span class="task-chip status">{display_value(task.get("status"))}</span>
-                            <span class="task-chip {priority_class}">{priority_value}</span>
-                            <span>Due {due_label}</span>
-                          </div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-
-                with right_action:
-                    if st.button(
-                        "Open",
-                        key=f"dash_open_{task.get('id')}_{idx}",
-                        use_container_width=True
-                    ):
-                        st.session_state["selected_task_id"] = task.get("id")
-                        st.session_state.portal_page = "My Tasks"
-                        st.rerun()
+                st.markdown(
+                    f"""
+                    <div class="attention-card">
+                      <div class="attention-card-title">{display_value(task.get("title"))}</div>
+                      <div class="attention-card-meta">
+                        {display_value(task.get("platform"))} ·
+                        {display_value(task.get("status"))} ·
+                        {display_value(task.get("priority"))} ·
+                        {due_label}
+                      </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
         else:
             st.caption("Nothing urgent right now.")
 
@@ -3388,45 +3258,19 @@ if page == "Company HQ":
 
         att_map = {r.get("employee_name"): r for r in today_att}
 
-        unique_people = []
-        seen_people = set()
-
-        for person in load_team_profiles():
-            person_name = str(person.get("name") or "").strip()
-            person_email = str(person.get("email") or "").strip().lower()
-            person_id = str(person.get("id") or "").strip()
-
-            dedupe_key = person_id or person_email or person_name.lower()
-            if not dedupe_key or dedupe_key in seen_people:
-                continue
-
-            seen_people.add(dedupe_key)
-            unique_people.append(person)
-
-        for person in unique_people[:8]:
+        for person in load_team_profiles()[:8]:
             person_name = person.get("name")
             rec = att_map.get(person_name)
 
             if rec:
-                arrival = late_status(rec.get("check_in"))
-                if arrival == "On Time":
-                    dot_class = "presence-good"
-                elif arrival in ["Late", "Very Late"]:
-                    dot_class = "presence-warn"
-                else:
-                    dot_class = "presence-bad"
-
-                status = f"{arrival} · {format_pk_time(rec.get('check_in'))}"
+                status = f"{late_status(rec.get('check_in'))} · {format_pk_time(rec.get('check_in'))}"
             else:
-                dot_class = "presence-neutral"
                 status = "Not marked"
 
             st.markdown(
                 f"""
                 <div class="attention-card">
-                  <div class="attention-card-title">
-                    <span class="presence-dot {dot_class}"></span>{display_value(person_name)}
-                  </div>
+                  <div class="attention-card-title">{display_value(person_name)}</div>
                   <div class="attention-card-meta">{status}</div>
                 </div>
                 """,
