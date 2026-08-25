@@ -38,109 +38,162 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    --canvas: #F2F3F6;
-    --navy: #01104E;
-    --blue: #2535E4;
-    --blue-soft: #EEF0FF;
-    --ink: #0B0B0F;
-    --muted: #737A93;
-    --muted-2: #A2A7C2;
-    --line: #E4E7EF;
-    --card: #FFFFFF;
-    --green: #13454B;
-    --green-soft: #EDF7F5;
-    --danger: #AD4A4A;
-    --danger-soft: #FFF3F3;
-    --warning: #B76A16;
-    --warning-soft: #FFF7EC;
+    --brand-900: #082e28;
+    --brand-700: #0b5f56;
+    --brand-600: #0e7d70;
+    --brand-500: #159c8c;
+    --brand-100: #e7f6f3;
+    --gold: #b3811f;
+    --gold-soft: #faf2e0;
+    --success: #1f9d63;
+    --success-soft: #eafbf2;
+    --danger: #d64545;
+    --danger-soft: #fdeeee;
+    --ink: #11162a;
+    --ink-soft: #454b63;
+    --muted: #767c92;
+    --line: #e8eaf1;
+    --line-soft: #f0f1f6;
+    --panel: #ffffff;
+    --page-bg: #f8f9fc;
+    --sidebar-bg: linear-gradient(195deg, #0a352f 0%, #0e544c 55%, #0a3f39 100%);
+    --sidebar-bg-fallback: #0b4a43;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --shadow-xs: 0 1px 2px rgba(17,22,42,.05);
+    --shadow-sm: 0 2px 8px rgba(17,22,42,.06);
+    --shadow-md: 0 6px 18px rgba(17,22,42,.08);
+    --shadow-lg: 0 16px 40px rgba(17,22,42,.12);
+
+    /* legacy aliases kept so nothing else in the app breaks */
+    --teal: var(--brand-600);
+    --teal-light: var(--brand-500);
+    --amber: var(--gold);
+    --amber-soft: var(--gold-soft);
+    --green: var(--success);
+    --red: var(--danger);
 }
 
 html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, sans-serif;
 }
 
+h1, h2, h3, h4, .tech-title, .section-title, .task-board-title,
+.workspace-hero-title, .attendance-date, .login-heading, .login-card-title,
+.sidebar-logo {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+/* ------------------------------------------------------------
+   APP BACKGROUND
+   ------------------------------------------------------------ */
 .stApp {
-    background: var(--canvas);
+    background: var(--page-bg);
     color: var(--ink);
 }
 
 .block-container {
-    max-width: 1500px;
-    padding: 2.0rem 2.2rem 3rem 2.2rem;
+    max-width: 1460px;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
 }
 
-/* -------- Sidebar -------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d7dae5; border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: #c1c5d6; }
+
+/* ------------------------------------------------------------
+   SIDEBAR
+   ------------------------------------------------------------ */
 [data-testid="stSidebar"] {
-    background: var(--navy);
-    border-right: 0;
-    min-width: 286px;
+    background: var(--sidebar-bg-fallback);
+    background: var(--sidebar-bg);
+    border-right: none;
+    min-width: 300px;
 }
 
 [data-testid="stSidebar"] [data-testid="stSidebarContent"] {
-    padding: 1.35rem 1rem 1rem 1rem;
-}
-
-.sidebar-logo {
-    font-size: 19px;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -.45px;
-    margin-bottom: 3px;
-}
-
-.sidebar-subtitle {
-    font-size: 11px;
-    color: rgba(255,255,255,.56) !important;
-    padding-bottom: 17px;
-    border-bottom: 1px solid rgba(255,255,255,.12);
-    margin-bottom: 14px;
+    padding: 1.4rem 1rem 1.1rem 1rem;
 }
 
 [data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
 [data-testid="stSidebar"] label,
-[data-testid="stSidebar"] span {
-    color: rgba(255,255,255,.82);
+[data-testid="stSidebar"] div {
+    color: #ffffff;
 }
 
-[data-testid="stSidebar"] .stCaption p {
-    color: rgba(255,255,255,.54) !important;
+[data-testid="stSidebar"] .stCaption,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+    color: rgba(255,255,255,.68) !important;
+}
+
+.sidebar-logo {
+    font-size: 21px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -.3px;
+    color: #ffffff;
+    margin-top: .3rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar-subtitle {
+    font-size: 11.5px;
+    color: rgba(255,255,255,.66) !important;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,.14);
 }
 
 [data-testid="stSidebar"] [role="radiogroup"] {
-    gap: 3px;
+    gap: 2px;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     width: 100%;
     min-height: 42px;
-    padding: 9px 11px !important;
+    display: flex;
+    align-items: center;
     border-radius: 10px;
+    padding: 9px 12px !important;
     margin: 1px 0;
-    transition: .14s ease;
+    background: transparent;
+    transition: background .15s ease, transform .1s ease;
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
     background: rgba(255,255,255,.08);
 }
 
+[data-testid="stSidebar"] [data-testid="stRadio"] label p {
+    color: rgba(255,255,255,.86) !important;
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    line-height: 1.25 !important;
+}
+
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
-    background: rgba(255,255,255,.98);
-    box-shadow: 0 7px 20px rgba(0,0,0,.14);
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(0,0,0,.18);
 }
 
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p {
-    color: var(--navy) !important;
-    font-weight: 750 !important;
+    color: var(--brand-700) !important;
+    font-weight: 700 !important;
 }
 
-[data-testid="stSidebar"] [data-testid="stRadio"] label p {
-    font-size: 13px !important;
-    font-weight: 570 !important;
-}
-
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
 [data-testid="stSidebar"] [data-baseweb="radio"] > div:first-child,
 [data-testid="stSidebar"] input[type="radio"] {
     display: none !important;
@@ -148,378 +201,410 @@ html, body, [class*="css"] {
 
 [data-testid="stSidebar"] .stButton > button {
     width: 100%;
-    min-height: 40px;
-    border-radius: 10px !important;
-    background: rgba(255,255,255,.07) !important;
-    color: #fff !important;
-    border: 1px solid rgba(255,255,255,.16) !important;
+    background: rgba(255,255,255,.08) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,.22) !important;
     box-shadow: none !important;
+    margin-top: 6px;
+    border-radius: 10px !important;
+}
+
+[data-testid="stSidebar"] .stButton > button p,
+[data-testid="stSidebar"] .stButton > button span {
+    color: #ffffff !important;
+    font-weight: 650 !important;
 }
 
 [data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(255,255,255,.13) !important;
+    background: rgba(255,255,255,.16) !important;
+    border-color: rgba(255,255,255,.36) !important;
 }
 
-/* -------- Page typography -------- */
+/* ------------------------------------------------------------
+   TITLES & TEXT
+   ------------------------------------------------------------ */
 .tech-title {
-    font-size: clamp(28px, 2.5vw, 38px);
-    font-weight: 800;
-    line-height: 1.12;
-    letter-spacing: -1.25px;
+    font-size: clamp(24px, 2.4vw, 33px);
+    line-height: 1.18;
+    font-weight: 700;
+    letter-spacing: -.5px;
     color: var(--ink);
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .tech-subtitle {
-    font-size: 13px;
+    font-size: 13.5px;
     color: var(--muted);
     margin-bottom: 22px;
 }
 
 .section-title {
     font-size: 16px;
-    font-weight: 750;
-    letter-spacing: -.25px;
+    line-height: 1.2;
+    font-weight: 700;
     color: var(--ink);
-    margin: 12px 0 11px;
+    letter-spacing: -.1px;
+    margin-top: 10px;
+    margin-bottom: 12px;
 }
 
-.stApp h1, .stApp h2, .stApp h3, .stApp h4 {
-    color: var(--ink);
-    letter-spacing: -.55px;
-}
+.stApp p, .stApp label, .stApp li { color: var(--ink-soft); }
+.stApp h1, .stApp h2, .stApp h3, .stApp h4 { color: var(--ink); font-weight: 700; }
 
-.stApp p, .stApp label, .stApp li {
-    color: #4F556A;
-}
-
-/* -------- Cards / containers -------- */
+/* ------------------------------------------------------------
+   METRIC CARDS
+   ------------------------------------------------------------ */
 div[data-testid="stMetric"] {
-    background: var(--card);
+    background: var(--panel);
     border: 1px solid var(--line);
-    padding: 18px 18px 16px;
-    border-radius: 15px;
-    box-shadow: 0 2px 8px rgba(1,16,78,.035);
-    min-height: 108px;
+    border-top: 3px solid var(--gold);
+    padding: 16px 18px 14px 18px;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-xs);
+    min-height: 104px;
+    transition: box-shadow .15s ease, transform .12s ease;
+}
+
+div[data-testid="stMetric"]:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
 div[data-testid="stMetric"] [data-testid="stMetricLabel"] p {
     color: var(--muted) !important;
-    font-size: 11.5px;
-    font-weight: 650;
+    font-weight: 600;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: .5px;
+    letter-spacing: .4px;
 }
 
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-    color: var(--navy) !important;
-    font-weight: 800;
-    letter-spacing: -.8px;
+    color: var(--ink) !important;
+    font-weight: 750;
+    letter-spacing: -.6px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.workspace-hero,
-.task-board-header,
-.attendance-hero {
+/* ------------------------------------------------------------
+   TASK CARDS
+   ------------------------------------------------------------ */
+.task-card {
+    background: var(--panel);
+    padding: 14px 18px 14px 16px;
+    border-radius: var(--r-sm);
     border: 1px solid var(--line);
-    border-radius: 17px;
-    padding: 20px 22px;
-    background: #fff;
-    box-shadow: 0 3px 12px rgba(1,16,78,.035);
-    margin-bottom: 16px;
+    border-left: 4px solid var(--gold);
+    margin-bottom: 9px;
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow .15s ease, transform .12s ease;
 }
 
-.workspace-hero-title,
-.task-board-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--navy);
+.task-card:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
 }
 
-.workspace-hero-copy,
-.task-board-copy {
+.task-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 5px;
+}
+
+.task-meta {
     color: var(--muted);
     font-size: 12.5px;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
-/* -------- Task cards -------- */
-.task-card,
-.work-card,
-.attendance-status-card {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 15px 16px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 8px rgba(1,16,78,.03);
-    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+/* ------------------------------------------------------------
+   BUTTONS
+   ------------------------------------------------------------ */
+.stButton > button, .stFormSubmitButton > button {
+    border-radius: var(--r-sm) !important;
+    min-height: 42px;
+    font-weight: 600;
+    border: 1px solid #dfe2ea;
+    box-shadow: none;
+    transition: all .14s ease;
 }
 
-.task-card:hover,
-.work-card:hover {
+.stButton > button:hover, .stFormSubmitButton > button:hover {
+    border-color: #c7cbdb;
+    box-shadow: var(--shadow-xs);
     transform: translateY(-1px);
-    border-color: #CCD1E4;
-    box-shadow: 0 8px 22px rgba(1,16,78,.07);
 }
 
-.task-card {
-    border-left: 3px solid var(--blue);
+button[kind="primary"] {
+    background: var(--brand-700) !important;
+    border: none !important;
 }
 
-.task-card-title,
-.work-card-title {
-    color: var(--ink);
-    font-size: 14px;
-    font-weight: 750;
-    margin-bottom: 6px;
+button[kind="primary"]:hover {
+    background: var(--brand-900) !important;
 }
 
-.task-meta,
-.work-meta {
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-.status-chip,
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px;
-    border-radius: 999px;
-    background: #F6F7FA;
-    border: 1px solid var(--line);
-    color: #575D70;
-    font-size: 10.5px;
-    font-weight: 700;
-    margin-right: 4px;
-}
-
-.priority-urgent {
-    background: var(--danger-soft);
-    color: var(--danger);
-    border-color: #F0D3D3;
-}
-.priority-high {
-    background: var(--warning-soft);
-    color: var(--warning);
-    border-color: #F1DDC5;
-}
-.priority-normal {
-    background: var(--blue-soft);
-    color: var(--blue);
-    border-color: #D8DCFF;
-}
-.priority-low {
-    background: #F7F8FA;
-    color: #737A93;
-}
-
-/* -------- Inputs -------- */
+/* ------------------------------------------------------------
+   INPUTS
+   ------------------------------------------------------------ */
 [data-baseweb="input"] > div,
 [data-baseweb="textarea"] > div,
 [data-baseweb="select"] > div {
-    border-radius: 11px !important;
-    border-color: #DDE1EB !important;
-    background: #fff !important;
-    min-height: 44px;
+    border-radius: var(--r-sm) !important;
+    border-color: #dde0e8 !important;
+    background: #ffffff !important;
+}
+
+[data-baseweb="input"] input,
+[data-baseweb="textarea"] textarea,
+[data-baseweb="select"] input,
+[data-baseweb="select"] div {
+    color: var(--ink) !important;
 }
 
 [data-baseweb="input"] > div:focus-within,
 [data-baseweb="textarea"] > div:focus-within,
 [data-baseweb="select"] > div:focus-within {
-    border-color: var(--blue) !important;
-    box-shadow: 0 0 0 3px rgba(37,53,228,.10) !important;
+    border-color: var(--brand-600) !important;
+    box-shadow: 0 0 0 3px rgba(14,125,112,.14) !important;
 }
 
-[data-baseweb="input"] input,
-[data-baseweb="textarea"] textarea {
-    color: var(--ink) !important;
-    font-size: 13px !important;
+/* ------------------------------------------------------------
+   EXPANDERS
+   ------------------------------------------------------------ */
+[data-testid="stExpander"] {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-xs);
+    margin-bottom: 10px;
 }
 
-.stTextInput label p,
-.stTextArea label p,
-.stSelectbox label p,
-.stDateInput label p,
-.stTimeInput label p,
-.stNumberInput label p,
-.stFileUploader label p {
-    font-size: 11.5px !important;
-    font-weight: 700 !important;
-    color: #555C70 !important;
+/* ------------------------------------------------------------
+   TABLES
+   ------------------------------------------------------------ */
+[data-testid="stDataFrame"], [data-testid="stTable"] {
+    background: #ffffff;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    border: 1px solid var(--line);
 }
 
-/* -------- Buttons -------- */
-.stButton > button,
-.stFormSubmitButton > button,
-.stDownloadButton > button,
-.stLinkButton > a {
-    border-radius: 10px !important;
-    min-height: 42px;
-    font-weight: 700;
-    font-size: 12.5px;
-    border: 1px solid #D9DDEA;
-    box-shadow: none;
+[data-testid="stDataFrame"] * {
+    color: #2c3142;
 }
 
-button[kind="primary"],
-.stFormSubmitButton button[kind="primary"] {
-    background: var(--blue) !important;
-    border-color: var(--blue) !important;
-    color: #fff !important;
+/* ------------------------------------------------------------
+   ALERTS
+   ------------------------------------------------------------ */
+[data-testid="stAlert"] {
+    border-radius: var(--r-sm);
+    border-width: 1px;
+    box-shadow: var(--shadow-xs);
 }
 
-button[kind="primary"]:hover {
-    background: #1D2BC1 !important;
+[data-testid="stAlert"] p {
+    color: #1e2333 !important;
+    font-weight: 500;
 }
 
-/* -------- Tabs -------- */
+/* ------------------------------------------------------------
+   TABS
+   ------------------------------------------------------------ */
 button[data-baseweb="tab"] {
+    font-weight: 600;
     color: var(--muted);
-    font-size: 12.5px;
-    font-weight: 650;
 }
 
 button[data-baseweb="tab"][aria-selected="true"] {
-    color: var(--navy) !important;
-    font-weight: 800;
+    color: var(--brand-700) !important;
 }
 
 [data-baseweb="tab-highlight"] {
-    background-color: var(--blue) !important;
-    height: 2px !important;
+    background-color: var(--brand-600) !important;
 }
 
-/* -------- Tables -------- */
-[data-testid="stDataFrame"],
-[data-testid="stTable"] {
-    background: #fff;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    box-shadow: 0 2px 8px rgba(1,16,78,.025);
+/* ------------------------------------------------------------
+   MISC
+   ------------------------------------------------------------ */
+hr { border-color: var(--line) !important; }
+
+.login-shell {
+    min-height: 77vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* -------- Expanders -------- */
-[data-testid="stExpander"] {
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 13px;
-    margin-bottom: 9px;
-    overflow: hidden;
-}
+.login-hero { padding: 30px 6px 20px 6px; }
 
-/* -------- Alerts -------- */
-[data-testid="stAlert"] {
-    border-radius: 12px;
-    border-width: 1px;
-}
-
-/* -------- Attendance -------- */
-.attendance-eyebrow {
-    color: var(--blue);
-    font-size: 10.5px;
-    font-weight: 800;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-}
-
-.attendance-date {
-    color: var(--navy);
-    font-size: 27px;
-    font-weight: 800;
-    margin-top: 5px;
-}
-
-.attendance-day,
-.attendance-note {
-    color: var(--muted);
-    font-size: 12px;
-}
-
-.attendance-label {
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-}
-
-.attendance-value {
-    color: var(--navy);
-    font-size: 20px;
-    font-weight: 800;
-    margin-top: 7px;
-}
-
-.attendance-rules {
-    background: #fff;
-    border: 1px solid var(--line);
-    color: #555C70;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 11.5px;
-}
-
-/* -------- Kanban -------- */
-.kanban-column-title {
-    color: var(--navy);
-    font-size: 12px;
-    font-weight: 800;
-    margin-bottom: 8px;
-}
-
-.kanban-count {
-    float: right;
-    color: var(--muted-2);
-}
-
-/* -------- Login -------- */
 .login-kicker {
-    display: inline-flex;
-    background: var(--blue-soft);
-    color: var(--blue);
-    padding: 6px 10px;
+    display: inline-block;
+    padding: 6px 13px;
     border-radius: 999px;
-    font-size: 11px;
-    font-weight: 800;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
     margin-bottom: 14px;
 }
 
 .login-heading {
-    color: var(--navy);
-    font-size: clamp(34px, 4vw, 54px);
+    font-size: clamp(30px, 3.8vw, 48px);
+    line-height: 1.1;
     font-weight: 800;
-    letter-spacing: -1.8px;
-    line-height: 1.05;
+    letter-spacing: -1.3px;
+    color: var(--ink);
+    max-width: 720px;
 }
 
-.login-copy,
+.login-copy {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 590px;
+    margin-top: 16px;
+}
+
+.login-card-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 3px;
+}
+
 .login-card-copy {
     color: var(--muted);
-}
-
-/* -------- Utility -------- */
-hr {
-    border-color: var(--line) !important;
-}
-
-footer {
-    visibility: hidden;
+    font-size: 13px;
+    margin-bottom: 10px;
 }
 
 @media (max-width: 900px) {
-    .block-container {
-        padding: 1.2rem 1rem 2.5rem;
-    }
-    .tech-title {
-        font-size: 27px;
-    }
-    [data-testid="stSidebar"] {
-        min-width: 270px;
-    }
+    .block-container { padding-top: 1.2rem; padding-left: 1rem; padding-right: 1rem; }
+    .tech-title { font-size: 24px; }
 }
+
+.workspace-hero {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 20px 22px;
+    background: linear-gradient(135deg, var(--brand-100) 0%, #ffffff 55%, var(--gold-soft) 100%);
+    margin-bottom: 18px;
+}
+.workspace-hero-title { font-size: 15px; font-weight: 750; color: var(--ink); }
+.workspace-hero-copy { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+.status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--success-soft);
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.chat-bubble {
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+    margin: 6px 0;
+    background: #fff;
+}
+
+footer { visibility: hidden; }
+
+/* ------------------------------------------------------------
+   TASK EXPERIENCE
+   ------------------------------------------------------------ */
+.task-board-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:18px 20px;
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:linear-gradient(135deg,#ffffff 0%,#f6faf9 100%);
+    margin-bottom:14px;
+}
+.task-board-title { font-size:19px; font-weight:800; color:var(--ink); }
+.task-board-copy { color:var(--muted); font-size:13px; margin-top:3px; }
+.work-card {
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    background:#fff;
+    padding:14px;
+    margin-bottom:10px;
+    box-shadow:var(--shadow-xs);
+    transition: box-shadow .15s ease, transform .12s ease;
+}
+.work-card:hover { box-shadow:var(--shadow-md); transform: translateY(-1px); }
+.work-card-title { font-weight:750; font-size:14px; color:var(--ink); margin-bottom:6px; }
+.work-meta { font-size:12px; color:var(--muted); line-height:1.6; }
+.status-chip {
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    border:1px solid #e1e5ea;
+    background:#f8fafc;
+    color:#334155;
+    margin-right:5px;
+}
+.priority-urgent { background:var(--danger-soft); color:#be123c; border-color:#fecdd3; }
+.priority-high { background:var(--gold-soft); color:#a4650f; border-color:#f1d9ad; }
+.priority-normal { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+.priority-low { background:#f8fafc; color:#64748b; border-color:#e2e8f0; }
+.kanban-column-title { font-size:13px; font-weight:800; color:#334155; margin-bottom:8px; }
+.kanban-count { float:right; font-weight:700; color:var(--muted); }
+
+/* ------------------------------------------------------------
+   ATTENDANCE EXPERIENCE
+   ------------------------------------------------------------ */
+.attendance-hero {
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:linear-gradient(135deg,#ffffff 0%,#f4faf8 100%);
+    padding:20px 22px;
+    margin:6px 0 18px 0;
+    box-shadow:0 4px 16px rgba(14,125,112,.07);
+}
+.attendance-eyebrow {
+    font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--brand-700); margin-bottom:6px;
+}
+.attendance-date { font-size:27px; font-weight:800; color:var(--ink); line-height:1.15; }
+.attendance-day { font-size:14px; color:var(--muted); margin-top:5px; }
+.attendance-status-card {
+    border:1px solid var(--line); border-radius:var(--r-lg); background:#fff;
+    padding:16px; min-height:126px; box-shadow:var(--shadow-sm);
+}
+.attendance-label { font-size:11px; color:var(--muted); font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+.attendance-value { font-size:20px; font-weight:800; color:var(--ink); margin-top:7px; }
+.attendance-note { font-size:12px; color:var(--muted); margin-top:6px; }
+.attendance-rules {
+    padding:12px 14px; border:1px solid #dce9e6; border-radius:var(--r-md);
+    background:#f8fffd; color:#35504b; font-size:12px; line-height:1.7;
+}
+
+/* ------------------------------------------------------------
+   NEW: small utility classes available for future pages
+   ------------------------------------------------------------ */
+.empty-state {
+    text-align:center; padding:36px 20px; color:var(--muted);
+    border:1px dashed var(--line); border-radius:var(--r-lg); background:#fbfcfe;
+}
+.skeleton {
+    background: linear-gradient(90deg,#eef0f5 25%,#f7f8fb 37%,#eef0f5 63%);
+    background-size: 400% 100%; animation: skeleton-loading 1.4s ease infinite;
+    border-radius: var(--r-sm); height: 14px;
+}
+@keyframes skeleton-loading { 0% {background-position:100% 50%;} 100% {background-position:0 50%;} }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -843,49 +928,6 @@ if not ensure_supabase_auth():
 PK_TZ = ZoneInfo("Asia/Karachi")
 ATTENDANCE_START_DATE = datetime(2026, 8, 25).date()  # Official first attendance day
 
-def _session_cache_get(key, ttl_seconds):
-    item = st.session_state.get("_fast_cache", {}).get(key)
-    if not item:
-        return None
-    created_at, value = item
-    if (datetime.now(timezone.utc) - created_at).total_seconds() > ttl_seconds:
-        return None
-    return value
-
-
-def _session_cache_set(key, value):
-    cache = st.session_state.setdefault("_fast_cache", {})
-    cache[key] = (datetime.now(timezone.utc), value)
-    return value
-
-
-def clear_fast_cache(*prefixes):
-    cache = st.session_state.setdefault("_fast_cache", {})
-    if not prefixes:
-        cache.clear()
-        return
-    for key in list(cache.keys()):
-        if any(str(key).startswith(prefix) for prefix in prefixes):
-            cache.pop(key, None)
-
-
-def run_lightweight_maintenance():
-    """Avoid expensive background checks on every Streamlit rerun/tab click."""
-    now = datetime.now(timezone.utc)
-
-    last_presence = st.session_state.get("_last_presence_ping")
-    if not last_presence or (now - last_presence).total_seconds() >= 60:
-        update_presence()
-        st.session_state._last_presence_ping = now
-
-    if is_manager():
-        last_manager_checks = st.session_state.get("_last_manager_checks")
-        if not last_manager_checks or (now - last_manager_checks).total_seconds() >= 300:
-            process_due_recurring_tasks()
-            escalate_unopened_urgent_tasks()
-            st.session_state._last_manager_checks = now
-
-
 
 # ============================================================
 # HELPERS
@@ -899,47 +941,60 @@ def is_manager():
     ]
 
 
+@st.cache_data(ttl=20, show_spinner=False)
 def load_all_tasks():
-    cached = _session_cache_get("tasks_all", 5)
-    if cached is not None:
-        return cached
+
     try:
+
         result = (
             supabase
             .table("tasks")
             .select("*")
             .eq("archived", False)
-            .order("created_at", desc=True)
-            .limit(250)
+            .order(
+                "created_at",
+                desc=True
+            )
             .execute()
         )
-        return _session_cache_set("tasks_all", result.data or [])
+
+        return result.data or []
+
     except Exception as error:
+
         st.error("Could not load tasks.")
         st.write(error)
+
         return []
 
 
 def load_my_tasks():
-    cache_key = f"tasks_user:{current_user_id}"
-    cached = _session_cache_get(cache_key, 5)
-    if cached is not None:
-        return cached
+
     try:
+
         result = (
             supabase
             .table("tasks")
             .select("*")
             .eq("archived", False)
-            .eq("assigned_to", name)
-            .order("created_at", desc=True)
-            .limit(200)
+            .eq(
+                "assigned_to",
+                name
+            )
+            .order(
+                "created_at",
+                desc=True
+            )
             .execute()
         )
-        return _session_cache_set(cache_key, result.data or [])
+
+        return result.data or []
+
     except Exception as error:
+
         st.error("Could not load your tasks.")
         st.write(error)
+
         return []
 
 
@@ -1045,7 +1100,6 @@ def update_task_status(
         except Exception:
             pass
 
-        clear_fast_cache("tasks_")
         return True
 
     except Exception as error:
@@ -1062,14 +1116,12 @@ def update_task_status(
 # TEAM / NOTIFICATION / CHAT HELPERS
 # ============================================================
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_team_profiles():
-    """Cached team directory; profiles rarely change during a working session."""
-    cached = _session_cache_get("team_profiles", 60)
-    if cached is not None:
-        return cached
+    """Return basic team directory data through a controlled Supabase RPC."""
     try:
         result = supabase.rpc("get_team_profiles").execute()
-        return _session_cache_set("team_profiles", result.data or [])
+        return result.data or []
     except Exception:
         return []
 
@@ -1740,6 +1792,7 @@ def update_presence():
         pass
 
 
+@st.cache_data(ttl=15, show_spinner=False)
 def load_presence():
     try:
         result = (
@@ -2015,6 +2068,7 @@ def attach_file_to_task(task_id, uploaded_file):
         return False
 
 
+@st.cache_data(ttl=30, show_spinner=False)
 def load_task_attachments(task_id):
     try:
         return (
@@ -2028,6 +2082,7 @@ def load_task_attachments(task_id):
         return []
 
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_task_templates():
     try:
         return (
@@ -2146,6 +2201,7 @@ def to_excel_bytes(sheets):
     return output.getvalue()
 
 
+@st.cache_data(ttl=30, show_spinner=False)
 def load_announcements(active_only=True):
     try:
         q = supabase.table("announcements").select("*")
@@ -2156,6 +2212,7 @@ def load_announcements(active_only=True):
         return []
 
 
+@st.cache_data(ttl=60, show_spinner=False)
 def load_knowledge_items():
     try:
         return (
@@ -2354,8 +2411,10 @@ def priority_badge(priority):
     return f"{icons.get(priority, '⚪')} {priority}"
 
 
-# Heartbeat / automation checks are throttled for fast navigation.
-run_lightweight_maintenance()
+# Heartbeat / automation checks
+update_presence()
+process_due_recurring_tasks()
+escalate_unopened_urgent_tasks()
 
 
 
@@ -2886,14 +2945,14 @@ with st.sidebar:
 
     st.markdown(
         '<div class="sidebar-logo">'
-        'TECHLOOM / TASK'
+        '◈ TECHLOOM TASK'
         '</div>',
         unsafe_allow_html=True
     )
 
     st.markdown(
         '<div class="sidebar-subtitle">'
-        'Operations workspace'
+        'Work Smart. Stay Organized.'
         '</div>',
         unsafe_allow_html=True
     )
@@ -3019,9 +3078,6 @@ with st.sidebar:
 
         logout()
 
-# Main workspace separator / consistent top rhythm
-st.markdown('<div style="height:2px"></div>', unsafe_allow_html=True)
-
 
 # ============================================================
 # DASHBOARD
@@ -3031,33 +3087,21 @@ if page == "🏠 Dashboard":
 
     render_team_shoutout_bar()
 
-    current_day = datetime.now(PK_TZ)
     st.markdown(
-        f'<div class="tech-title">Good morning, {name}</div>',
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        f'<div class="tech-subtitle">'
-        f'{current_day.strftime("%A, %d %B %Y")} &nbsp; • &nbsp; '
-        f'{department} &nbsp; • &nbsp; {role}'
+        f'<div class="tech-title">'
+        f'Welcome, {name} 👋'
         f'</div>',
         unsafe_allow_html=True
     )
 
-    all_dashboard_tasks = tasks_for_current_user()
-    ACTIVE_DASHBOARD_STATUSES = {
-        "New",
-        "In Progress",
-        "Waiting on Information",
-        "Waiting on Platform",
-        "Submitted for Review",
-        "Changes Requested"
-    }
-    tasks = [
-        task for task in all_dashboard_tasks
-        if task.get("status", "New") in ACTIVE_DASHBOARD_STATUSES
-        and not task.get("archived", False)
-    ]
+    st.markdown(
+        f'<div class="tech-subtitle">'
+        f'{department} • {role}'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+
+    tasks = tasks_for_current_user()
 
     today_date = datetime.now(PK_TZ).date()
     due_today_count = 0
