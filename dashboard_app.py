@@ -20,7 +20,7 @@ from supabase import create_client
 # ============================================================
 
 st.set_page_config(
-    page_title="Techloom Task",
+    page_title="Techloom Workspace",
     page_icon="◈",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -781,6 +781,584 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"]{font-size:22px!importa
 </style>
 """, unsafe_allow_html=True)
 
+
+# ============================================================
+# PREMIUM CORPORATE UI — V12
+# Visual-only override. Existing routing, Supabase, attendance,
+# tasks, chat and authentication logic intentionally unchanged.
+# ============================================================
+
+st.markdown("""
+<style>
+/* ============================================================
+   TECHLOOM PREMIUM CORPORATE DESIGN SYSTEM
+   ============================================================ */
+:root{
+  --tl-navy-950:#07111f;
+  --tl-navy-900:#0b1628;
+  --tl-navy-850:#101d31;
+  --tl-navy-800:#15243b;
+  --tl-blue-600:#2563eb;
+  --tl-blue-500:#3b82f6;
+  --tl-blue-100:#dbeafe;
+  --tl-blue-50:#eff6ff;
+  --tl-bg:#f5f7fb;
+  --tl-surface:#ffffff;
+  --tl-surface-soft:#f8fafc;
+  --tl-border:#e5eaf1;
+  --tl-border-strong:#d8e0ea;
+  --tl-text:#152033;
+  --tl-text-2:#475569;
+  --tl-muted:#7b8798;
+  --tl-success:#15803d;
+  --tl-warning:#b45309;
+  --tl-danger:#b91c1c;
+  --tl-radius:12px;
+  --tl-radius-sm:9px;
+  --tl-shadow:0 1px 2px rgba(15,23,42,.035),0 8px 24px rgba(15,23,42,.045);
+  --tl-shadow-hover:0 10px 30px rgba(15,23,42,.08);
+}
+
+/* App canvas */
+html,body,[class*="css"]{
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+.stApp{
+  background:var(--tl-bg)!important;
+  color:var(--tl-text)!important;
+}
+.block-container{
+  max-width:1440px!important;
+  padding:1.05rem 2rem 3.5rem!important;
+}
+header[data-testid="stHeader"]{
+  background:transparent!important;
+}
+#MainMenu,footer,[data-testid="stToolbar"]{
+  visibility:hidden!important;
+}
+
+/* ============================================================
+   SIDEBAR — EXECUTIVE NAV
+   ============================================================ */
+[data-testid="stSidebar"]{
+  width:252px!important;
+  min-width:252px!important;
+  background:linear-gradient(180deg,var(--tl-navy-950) 0%,var(--tl-navy-900) 100%)!important;
+  border-right:1px solid rgba(255,255,255,.06)!important;
+  box-shadow:12px 0 32px rgba(15,23,42,.06);
+}
+[data-testid="stSidebar"] [data-testid="stSidebarContent"]{
+  padding:1rem .78rem 1.1rem!important;
+}
+.side-brand{
+  height:48px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:11px!important;
+  padding:0 7px!important;
+  margin:0 0 12px!important;
+}
+.brand-mark{
+  width:31px!important;
+  height:31px!important;
+  border-radius:9px!important;
+  background:linear-gradient(145deg,#4f8cff,#2563eb)!important;
+  color:white!important;
+  box-shadow:0 5px 16px rgba(37,99,235,.32)!important;
+  font-size:12px!important;
+}
+.side-brand-copy{
+  display:flex;
+  flex-direction:column;
+  line-height:1.05;
+}
+.side-brand-copy strong,.side-brand strong{
+  color:#fff!important;
+  font-size:13.5px!important;
+  letter-spacing:-.01em!important;
+  font-weight:760!important;
+}
+.side-brand-copy small{
+  color:#7f91aa!important;
+  font-size:7.5px!important;
+  letter-spacing:.14em!important;
+  font-weight:800!important;
+  margin-top:4px!important;
+}
+.side-user{
+  position:relative;
+  padding:10px 11px 10px 38px!important;
+  margin:4px 2px 14px!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  background:rgba(255,255,255,.045)!important;
+  border-radius:10px!important;
+}
+.side-user:before{
+  content:"";
+  position:absolute;
+  left:11px;
+  top:50%;
+  transform:translateY(-50%);
+  width:18px;height:18px;
+  border-radius:50%;
+  background:linear-gradient(145deg,#6da0ff,#2b66de);
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.12);
+}
+.side-user b{
+  color:#f8fafc!important;
+  font-size:10.8px!important;
+  font-weight:680!important;
+}
+.side-user small{
+  color:#8290a5!important;
+  font-size:8.3px!important;
+  margin-top:3px!important;
+}
+[data-testid="stSidebar"] [role="radiogroup"]{gap:3px!important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label{
+  min-height:36px!important;
+  padding:8px 10px!important;
+  border-radius:8px!important;
+  transition:background .16s ease,transform .16s ease!important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{
+  background:rgba(255,255,255,.055)!important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){
+  background:rgba(59,130,246,.16)!important;
+  box-shadow:inset 3px 0 0 #4f8cff!important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label p{
+  color:#aeb9c8!important;
+  font-size:10.5px!important;
+  font-weight:560!important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) p{
+  color:#f8fbff!important;
+  font-weight:680!important;
+}
+[data-testid="stSidebar"] .stButton>button{
+  min-height:36px!important;
+  border-radius:8px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  background:rgba(255,255,255,.05)!important;
+  color:#d9e2ee!important;
+  font-size:9.8px!important;
+}
+[data-testid="stSidebar"] .stButton>button:hover{
+  background:rgba(255,255,255,.09)!important;
+  border-color:rgba(255,255,255,.16)!important;
+}
+[data-testid="stSidebar"] button[kind="primary"]{
+  background:linear-gradient(180deg,#3479f6,#2563eb)!important;
+  border-color:#3679ef!important;
+  color:#fff!important;
+  box-shadow:0 5px 16px rgba(37,99,235,.22)!important;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.portal-topbar{
+  min-height:48px!important;
+  margin:0 0 22px!important;
+  padding:0 2px 12px!important;
+  border-bottom:1px solid var(--tl-border)!important;
+}
+.crumb{
+  color:var(--tl-text-2)!important;
+  font-size:10.5px!important;
+  font-weight:650!important;
+}
+.crumb-mark{
+  color:var(--tl-blue-600)!important;
+  font-size:10px!important;
+}
+.top-user{
+  color:var(--tl-text-2)!important;
+  font-size:10px!important;
+  gap:8px!important;
+}
+.top-avatar{
+  width:29px!important;height:29px!important;
+  background:linear-gradient(145deg,#4d8dff,#2563eb)!important;
+  box-shadow:0 4px 11px rgba(37,99,235,.18)!important;
+}
+.notify-dot{
+  width:29px!important;height:29px!important;
+  border-radius:8px!important;
+  border:1px solid var(--tl-border)!important;
+  background:#fff!important;
+  color:#667085!important;
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.dashboard-hero-title,.tech-title,.page-title,.page-head-new h1{
+  color:var(--tl-text)!important;
+  font-size:31px!important;
+  line-height:1.06!important;
+  letter-spacing:-.045em!important;
+  font-weight:760!important;
+}
+.dashboard-hero-copy,.tech-subtitle,.page-subtitle,.page-head-new p{
+  color:var(--tl-muted)!important;
+  font-size:10.7px!important;
+  line-height:1.5!important;
+}
+.eyebrow{
+  color:#8b98a9!important;
+  font-size:8px!important;
+  letter-spacing:.13em!important;
+}
+.section-title{
+  color:#344054!important;
+  font-size:11.5px!important;
+  font-weight:730!important;
+}
+
+/* ============================================================
+   DASHBOARD HERO / SUMMARY
+   ============================================================ */
+.dashboard-hero{
+  padding:2px 0 4px!important;
+  margin-bottom:13px!important;
+}
+.hero-date{
+  color:#7b8798!important;
+  font-size:9.5px!important;
+  line-height:1.6!important;
+  padding-top:2px!important;
+}
+.today-strip{
+  border:1px solid #dae3ef!important;
+  background:linear-gradient(90deg,#f7faff,#fff)!important;
+  border-radius:10px!important;
+  padding:10px 13px!important;
+  color:#65748a!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.025)!important;
+}
+.today-strip b{
+  color:#22324a!important;
+}
+.announcement-mini{
+  border:1px solid #f0d4d4!important;
+  background:#fff8f8!important;
+  border-radius:10px!important;
+}
+
+/* ============================================================
+   KPI / METRIC CARDS
+   ============================================================ */
+div[data-testid="stMetric"]{
+  min-height:88px!important;
+  padding:14px 15px 12px!important;
+  border:1px solid var(--tl-border)!important;
+  border-radius:var(--tl-radius)!important;
+  background:rgba(255,255,255,.96)!important;
+  box-shadow:var(--tl-shadow)!important;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease!important;
+}
+div[data-testid="stMetric"]:hover{
+  transform:translateY(-1px)!important;
+  border-color:#d7e0ec!important;
+  box-shadow:var(--tl-shadow-hover)!important;
+}
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] p{
+  color:#718096!important;
+  font-size:8.8px!important;
+  font-weight:680!important;
+  letter-spacing:.015em!important;
+}
+div[data-testid="stMetric"] [data-testid="stMetricValue"]{
+  color:#162033!important;
+  font-size:24px!important;
+  font-weight:760!important;
+  letter-spacing:-.04em!important;
+}
+
+/* ============================================================
+   PANELS / CARDS
+   ============================================================ */
+.panel,.workspace-hero,.task-board-header,.analytics-panel,
+.attention-card,.work-card,.task-card,.task-detail-top,
+.attendance-status-card{
+  border:1px solid var(--tl-border)!important;
+  background:#fff!important;
+  border-radius:var(--tl-radius)!important;
+  box-shadow:var(--tl-shadow)!important;
+}
+.panel,.workspace-hero,.task-board-header,.analytics-panel{
+  padding:15px 16px!important;
+}
+.attention-card,.work-card,.task-card{
+  padding:11px 12px!important;
+  margin-bottom:8px!important;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease!important;
+}
+.attention-card:hover,.work-card:hover,.task-card:hover{
+  transform:translateY(-1px)!important;
+  border-color:#d3dce8!important;
+  box-shadow:var(--tl-shadow-hover)!important;
+  background:#fff!important;
+}
+.attention-card-title,.work-card-title,.task-card-title{
+  color:#26354b!important;
+  font-size:11px!important;
+  font-weight:690!important;
+}
+.attention-card-meta,.work-meta,.task-meta{
+  color:#8591a2!important;
+  font-size:8.8px!important;
+}
+.analytics-title{
+  color:#26354b!important;
+  font-size:11px!important;
+  font-weight:740!important;
+}
+.analytics-copy{
+  color:#8a96a6!important;
+  font-size:8.7px!important;
+}
+.mini-stat{
+  border:1px solid var(--tl-border)!important;
+  background:#f8fafc!important;
+  border-radius:9px!important;
+}
+.mini-stat b{color:#17253b!important}
+.mini-stat span{color:#8390a2!important}
+
+/* ============================================================
+   BUTTONS / CONTROLS
+   ============================================================ */
+.stButton>button,.stFormSubmitButton>button,.stDownloadButton>button,.stLinkButton>a{
+  min-height:37px!important;
+  border-radius:9px!important;
+  border:1px solid var(--tl-border-strong)!important;
+  background:#fff!important;
+  color:#344054!important;
+  font-size:9.8px!important;
+  font-weight:650!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.03)!important;
+  transition:all .15s ease!important;
+}
+.stButton>button:hover,.stFormSubmitButton>button:hover,.stDownloadButton>button:hover,.stLinkButton>a:hover{
+  border-color:#c8d3e0!important;
+  color:#1f3556!important;
+  background:#f9fbfd!important;
+  transform:translateY(-1px)!important;
+}
+button[kind="primary"],.stFormSubmitButton button[kind="primary"]{
+  background:linear-gradient(180deg,#3479f6,#2563eb)!important;
+  border-color:#2563eb!important;
+  color:#fff!important;
+  box-shadow:0 5px 14px rgba(37,99,235,.17)!important;
+}
+button[kind="primary"]:hover,.stFormSubmitButton button[kind="primary"]:hover{
+  background:linear-gradient(180deg,#2f70e8,#1f5bd8)!important;
+  color:#fff!important;
+}
+
+/* Inputs */
+[data-baseweb="input"]>div,
+[data-baseweb="textarea"]>div,
+[data-baseweb="select"]>div{
+  min-height:39px!important;
+  border:1px solid #dbe2eb!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.02)!important;
+}
+[data-baseweb="input"]>div:focus-within,
+[data-baseweb="textarea"]>div:focus-within,
+[data-baseweb="select"]>div:focus-within{
+  border-color:#79a7f8!important;
+  box-shadow:0 0 0 3px rgba(37,99,235,.10)!important;
+}
+.stTextInput label p,.stTextArea label p,.stSelectbox label p,.stDateInput label p,
+.stNumberInput label p,.stFileUploader label p,.stMultiSelect label p{
+  color:#637083!important;
+  font-size:9px!important;
+  font-weight:650!important;
+}
+
+/* Tabs, tables, expanders */
+button[data-baseweb="tab"]{
+  padding:8px 10px!important;
+  font-size:9.7px!important;
+  color:#768396!important;
+}
+button[data-baseweb="tab"][aria-selected="true"]{
+  color:#1f3d67!important;
+}
+[data-baseweb="tab-highlight"]{
+  background:var(--tl-blue-600)!important;
+  height:2px!important;
+}
+[data-testid="stDataFrame"],[data-testid="stTable"]{
+  border:1px solid var(--tl-border)!important;
+  border-radius:10px!important;
+  box-shadow:var(--tl-shadow)!important;
+}
+[data-testid="stExpander"]{
+  border:1px solid var(--tl-border)!important;
+  border-radius:10px!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.02)!important;
+}
+[data-testid="stAlert"]{
+  border-radius:10px!important;
+}
+
+/* ============================================================
+   STATUS ELEMENTS
+   ============================================================ */
+.status-chip,.status-pill,.tl-chip{
+  border-radius:999px!important;
+  padding:3px 7px!important;
+  font-size:7.9px!important;
+  font-weight:720!important;
+}
+.priority-urgent,.tl-chip-urgent{background:#feecec!important;color:#ad2e2e!important}
+.priority-high,.tl-chip-high{background:#fff3dc!important;color:#94600d!important}
+.priority-normal,.tl-chip-normal{background:#eaf3ff!important;color:#2c67ae!important}
+.priority-low,.tl-chip-low{background:#f0f2f5!important;color:#667085!important}
+
+/* Direct messages shortcut */
+.dm-shortcut-card{
+  min-height:61px!important;
+  border:1px solid var(--tl-border)!important;
+  border-radius:11px!important;
+  background:#fff!important;
+  box-shadow:var(--tl-shadow)!important;
+}
+.dm-shortcut-icon{
+  width:37px!important;height:37px!important;
+  border-radius:10px!important;
+  background:#edf4ff!important;
+}
+.dm-shortcut-title{color:#26354b!important}
+.dm-shortcut-copy{color:#8a96a6!important}
+
+/* ============================================================
+   ATTENDANCE
+   ============================================================ */
+.attendance-hero{
+  position:relative;
+  overflow:hidden;
+  border:1px solid #dae3ef!important;
+  border-radius:14px!important;
+  background:linear-gradient(120deg,#ffffff 0%,#f5f9ff 100%)!important;
+  padding:20px 21px!important;
+  box-shadow:var(--tl-shadow)!important;
+}
+.attendance-hero:after{
+  content:"";
+  position:absolute;
+  width:170px;height:170px;
+  border-radius:50%;
+  right:-65px;top:-105px;
+  background:rgba(59,130,246,.08);
+}
+.attendance-eyebrow{
+  color:#718096!important;
+  font-size:8px!important;
+  letter-spacing:.13em!important;
+}
+.attendance-date{
+  color:#15233a!important;
+  font-size:27px!important;
+  font-weight:760!important;
+}
+.attendance-day,.attendance-note{
+  color:#7e8b9e!important;
+}
+.attendance-rules{
+  border:1px solid var(--tl-border)!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  color:#64748b!important;
+  box-shadow:0 1px 2px rgba(15,23,42,.025)!important;
+}
+
+/* ============================================================
+   LOGIN — PREMIUM CORPORATE LANDING
+   ============================================================ */
+.login-shell{
+  min-height:calc(100vh - 70px);
+  display:flex;
+  align-items:center;
+}
+.login-hero{
+  min-height:330px;
+  border-radius:22px;
+  padding:48px 44px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  background:
+    radial-gradient(circle at 82% 18%,rgba(88,144,255,.32),transparent 30%),
+    linear-gradient(140deg,#081426 0%,#10223d 58%,#163a72 100%);
+  box-shadow:0 24px 60px rgba(15,23,42,.16);
+  color:#fff;
+}
+.login-kicker{
+  color:#93b8ff;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.15em;
+  margin-bottom:14px;
+}
+.login-heading{
+  max-width:620px;
+  color:#fff;
+  font-size:42px;
+  line-height:1.03;
+  letter-spacing:-.052em;
+  font-weight:770;
+}
+.login-copy{
+  max-width:560px;
+  color:#b8c5d8;
+  font-size:12px;
+  line-height:1.75;
+  margin-top:17px;
+}
+.login-card-title{
+  color:#17243a;
+  font-size:24px;
+  font-weight:760;
+  letter-spacing:-.035em;
+  margin-top:28px;
+}
+.login-card-copy{
+  color:#7e8b9d;
+  font-size:10.5px;
+  margin:5px 0 21px;
+}
+.login-shell div[data-testid="stMetric"]{
+  background:#fff!important;
+  min-height:74px!important;
+  margin-top:5px!important;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:1100px){
+  .block-container{padding-left:1.25rem!important;padding-right:1.25rem!important}
+  [data-testid="stSidebar"]{width:236px!important;min-width:236px!important}
+}
+@media(max-width:900px){
+  .block-container{padding:.9rem .8rem 2.5rem!important}
+  .dashboard-hero-title,.tech-title,.page-title,.page-head-new h1{font-size:27px!important}
+  .login-heading{font-size:34px!important}
+  .login-hero{padding:34px 30px!important;min-height:280px!important}
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ============================================================
 # SUPABASE
 # ============================================================
@@ -1043,11 +1621,11 @@ if st.session_state.user is None:
         st.markdown(
             """
             <div class="login-hero">
-                <div class="login-kicker">TECHLOOM WORKSPACE</div>
-                <div class="login-heading">One place to run the workday.</div>
+                <div class="login-kicker">TECHLOOM · INTERNAL OPERATIONS</div>
+                <div class="login-heading">Your company workspace, beautifully organised.</div>
                 <div class="login-copy">
-                    Manage tasks, approvals, marketplace operations and attendance
-                    from one focused workspace built for the Techloom team.
+                    Run tasks, approvals, marketplace operations, attendance and team
+                    communication from one secure, focused workspace.
                 </div>
             </div>
             """,
@@ -2948,14 +3526,21 @@ def attendance_excel_bytes(detail_df, summary_df, title):
 
 
 def today_team_attendance():
+    """
+    Load today's team attendance.
+    pakistan_today() already returns YYYY-MM-DD as a string,
+    so do not call .isoformat() on it.
+    """
     try:
         return (
             supabase.table("attendance")
             .select("*")
-            .eq("attendance_date", pakistan_today().isoformat())
+            .eq("attendance_date", pakistan_today())
+            .order("check_in")
             .execute()
         ).data or []
-    except Exception:
+    except Exception as error:
+        # Keep dashboard alive, but expose the real issue to logs/UI if needed.
         return []
 
 
@@ -3116,7 +3701,7 @@ def portal_header(page_name="Techloom HQ"):
     st.markdown(
         f"""
         <div class="portal-topbar">
-          <div class="crumb"><span class="crumb-mark">◢</span><span>{page_name}</span></div>
+          <div class="crumb"><span class="crumb-mark">◆</span><span>{page_name}</span></div>
           <div class="top-user">
             <span class="notify-dot">▤</span>
             <span class="top-avatar">{initial}</span>
@@ -3263,7 +3848,10 @@ with st.sidebar:
         """
         <div class="side-brand">
           <span class="brand-mark">T</span>
-          <strong>Techloom</strong>
+          <span class="side-brand-copy">
+            <strong>Techloom</strong>
+            <small>WORKSPACE</small>
+          </span>
         </div>
         """,
         unsafe_allow_html=True
@@ -3510,8 +4098,8 @@ if page == "Company HQ":
     att_map = {}
     for rec in today_att:
         employee_name = str(rec.get("employee_name") or "").strip()
-        if employee_name and employee_name not in att_map:
-            att_map[employee_name] = rec
+        if employee_name:
+            att_map[employee_name.lower()] = rec
 
     unique_people = []
     seen_names = set()
@@ -3533,7 +4121,7 @@ if page == "Company HQ":
 
     for person in unique_people:
         person_name = person.get("name")
-        rec = att_map.get(person_name)
+        rec = att_map.get(str(person_name).strip().lower())
 
         if rec:
             marked_count += 1
