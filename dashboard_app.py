@@ -694,6 +694,90 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"]{font-size:22px!importa
     font-size:9px;
 }
 
+
+/* ===== V9 DASHBOARD ANALYTICS ===== */
+.analytics-panel{
+    border:1px solid #e7e7e3;
+    border-radius:10px;
+    background:#fff;
+    padding:13px 14px;
+    margin-bottom:10px;
+}
+.analytics-title{
+    font-size:11px;
+    font-weight:750;
+    color:#2c2c2a;
+    margin-bottom:3px;
+}
+.analytics-copy{
+    font-size:9px;
+    color:#8a8a84;
+    margin-bottom:10px;
+}
+.mini-stat-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:7px;
+}
+.mini-stat{
+    border:1px solid #ecece8;
+    background:#fafaf8;
+    border-radius:8px;
+    padding:9px 10px;
+}
+.mini-stat b{
+    display:block;
+    font-size:16px;
+    color:#292927;
+    line-height:1.1;
+}
+.mini-stat span{
+    display:block;
+    font-size:8.5px;
+    color:#888882;
+    margin-top:4px;
+}
+.priority-mini{
+    border-bottom:1px solid #efefec;
+    padding:8px 0;
+}
+.priority-mini:last-child{
+    border-bottom:0;
+}
+.priority-mini-title{
+    font-size:10.5px;
+    font-weight:700;
+    color:#2e2e2c;
+}
+.priority-mini-meta{
+    font-size:8.5px;
+    color:#8b8b85;
+    margin-top:3px;
+}
+.activity-mini{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    padding:8px 0;
+    border-bottom:1px solid #f0f0ed;
+}
+.activity-mini:last-child{border-bottom:0}
+.activity-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:#9ca3af;margin-top:5px;flex:none;
+}
+.activity-text b{
+    display:block;
+    font-size:9.7px;
+    color:#30302e;
+}
+.activity-text span{
+    display:block;
+    font-size:8.5px;
+    color:#8d8d87;
+    margin-top:2px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -3384,126 +3468,234 @@ if page == "Company HQ":
 
     st.write("")
 
-    left, right = st.columns([1.55, 1])
+    # --------------------------------------------------------
+    # DASHBOARD ANALYTICS — cleaner, less repetitive
+    # --------------------------------------------------------
+    status_order = [
+        "New",
+        "In Progress",
+        "Waiting on Information",
+        "Waiting on Platform",
+        "Submitted for Review",
+        "Changes Requested",
+    ]
 
-    with left:
-        st.markdown('<div class="section-title">Priority work</div>', unsafe_allow_html=True)
+    status_counts = {
+        status_name: sum(1 for t in active_tasks if t.get("status") == status_name)
+        for status_name in status_order
+    }
+
+    chart_df = pd.DataFrame(
+        {
+            "Status": list(status_counts.keys()),
+            "Tasks": list(status_counts.values())
+        }
+    ).set_index("Status")
+
+    # Team attendance - de-duplicate by NAME (stronger than ID because old profile rows can duplicate)
+    try:
+        today_att = today_team_attendance()
+    except Exception:
+        today_att = []
+
+    att_map = {}
+    for rec in today_att:
+        employee_name = str(rec.get("employee_name") or "").strip()
+        if employee_name and employee_name not in att_map:
+            att_map[employee_name] = rec
+
+    unique_people = []
+    seen_names = set()
+
+    for person in load_team_profiles():
+        person_name = str(person.get("name") or "").strip()
+        name_key = person_name.lower()
+        if not person_name or name_key in seen_names:
+            continue
+        seen_names.add(name_key)
+        unique_people.append(person)
+
+    marked_count = 0
+    on_time_count = 0
+    late_count = 0
+    not_marked_count = 0
+
+    attendance_rows = []
+
+    for person in unique_people:
+        person_name = person.get("name")
+        rec = att_map.get(person_name)
+
+        if rec:
+            marked_count += 1
+            arrival = late_status(rec.get("check_in"))
+            if arrival == "On Time":
+                on_time_count += 1
+            else:
+                late_count += 1
+
+            attendance_rows.append(
+                {
+                    "Member": person_name,
+                    "Status": arrival,
+                    "Check In": format_pk_time(rec.get("check_in"))
+                }
+            )
+        else:
+            not_marked_count += 1
+            attendance_rows.append(
+                {
+                    "Member": person_name,
+                    "Status": "Not marked",
+                    "Check In": "—"
+                }
+            )
+
+    left_analytics, right_analytics = st.columns([1.45, 1])
+
+    with left_analytics:
+        st.markdown(
+            """
+            <div class="analytics-panel">
+                <div class="analytics-title">Work overview</div>
+                <div class="analytics-copy">Current active workload by status.</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.bar_chart(
+            chart_df,
+            use_container_width=True,
+            height=245
+        )
+
+    with right_analytics:
+        st.markdown(
+            f"""
+            <div class="analytics-panel">
+                <div class="analytics-title">Team attendance today</div>
+                <div class="analytics-copy">A quick view of today's attendance status.</div>
+
+                <div class="mini-stat-grid">
+                    <div class="mini-stat">
+                        <b>{len(unique_people)}</b>
+                        <span>Team members</span>
+                    </div>
+                    <div class="mini-stat">
+                        <b>{marked_count}</b>
+                        <span>Attendance marked</span>
+                    </div>
+                    <div class="mini-stat">
+                        <b>{on_time_count}</b>
+                        <span>On time</span>
+                    </div>
+                    <div class="mini-stat">
+                        <b>{not_marked_count}</b>
+                        <span>Not marked</span>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        if attendance_rows:
+            attendance_df = pd.DataFrame(attendance_rows)
+            st.dataframe(
+                attendance_df,
+                use_container_width=True,
+                hide_index=True,
+                height=min(230, 42 + 35 * len(attendance_rows))
+            )
+
+    st.write("")
+
+    priority_col, activity_col = st.columns([1.1, 1])
+
+    with priority_col:
+        st.markdown(
+            """
+            <div class="analytics-panel">
+                <div class="analytics-title">Priority work</div>
+                <div class="analytics-copy">Only the most important items are shown here.</div>
+            """,
+            unsafe_allow_html=True
+        )
 
         priority = []
-        seen = set()
+        seen_priority = set()
+
         for group in [overdue, urgent, due_today, review, active_tasks]:
             for task in group:
-                tid = task.get("id")
-                if tid not in seen:
-                    priority.append(task)
-                    seen.add(tid)
+                task_id = task.get("id")
+                if task_id in seen_priority:
+                    continue
+                seen_priority.add(task_id)
+                priority.append(task)
 
         if priority:
-            for idx, task in enumerate(priority[:6]):
+            for task in priority[:4]:
                 due = _due_local(task)
                 due_label = due.strftime("%d %b") if due else "No due date"
-                priority_value = display_value(task.get("priority"), "Normal")
-                priority_class = str(priority_value).lower()
-
                 st.markdown(
                     f"""
-                    <div class="attention-card">
-                      <div class="attention-card-title">{display_value(task.get("title"))}</div>
-                      <div class="attention-card-meta">
-                        <span class="tl-chip tl-chip-platform">{display_value(task.get("platform"))}</span>
-                        <span class="tl-chip tl-chip-status">{display_value(task.get("status"))}</span>
-                        <span class="tl-chip tl-chip-{priority_class}">{priority_value}</span>
-                        <span>Due {due_label}</span>
-                      </div>
+                    <div class="priority-mini">
+                        <div class="priority-mini-title">{display_value(task.get("title"))}</div>
+                        <div class="priority-mini-meta">
+                            {display_value(task.get("platform"))} ·
+                            {display_value(task.get("status"))} ·
+                            {display_value(task.get("priority"))} ·
+                            Due {due_label}
+                        </div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
         else:
-            st.caption("Nothing urgent right now.")
+            st.caption("No priority work right now.")
 
-    with right:
-        st.markdown('<div class="section-title">Team today</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with activity_col:
+        st.markdown(
+            """
+            <div class="analytics-panel">
+                <div class="analytics-title">Recent activity</div>
+                <div class="analytics-copy">Latest task updates from the workspace.</div>
+            """,
+            unsafe_allow_html=True
+        )
 
         try:
-            today_att = today_team_attendance()
+            activity = (
+                supabase.table("task_activity")
+                .select("*")
+                .order("created_at", desc=True)
+                .limit(5)
+                .execute()
+            ).data or []
         except Exception:
-            today_att = []
+            activity = []
 
-        att_map = {r.get("employee_name"): r for r in today_att}
-
-        unique_people = []
-        seen_people = set()
-
-        for person in load_team_profiles():
-            person_name = str(person.get("name") or "").strip()
-            person_email = str(person.get("email") or "").strip().lower()
-            person_id = str(person.get("id") or "").strip()
-            dedupe_key = person_id or person_email or person_name.lower()
-
-            if not dedupe_key or dedupe_key in seen_people:
-                continue
-
-            seen_people.add(dedupe_key)
-            unique_people.append(person)
-
-        for person in unique_people[:8]:
-            person_name = person.get("name")
-            rec = att_map.get(person_name)
-
-            if rec:
-                arrival = late_status(rec.get("check_in"))
-                dot_class = (
-                    "tl-dot-good" if arrival == "On Time"
-                    else "tl-dot-warn" if arrival in ["Late", "Very Late"]
-                    else "tl-dot-bad"
+        if activity:
+            for item in activity:
+                st.markdown(
+                    f"""
+                    <div class="activity-mini">
+                        <span class="activity-dot"></span>
+                        <div class="activity-text">
+                            <b>{display_value(item.get("user_name"), "User")} · {display_value(item.get("action"))}</b>
+                            <span>{display_value(item.get("details"))}</span>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
-                status = f"{arrival} · {format_pk_time(rec.get('check_in'))}"
-            else:
-                dot_class = "tl-dot-neutral"
-                status = "Not marked"
+        else:
+            st.caption("No recent activity.")
 
-            st.markdown(
-                f"""
-                <div class="attention-card">
-                  <div class="attention-card-title">
-                    <span class="tl-dot {dot_class}"></span>{display_value(person_name)}
-                  </div>
-                  <div class="attention-card-meta">{status}</div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-    st.write("")
-    st.markdown('<div class="section-title">Recent activity</div>', unsafe_allow_html=True)
-
-    try:
-        activity = (
-            supabase.table("task_activity")
-            .select("*")
-            .order("created_at", desc=True)
-            .limit(6)
-            .execute()
-        ).data or []
-    except Exception:
-        activity = []
-
-    if activity:
-        for item in activity:
-            st.markdown(
-                f"""
-                <div class="attention-card">
-                  <div class="attention-card-title">
-                    {display_value(item.get("user_name"), "User")} · {display_value(item.get("action"))}
-                  </div>
-                  <div class="attention-card-meta">
-                    {display_value(item.get("details"))} · {display_value(item.get("created_at"))}
-                  </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ============================================================
 # MY TASKS / TEAM TASKS — WORK INBOX + KANBAN
