@@ -4946,17 +4946,8 @@ if page == "Company HQ":
     ]
 
     today_local = datetime.now(PK_TZ)
-
-    # Special team recognition for 25 August 2026.
-    if today_local.date() == datetime(2026, 8, 25).date():
-        message_theme = "Team Shoutout"
-        message_text = (
-            "Talha Mughal — recognised for his positive energy, optimistic mindset, "
-            "and the uplifting attitude he brings to the team every day."
-        )
-    else:
-        message_index = (today_local.timetuple().tm_yday - 1) % len(daily_messages)
-        message_theme, message_text = daily_messages[message_index]
+    message_index = (today_local.timetuple().tm_yday - 1) % len(daily_messages)
+    message_theme, message_text = daily_messages[message_index]
 
     ticker_item = (
         f'<span>💡 <b>{safe_html(message_theme)}</b></span>'
