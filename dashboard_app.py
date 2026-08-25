@@ -1594,17 +1594,19 @@ st.markdown("""
 .command-ticker{
   position:relative;
   overflow:hidden;
-  height:37px;
+  min-height:58px;
   display:flex;
   align-items:center;
-  margin:-4px 0 18px;
-  border:1px solid #16345f;
-  border-radius:11px;
-  background:linear-gradient(90deg,#071426,#0d2445 52%,#102f5f);
-  box-shadow:0 8px 24px rgba(15,23,42,.08);
+  margin:-4px 0 20px;
+  border:1px solid #1d4f91;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 85% 30%,rgba(96,165,250,.20),transparent 30%),
+    linear-gradient(90deg,#061427 0%,#0b2450 48%,#123b78 100%);
+  box-shadow:0 10px 28px rgba(15,23,42,.13);
 }
 .command-ticker:before{
-  content:"UPCOMING";
+  content:"GRAND FAREWELL";
   position:absolute;
   left:0;
   top:0;
@@ -1612,39 +1614,56 @@ st.markdown("""
   z-index:3;
   display:flex;
   align-items:center;
-  padding:0 14px;
-  background:#2563eb;
+  padding:0 18px;
+  background:linear-gradient(180deg,#3b82f6,#2563eb);
   color:#fff;
-  font-size:7.5px;
-  font-weight:850;
-  letter-spacing:.12em;
-  box-shadow:8px 0 18px rgba(7,20,38,.22);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.13em;
+  box-shadow:10px 0 22px rgba(7,20,38,.28);
 }
 .command-ticker-track{
   display:inline-flex;
   align-items:center;
-  gap:28px;
+  gap:34px;
   min-width:max-content;
-  padding-left:125px;
+  padding-left:175px;
   white-space:nowrap;
-  animation:tlTicker 24s linear infinite;
+  animation:tlTicker 30s linear infinite;
   color:#dce9ff;
-  font-size:9.2px;
-  font-weight:590;
+  font-size:16px;
+  line-height:1;
+  font-weight:650;
+  letter-spacing:-.01em;
 }
 .command-ticker-track b{
   color:#fff;
-  font-weight:760;
+  font-size:17px;
+  font-weight:850;
+}
+.command-ticker-track .ticker-date{
+  color:#93c5fd;
+  font-weight:800;
+}
+.command-ticker-track .ticker-place{
+  color:#fde68a;
+  font-weight:800;
+}
+.command-ticker-track .ticker-invite{
+  color:#d1fae5;
+  font-weight:750;
 }
 .command-ticker-sep{
-  color:#679cf5;
-  font-size:8px;
+  color:#60a5fa;
+  font-size:11px;
 }
 .command-ticker:hover .command-ticker-track{
   animation-play-state:paused;
 }
 @keyframes tlTicker{
   0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
   100%{transform:translateX(-50%)}
 }
 
@@ -1881,13 +1900,18 @@ st.markdown("""
 @media(max-width:900px){
   .command-ticker{
     margin-top:0;
+    min-height:52px;
   }
   .command-ticker:before{
-    padding:0 9px;
-    font-size:6.5px;
+    padding:0 10px;
+    font-size:7px;
   }
   .command-ticker-track{
-    padding-left:95px;
+    padding-left:125px;
+    font-size:12px;
+  }
+  .command-ticker-track b{
+    font-size:13px;
   }
   .dashboard-hero-v14{
     align-items:flex-start;
@@ -4636,10 +4660,13 @@ if page == "Company HQ":
     # Duplicate ticker content intentionally creates a seamless loop.
     # --------------------------------------------------------
     ticker_item = (
-        "<span>✨ <b>Farewell to Ma'am Aifa Tassawar</b> "
-        "— team gathering coming up</span>"
+        '<span>🎉 <b>Grand Farewell Party for Ma\'am Aifa Tassawar</b></span>'
         '<span class="command-ticker-sep">◆</span>'
-        "<span>Please keep an eye on company announcements for final details.</span>"
+        '<span class="ticker-date">31 August 2026</span>'
+        '<span class="command-ticker-sep">◆</span>'
+        '<span class="ticker-place">📍 Ranchers, Sargodha</span>'
+        '<span class="command-ticker-sep">◆</span>'
+        '<span class="ticker-invite">Come join us for an evening of memories, laughter and celebration — everyone is warmly invited!</span>'
         '<span class="command-ticker-sep">◆</span>'
     )
 
