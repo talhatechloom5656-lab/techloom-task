@@ -1363,6 +1363,7 @@ button[data-baseweb="tab"][aria-selected="true"]{
 
 # ============================================================
 # V13 — EXECUTIVE WORKSPACE POLISH / SYMMETRY / CHAT / TASKS
+# V14 dashboard command-center additions are layered below.
 # ============================================================
 
 st.markdown("""
@@ -1578,6 +1579,325 @@ div[data-testid="stMetric"]{
 @media(max-width:1050px){
   .capacity-card-v13{min-height:120px}
   .task-card-v13{min-height:136px}
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# V14 — DASHBOARD COMMAND CENTER / LIVE TICKER
+# ============================================================
+
+st.markdown("""
+<style>
+/* Remove the visual "dead zone" from the dashboard and make every row intentional */
+.command-ticker{
+  position:relative;
+  overflow:hidden;
+  height:37px;
+  display:flex;
+  align-items:center;
+  margin:-4px 0 18px;
+  border:1px solid #16345f;
+  border-radius:11px;
+  background:linear-gradient(90deg,#071426,#0d2445 52%,#102f5f);
+  box-shadow:0 8px 24px rgba(15,23,42,.08);
+}
+.command-ticker:before{
+  content:"UPCOMING";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  background:#2563eb;
+  color:#fff;
+  font-size:7.5px;
+  font-weight:850;
+  letter-spacing:.12em;
+  box-shadow:8px 0 18px rgba(7,20,38,.22);
+}
+.command-ticker-track{
+  display:inline-flex;
+  align-items:center;
+  gap:28px;
+  min-width:max-content;
+  padding-left:125px;
+  white-space:nowrap;
+  animation:tlTicker 24s linear infinite;
+  color:#dce9ff;
+  font-size:9.2px;
+  font-weight:590;
+}
+.command-ticker-track b{
+  color:#fff;
+  font-weight:760;
+}
+.command-ticker-sep{
+  color:#679cf5;
+  font-size:8px;
+}
+.command-ticker:hover .command-ticker-track{
+  animation-play-state:paused;
+}
+@keyframes tlTicker{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+
+/* Dashboard header now feels anchored rather than floating in empty space */
+.dashboard-hero-v14{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+  margin:2px 0 14px;
+}
+.dashboard-hero-v14-left{
+  min-width:0;
+}
+.dashboard-hero-v14-title{
+  color:#152033;
+  font-size:31px;
+  line-height:1.05;
+  letter-spacing:-.045em;
+  font-weight:770;
+}
+.dashboard-hero-v14-copy{
+  color:#7b8798;
+  font-size:10.7px;
+  margin-top:6px;
+}
+.dashboard-date-v14{
+  flex:none;
+  text-align:right;
+  color:#8190a5;
+  font-size:9px;
+  line-height:1.55;
+}
+.dashboard-date-v14 b{
+  display:block;
+  color:#3b4a5f;
+  font-size:10px;
+}
+
+/* Full-width command row: replaces the old 4.8-column blank spacer */
+.command-card-v14{
+  min-height:142px;
+  height:100%;
+  border:1px solid #e2e8f0;
+  border-radius:13px;
+  background:#fff;
+  padding:14px 15px;
+  box-shadow:0 1px 2px rgba(15,23,42,.03),0 8px 20px rgba(15,23,42,.035);
+}
+.command-card-v14.primary{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 92% 12%,rgba(59,130,246,.13),transparent 28%),
+    linear-gradient(135deg,#ffffff,#f6f9ff);
+  border-color:#dbe5f3;
+}
+.command-card-v14.primary:after{
+  content:"";
+  position:absolute;
+  width:150px;
+  height:150px;
+  border:1px solid rgba(37,99,235,.08);
+  border-radius:50%;
+  right:-60px;
+  bottom:-95px;
+}
+.command-kicker-v14{
+  color:#8794a7;
+  font-size:7.2px;
+  font-weight:820;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+.command-title-v14{
+  color:#1e2e45;
+  font-size:12px;
+  font-weight:760;
+  margin-top:6px;
+  line-height:1.35;
+}
+.command-copy-v14{
+  color:#7f8c9f;
+  font-size:8.5px;
+  line-height:1.55;
+  margin-top:4px;
+}
+.command-focus-title-v14{
+  color:#1a2b43;
+  font-size:14px;
+  line-height:1.3;
+  font-weight:760;
+  margin-top:7px;
+  max-width:90%;
+}
+.command-focus-meta-v14{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:10px;
+}
+.command-focus-meta-v14 span{
+  border:1px solid #e1e8f1;
+  border-radius:999px;
+  background:#fff;
+  color:#627086;
+  font-size:7.5px;
+  font-weight:650;
+  padding:3px 7px;
+}
+.command-stats-v14{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  margin-top:11px;
+}
+.command-stat-v14{
+  border:1px solid #e8edf4;
+  border-radius:9px;
+  background:rgba(255,255,255,.82);
+  padding:8px 9px;
+}
+.command-stat-v14 b{
+  display:block;
+  color:#1c2c44;
+  font-size:15px;
+  line-height:1;
+}
+.command-stat-v14 span{
+  display:block;
+  color:#8996a8;
+  font-size:7px;
+  margin-top:4px;
+}
+.command-icon-v14{
+  width:34px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  background:#edf4ff;
+  color:#2563eb;
+  font-size:15px;
+  margin-bottom:9px;
+}
+.command-icon-v14.amber{background:#fff5e7;color:#b66a13}
+.command-icon-v14.green{background:#ecf9f1;color:#18834c}
+.command-badge-v14{
+  display:inline-flex;
+  min-width:19px;
+  height:19px;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  background:#e5484d;
+  color:#fff;
+  font-size:7.5px;
+  font-weight:850;
+  padding:0 5px;
+  margin-left:5px;
+}
+.quick-actions-v14{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:7px;
+  margin-top:10px;
+}
+.quick-action-v14{
+  border:1px solid #e7ecf2;
+  border-radius:9px;
+  background:#f9fbfd;
+  padding:8px;
+  color:#56657a;
+  font-size:7.8px;
+  font-weight:680;
+  text-align:center;
+}
+
+/* Latest company announcement gets a calmer full-width treatment */
+.announcement-bar-v14{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:39px;
+  margin:12px 0;
+  padding:8px 12px;
+  border:1px solid #efd8d5;
+  border-radius:10px;
+  background:#fff9f8;
+  color:#8a4a43;
+  font-size:8.8px;
+}
+.announcement-bar-v14 b{
+  color:#7a3934;
+}
+
+/* Equal metric rhythm */
+.dashboard-metrics-v14 div[data-testid="stMetric"]{
+  min-height:86px!important;
+}
+
+/* Make dashboard rows visually symmetric */
+.dashboard-section-v14{
+  margin-top:4px;
+}
+.dashboard-section-head-v14{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+  margin:18px 1px 8px;
+}
+.dashboard-section-head-v14 b{
+  color:#29394f;
+  font-size:11px;
+}
+.dashboard-section-head-v14 span{
+  color:#8a97a8;
+  font-size:8px;
+}
+
+/* Slightly tighter chart/card relationship */
+.analytics-panel{
+  min-height:64px;
+}
+[data-testid="stVegaLiteChart"],
+[data-testid="stArrowVegaLiteChart"]{
+  border-radius:11px;
+  overflow:hidden;
+}
+
+/* Mobile/tablet */
+@media(max-width:900px){
+  .command-ticker{
+    margin-top:0;
+  }
+  .command-ticker:before{
+    padding:0 9px;
+    font-size:6.5px;
+  }
+  .command-ticker-track{
+    padding-left:95px;
+  }
+  .dashboard-hero-v14{
+    align-items:flex-start;
+  }
+  .dashboard-hero-v14-title{
+    font-size:27px;
+  }
+  .command-card-v14{
+    min-height:128px;
+  }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -4172,6 +4492,11 @@ def go_to_direct_messages():
     st.session_state["main_portal_nav"] = "Direct Messages"
 
 
+def go_to_portal_page(page_name):
+    """Navigate to a portal page from dashboard quick actions."""
+    st.session_state["main_portal_nav"] = page_name
+
+
 # ============================================================
 # SIDEBAR
 # ============================================================
@@ -4289,77 +4614,231 @@ if page == "Company HQ":
         return parsed.astimezone(PK_TZ) if parsed else None
 
     today = current_day.date()
-    due_today = [t for t in active_tasks if _due_local(t) and _due_local(t).date() == today]
-    overdue = [t for t in active_tasks if _due_local(t) and _due_local(t).date() < today]
-    urgent = [t for t in active_tasks if t.get("priority") == "Urgent"]
-    review = [t for t in active_tasks if t.get("status") == "Submitted for Review"]
+    due_today = [
+        t for t in active_tasks
+        if _due_local(t) and _due_local(t).date() == today
+    ]
+    overdue = [
+        t for t in active_tasks
+        if _due_local(t) and _due_local(t).date() < today
+    ]
+    urgent = [
+        t for t in active_tasks
+        if t.get("priority") == "Urgent"
+    ]
+    review = [
+        t for t in active_tasks
+        if t.get("status") == "Submitted for Review"
+    ]
+
+    # --------------------------------------------------------
+    # LIVE UPCOMING TICKER
+    # Duplicate ticker content intentionally creates a seamless loop.
+    # --------------------------------------------------------
+    ticker_item = (
+        "<span>✨ <b>Farewell to Ma'am Aifa Tassawar</b> "
+        "— team gathering coming up</span>"
+        '<span class="command-ticker-sep">◆</span>'
+        "<span>Please keep an eye on company announcements for final details.</span>"
+        '<span class="command-ticker-sep">◆</span>'
+    )
 
     st.markdown(
         f"""
-        <div class="dashboard-hero">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
-            <div>
-              <div class="dashboard-hero-title">Dashboard</div>
-              <div class="dashboard-hero-copy">Your live workspace for today.</div>
-            </div>
-            <div class="hero-date">{current_day.strftime("%A")}<br>{current_day.strftime("%d %B %Y")}</div>
+        <div class="command-ticker">
+          <div class="command-ticker-track">
+            {ticker_item}{ticker_item}
           </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
+    # --------------------------------------------------------
+    # HEADER
+    # --------------------------------------------------------
     st.markdown(
         f"""
-        <div class="today-strip">
-          <b>Today at Techloom</b> &nbsp; · &nbsp;
-          {len(due_today)} due today &nbsp; · &nbsp;
-          {len(overdue)} overdue &nbsp; · &nbsp;
-          {len(review)} awaiting review
+        <div class="dashboard-hero-v14">
+          <div class="dashboard-hero-v14-left">
+            <div class="dashboard-hero-v14-title">Dashboard</div>
+            <div class="dashboard-hero-v14-copy">
+              Good {("morning" if current_day.hour < 12 else "afternoon" if current_day.hour < 17 else "evening")},
+              {safe_html(name)}. Here is what needs attention today.
+            </div>
+          </div>
+          <div class="dashboard-date-v14">
+            <b>{current_day.strftime("%A")}</b>
+            {current_day.strftime("%d %B %Y")}
+          </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # Front-page Direct Messages shortcut with unread badge.
+    # Front-page Direct Messages count.
     try:
         dm_unread = get_unread_direct_message_count()
     except Exception:
         dm_unread = 0
 
-    dm_space, dm_widget = st.columns([4.8, 1.2])
+    # Best next task for the signed-in user's visible scope.
+    priority_rank = {"Urgent": 0, "High": 1, "Normal": 2, "Low": 3}
 
-    with dm_widget:
-        badge = (
-            f'<span class="dm-unread-badge">{dm_unread if dm_unread < 100 else "99+"}</span>'
+    def _dashboard_focus_key(task):
+        due = _due_local(task)
+        due_ts = due.timestamp() if due else float("inf")
+        return (
+            0 if task in overdue else 1,
+            priority_rank.get(task.get("priority"), 9),
+            due_ts
+        )
+
+    focus_tasks = sorted(active_tasks, key=_dashboard_focus_key)
+    focus_task = focus_tasks[0] if focus_tasks else None
+
+    if focus_task:
+        focus_due = _due_local(focus_task)
+        if focus_due:
+            if focus_due.date() < today:
+                focus_due_label = f"Overdue · {focus_due.strftime('%d %b')}"
+            elif focus_due.date() == today:
+                focus_due_label = f"Due today · {focus_due.strftime('%I:%M %p')}"
+            else:
+                focus_due_label = f"Due {focus_due.strftime('%d %b · %I:%M %p')}"
+        else:
+            focus_due_label = "No due date"
+
+        focus_title = safe_html(display_value(focus_task.get("title"), "Untitled task"))
+        focus_platform = safe_html(display_value(focus_task.get("platform"), "General"))
+        focus_priority = safe_html(display_value(focus_task.get("priority"), "Normal"))
+        focus_status = safe_html(display_value(focus_task.get("status"), "New"))
+    else:
+        focus_title = "You are clear for now"
+        focus_platform = "No active work"
+        focus_priority = "—"
+        focus_status = "Up to date"
+        focus_due_label = "No deadline"
+
+    # --------------------------------------------------------
+    # COMMAND ROW — FILLS THE OLD EMPTY SPACE
+    # --------------------------------------------------------
+    focus_col, messages_col, actions_col = st.columns([2.0, 1.0, 1.0])
+
+    with focus_col:
+        st.markdown(
+            f"""
+            <div class="command-card-v14 primary">
+              <div class="command-kicker-v14">TODAY'S FOCUS</div>
+              <div class="command-focus-title-v14">{focus_title}</div>
+              <div class="command-focus-meta-v14">
+                <span>{focus_platform}</span>
+                <span>{focus_priority}</span>
+                <span>{focus_status}</span>
+                <span>{safe_html(focus_due_label)}</span>
+              </div>
+              <div class="command-stats-v14">
+                <div class="command-stat-v14">
+                  <b>{len(due_today)}</b>
+                  <span>Due today</span>
+                </div>
+                <div class="command-stat-v14">
+                  <b>{len(overdue)}</b>
+                  <span>Overdue</span>
+                </div>
+                <div class="command-stat-v14">
+                  <b>{len(review)}</b>
+                  <span>Awaiting review</span>
+                </div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        st.button(
+            "Open My Tasks →",
+            key="dashboard_open_tasks_v14",
+            use_container_width=True,
+            type="primary",
+            on_click=go_to_portal_page,
+            args=("My Tasks",)
+        )
+
+    with messages_col:
+        unread_badge = (
+            f'<span class="command-badge-v14">{dm_unread if dm_unread < 100 else "99+"}</span>'
             if dm_unread > 0 else ""
         )
-        dm_copy = (
-            f"{dm_unread} unread message{'s' if dm_unread != 1 else ''}"
-            if dm_unread > 0 else "No unread messages"
+        st.markdown(
+            f"""
+            <div class="command-card-v14">
+              <div class="command-icon-v14">✉</div>
+              <div class="command-kicker-v14">MESSAGES</div>
+              <div class="command-title-v14">
+                Direct Messages {unread_badge}
+              </div>
+              <div class="command-copy-v14">
+                {"You have unread conversations waiting for you." if dm_unread else "You are caught up on private messages."}
+              </div>
+              <div class="command-stats-v14" style="grid-template-columns:1fr">
+                <div class="command-stat-v14">
+                  <b>{dm_unread}</b>
+                  <span>Unread message{"s" if dm_unread != 1 else ""}</span>
+                </div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-
-        dm_html = (
-            '<div class="dm-shortcut-card">'
-            '<div class="dm-shortcut-icon">✉'
-            f'{badge}'
-            '</div>'
-            '<div>'
-            '<div class="dm-shortcut-title">Direct Messages</div>'
-            f'<div class="dm-shortcut-copy">{dm_copy}</div>'
-            '</div>'
-            '</div>'
-        )
-        st.markdown(dm_html, unsafe_allow_html=True)
-
         st.button(
-            "Open Messages",
-            key="dashboard_open_direct_messages",
+            "Open Messages →",
+            key="dashboard_open_direct_messages_v14",
             use_container_width=True,
             on_click=go_to_direct_messages
         )
 
-    # Compact announcement: show only latest active one
+    with actions_col:
+        st.markdown(
+            f"""
+            <div class="command-card-v14">
+              <div class="command-icon-v14 amber">⚡</div>
+              <div class="command-kicker-v14">QUICK ACCESS</div>
+              <div class="command-title-v14">Move faster</div>
+              <div class="command-copy-v14">
+                Jump directly into the workflows used most during the workday.
+              </div>
+              <div class="quick-actions-v14">
+                <div class="quick-action-v14">Attendance</div>
+                <div class="quick-action-v14">Sprint</div>
+                <div class="quick-action-v14">Chat</div>
+                <div class="quick-action-v14">Timeline</div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        qa1, qa2 = st.columns(2)
+        with qa1:
+            st.button(
+                "Attendance",
+                key="dashboard_attendance_v14",
+                use_container_width=True,
+                on_click=go_to_portal_page,
+                args=("Attendance",)
+            )
+        with qa2:
+            st.button(
+                "Sprint",
+                key="dashboard_sprint_v14",
+                use_container_width=True,
+                on_click=go_to_portal_page,
+                args=("Current Sprint",)
+            )
+
+    # --------------------------------------------------------
+    # LATEST COMPANY ANNOUNCEMENT
+    # --------------------------------------------------------
     try:
         ann = (
             supabase.table("announcements")
@@ -4373,14 +4852,28 @@ if page == "Company HQ":
 
     if ann:
         latest = ann[0]
+        latest_title = safe_html(display_value(latest.get("title")))
+        latest_body = safe_html(display_value(latest.get("body")))
         st.markdown(
             f"""
-            <div class="announcement-mini">
-              📣 <b>{display_value(latest.get("title"))}</b> — {display_value(latest.get("body"))}
+            <div class="announcement-bar-v14">
+              <span>📣</span>
+              <div><b>{latest_title}</b> — {latest_body}</div>
             </div>
             """,
             unsafe_allow_html=True
         )
+
+    # --------------------------------------------------------
+    # KPI ROW
+    # --------------------------------------------------------
+    st.markdown(
+        '<div class="dashboard-section-head-v14">'
+        '<b>Today at a glance</b>'
+        '<span>Live task health across your current workspace</span>'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Active", len(active_tasks))
@@ -4388,10 +4881,8 @@ if page == "Company HQ":
     m3.metric("Urgent", len(urgent))
     m4.metric("For Review", len(review))
 
-    st.write("")
-
     # --------------------------------------------------------
-    # DASHBOARD ANALYTICS — cleaner, less repetitive
+    # DASHBOARD ANALYTICS
     # --------------------------------------------------------
     status_order = [
         "New",
@@ -4423,7 +4914,7 @@ if page == "Company HQ":
         }
     ).set_index("Status")
 
-    # Team attendance - de-duplicate by NAME (stronger than ID because old profile rows can duplicate)
+    # Team attendance — de-duplicate by name.
     try:
         today_att = today_team_attendance()
     except Exception:
@@ -4450,7 +4941,6 @@ if page == "Company HQ":
     on_time_count = 0
     late_count = 0
     not_marked_count = 0
-
     attendance_rows = []
 
     for person in unique_people:
@@ -4481,6 +4971,14 @@ if page == "Company HQ":
                     "Check In": "—"
                 }
             )
+
+    st.markdown(
+        '<div class="dashboard-section-head-v14">'
+        '<b>Workspace health</b>'
+        '<span>Workload and attendance in one balanced view</span>'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
     left_analytics, right_analytics = st.columns([1.45, 1])
 
@@ -4525,7 +5023,13 @@ if page == "Company HQ":
                 height=min(230, 42 + 35 * len(attendance_rows))
             )
 
-    st.write("")
+    st.markdown(
+        '<div class="dashboard-section-head-v14">'
+        '<b>Attention & activity</b>'
+        '<span>What matters now and what just changed</span>'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
     priority_col, activity_col = st.columns([1.1, 1])
 
@@ -4557,12 +5061,14 @@ if page == "Company HQ":
                 st.markdown(
                     f"""
                     <div class="priority-mini">
-                        <div class="priority-mini-title">{display_value(task.get("title"))}</div>
+                        <div class="priority-mini-title">
+                            {safe_html(display_value(task.get("title")))}
+                        </div>
                         <div class="priority-mini-meta">
-                            {display_value(task.get("platform"))} ·
-                            {display_value(task.get("status"))} ·
-                            {display_value(task.get("priority"))} ·
-                            Due {due_label}
+                            {safe_html(display_value(task.get("platform")))} ·
+                            {safe_html(display_value(task.get("status")))} ·
+                            {safe_html(display_value(task.get("priority")))} ·
+                            Due {safe_html(due_label)}
                         </div>
                     </div>
                     """,
@@ -4601,8 +5107,11 @@ if page == "Company HQ":
                     <div class="activity-mini">
                         <span class="activity-dot"></span>
                         <div class="activity-text">
-                            <b>{display_value(item.get("user_name"), "User")} · {display_value(item.get("action"))}</b>
-                            <span>{display_value(item.get("details"))}</span>
+                            <b>
+                                {safe_html(display_value(item.get("user_name"), "User"))} ·
+                                {safe_html(display_value(item.get("action")))}
+                            </b>
+                            <span>{safe_html(display_value(item.get("details")))}</span>
                         </div>
                     </div>
                     """,
@@ -4612,6 +5121,7 @@ if page == "Company HQ":
             st.caption("No recent activity.")
 
         st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ============================================================
 # MY TASKS / TEAM TASKS — WORK INBOX + KANBAN
