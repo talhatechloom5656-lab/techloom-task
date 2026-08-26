@@ -6357,13 +6357,8 @@ elif page == "Attendance":
                 "Date": record_date,
                 "Day": day_name,
                 "Check In": format_pk_time(record.get("check_in")),
-                "Arrival": late_status(record.get("check_in")),
                 "Check Out": format_pk_time(record.get("check_out")),
                 "Departure": early_departure_status(record.get("check_out")),
-                "Working Time": working_time(
-                    record.get("check_in"),
-                    record.get("check_out")
-                ),
                 "Status": record.get("status", "Present")
             })
 
