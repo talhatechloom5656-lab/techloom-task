@@ -3214,19 +3214,44 @@ def get_today_attendance():
         return None
 
 
-def check_in_employee():
+def _attendance_local_datetime(selected_time):
+    """
+    Combine today's Pakistan date with a manually entered local time,
+    then convert it to UTC for Supabase timestamptz storage.
+    """
+    local_dt = datetime.combine(
+        datetime.now(PK_TZ).date(),
+        selected_time,
+        tzinfo=PK_TZ
+    )
+    return local_dt, local_dt.astimezone(timezone.utc)
+
+
+def check_in_employee(selected_time=None):
     try:
         existing = get_today_attendance()
 
         if existing:
             return True
 
+        if selected_time is None:
+            selected_time = datetime.now(PK_TZ).time().replace(second=0, microsecond=0)
+
+        local_dt, utc_dt = _attendance_local_datetime(selected_time)
+        now_local = datetime.now(PK_TZ)
+
+        # Prevent accidental future attendance entries.
+        if local_dt > now_local + timedelta(minutes=1):
+            st.warning("Check-in time cannot be in the future.")
+            return False
+
         supabase.table("attendance").insert({
             "user_id": current_user_id,
             "employee_name": name,
             "attendance_date": pakistan_today(),
-            "check_in": datetime.now(timezone.utc).isoformat(),
-            "status": "Present"
+            "check_in": utc_dt.isoformat(),
+            "status": "Present",
+            "notes": "Check-in time entered manually"
         }).execute()
 
         return True
@@ -3237,7 +3262,7 @@ def check_in_employee():
         return False
 
 
-def check_out_employee():
+def check_out_employee(selected_time=None):
     try:
         existing = get_today_attendance()
 
@@ -3248,8 +3273,32 @@ def check_out_employee():
         if existing.get("check_out"):
             return True
 
+        if selected_time is None:
+            selected_time = datetime.now(PK_TZ).time().replace(second=0, microsecond=0)
+
+        local_dt, utc_dt = _attendance_local_datetime(selected_time)
+        now_local = datetime.now(PK_TZ)
+
+        if local_dt > now_local + timedelta(minutes=1):
+            st.warning("Check-out time cannot be in the future.")
+            return False
+
+        check_in_dt = parse_timestamp(existing.get("check_in"))
+        if check_in_dt:
+            check_in_local = check_in_dt.astimezone(PK_TZ)
+            if local_dt < check_in_local:
+                st.warning(
+                    f"Check-out must be after your check-in time "
+                    f"({check_in_local.strftime('%I:%M %p')})."
+                )
+                return False
+
+        current_notes = str(existing.get("notes") or "").strip()
+        note_parts = [part for part in [current_notes, "Check-out time entered manually"] if part]
+
         supabase.table("attendance").update({
-            "check_out": datetime.now(timezone.utc).isoformat()
+            "check_out": utc_dt.isoformat(),
+            "notes": " • ".join(note_parts)
         }).eq(
             "id",
             existing["id"]
@@ -3265,18 +3314,30 @@ def check_out_employee():
 
 def render_today_attendance():
     attendance = get_today_attendance()
+    now_local = datetime.now(PK_TZ)
 
     if attendance is None:
         st.info("You have not checked in today.")
 
+        manual_check_in = st.time_input(
+            "Entry time",
+            value=now_local.time().replace(second=0, microsecond=0),
+            step=60,
+            key="dashboard_manual_checkin_time",
+            help="Type or select the actual time you entered the office."
+        )
+
         if st.button(
-            "🟢 Check In Now",
+            "✅ Record Check In",
             type="primary",
             use_container_width=True,
             key="dashboard_attendance_checkin"
         ):
-            if check_in_employee():
-                st.success("Check-in recorded successfully.")
+            if check_in_employee(manual_check_in):
+                st.success(
+                    f"Check-in recorded at "
+                    f"{manual_check_in.strftime('%I:%M %p')}."
+                )
                 st.rerun()
 
         return
@@ -3302,14 +3363,36 @@ def render_today_attendance():
     )
 
     if not attendance.get("check_out"):
+        check_in_dt = parse_timestamp(attendance.get("check_in"))
+        check_in_local = (
+            check_in_dt.astimezone(PK_TZ)
+            if check_in_dt
+            else now_local
+        )
+
+        default_checkout = now_local
+        if default_checkout < check_in_local:
+            default_checkout = check_in_local
+
+        manual_check_out = st.time_input(
+            "Exit time",
+            value=default_checkout.time().replace(second=0, microsecond=0),
+            step=60,
+            key="dashboard_manual_checkout_time",
+            help="Type or select the actual time you left the office."
+        )
+
         if st.button(
-            "🚪 Check Out",
+            "🚪 Record Check Out",
             type="primary",
             use_container_width=True,
             key="dashboard_attendance_checkout"
         ):
-            if check_out_employee():
-                st.success("Check-out recorded successfully.")
+            if check_out_employee(manual_check_out):
+                st.success(
+                    f"Check-out recorded at "
+                    f"{manual_check_out.strftime('%I:%M %p')}."
+                )
                 st.rerun()
     else:
         st.success("Attendance completed for today.")
@@ -4946,8 +5029,17 @@ if page == "Company HQ":
     ]
 
     today_local = datetime.now(PK_TZ)
-    message_index = (today_local.timetuple().tm_yday - 1) % len(daily_messages)
-    message_theme, message_text = daily_messages[message_index]
+
+    # Special team recognition for 25 August 2026.
+    if today_local.date() == datetime(2026, 8, 25).date():
+        message_theme = "Team Shoutout"
+        message_text = (
+            "Talha Mughal — recognised for his positive energy, optimistic mindset, "
+            "and the uplifting attitude he brings to the team every day."
+        )
+    else:
+        message_index = (today_local.timetuple().tm_yday - 1) % len(daily_messages)
+        message_theme, message_text = daily_messages[message_index]
 
     ticker_item = (
         f'<span>💡 <b>{safe_html(message_theme)}</b></span>'
@@ -6042,6 +6134,8 @@ elif page == "Attendance":
     st.markdown(
         """
         <div class="attendance-rules">
+            <b>Manual attendance:</b> Enter your actual office entry and exit time.
+            &nbsp; • &nbsp;
             <b>Arrival grading:</b>
             On Time up to 10:15 AM •
             Late 10:16–10:30 AM •
@@ -6077,15 +6171,31 @@ elif page == "Attendance":
 
         st.write("")
 
-        if st.button(
-            f"✅ Mark Attendance for {attendance_day_name}",
-            type="primary",
-            use_container_width=True,
-            key="attendance_page_checkin"
-        ):
-            if check_in_employee():
-                st.success("Check-in recorded successfully.")
-                st.rerun()
+        entry_col, action_col = st.columns([2, 1])
+
+        with entry_col:
+            manual_entry_time = st.time_input(
+                "Actual entry time",
+                value=now_local.time().replace(second=0, microsecond=0),
+                step=60,
+                key="attendance_page_manual_checkin",
+                help="Type or select the time you actually entered the office."
+            )
+
+        with action_col:
+            st.caption("Save your actual arrival time.")
+            if st.button(
+                "✅ RECORD CHECK IN",
+                type="primary",
+                use_container_width=True,
+                key="attendance_page_checkin"
+            ):
+                if check_in_employee(manual_entry_time):
+                    st.success(
+                        f"Check-in recorded at "
+                        f"{manual_entry_time.strftime('%I:%M %p')}."
+                    )
+                    st.rerun()
 
     else:
 
@@ -6148,15 +6258,42 @@ elif page == "Attendance":
         st.subheader("Today's Actions")
 
         if not check_out_value:
-            if st.button(
-                "🚪 CHECK OUT",
-                type="primary",
-                use_container_width=True,
-                key="attendance_page_checkout"
-            ):
-                if check_out_employee():
-                    st.success("Check-out recorded successfully.")
-                    st.rerun()
+            check_in_dt = parse_timestamp(check_in_value)
+            check_in_local = (
+                check_in_dt.astimezone(PK_TZ)
+                if check_in_dt
+                else now_local
+            )
+
+            default_checkout = now_local
+            if default_checkout < check_in_local:
+                default_checkout = check_in_local
+
+            exit_col, action_col = st.columns([2, 1])
+
+            with exit_col:
+                manual_exit_time = st.time_input(
+                    "Actual exit time",
+                    value=default_checkout.time().replace(second=0, microsecond=0),
+                    step=60,
+                    key="attendance_page_manual_checkout",
+                    help="Type or select the time you actually left the office."
+                )
+
+            with action_col:
+                st.caption("Save your actual departure time.")
+                if st.button(
+                    "🚪 RECORD CHECK OUT",
+                    type="primary",
+                    use_container_width=True,
+                    key="attendance_page_checkout"
+                ):
+                    if check_out_employee(manual_exit_time):
+                        st.success(
+                            f"Check-out recorded at "
+                            f"{manual_exit_time.strftime('%I:%M %p')}."
+                        )
+                        st.rerun()
         else:
             st.success("Today's attendance is complete.")
 
