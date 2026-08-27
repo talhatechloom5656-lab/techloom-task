@@ -3312,6 +3312,103 @@ def check_out_employee(selected_time=None):
         return False
 
 
+def update_previous_attendance_time(record_id, record_date, field_name, selected_time):
+    """
+    Fill a missing historical check-in/check-out for the signed-in employee.
+    Input time is Pakistan local time; Supabase stores UTC timestamptz.
+    """
+    try:
+        if field_name not in ("check_in", "check_out"):
+            st.error("Invalid attendance field.")
+            return False
+
+        attendance_date = (
+            datetime.strptime(record_date, "%Y-%m-%d").date()
+            if isinstance(record_date, str)
+            else record_date
+        )
+
+        if attendance_date >= datetime.now(PK_TZ).date():
+            st.warning("Use Today's Actions for the current day.")
+            return False
+
+        rows = (
+            supabase.table("attendance")
+            .select("*")
+            .eq("id", record_id)
+            .eq("user_id", current_user_id)
+            .limit(1)
+            .execute()
+        ).data or []
+
+        if not rows:
+            st.error("Attendance record could not be found.")
+            return False
+
+        row = rows[0]
+
+        if row.get(field_name):
+            st.info("That attendance time is already recorded.")
+            return False
+
+        local_dt = datetime.combine(attendance_date, selected_time, tzinfo=PK_TZ)
+        utc_dt = local_dt.astimezone(timezone.utc)
+
+        if field_name == "check_in" and row.get("check_out"):
+            checkout_dt = parse_timestamp(row.get("check_out"))
+            if checkout_dt and local_dt > checkout_dt.astimezone(PK_TZ):
+                st.warning("Check-in cannot be later than the recorded check-out.")
+                return False
+
+        if field_name == "check_out" and row.get("check_in"):
+            checkin_dt = parse_timestamp(row.get("check_in"))
+            if checkin_dt and local_dt < checkin_dt.astimezone(PK_TZ):
+                st.warning("Check-out cannot be earlier than the recorded check-in.")
+                return False
+
+        existing_notes = str(row.get("notes") or "").strip()
+        correction_note = (
+            "Previous missing check-in added manually"
+            if field_name == "check_in"
+            else "Previous missing check-out added manually"
+        )
+
+        supabase.table("attendance").update({
+            field_name: utc_dt.isoformat(),
+            "notes": " • ".join(
+                part for part in [existing_notes, correction_note] if part
+            )
+        }).eq("id", record_id).eq("user_id", current_user_id).execute()
+
+        return True
+
+    except Exception as error:
+        st.error("Could not update the previous attendance record.")
+        st.write(error)
+        return False
+
+
+def historical_missing_attendance_rows():
+    """Previous attendance rows for this employee with a missing time."""
+    try:
+        rows = (
+            supabase.table("attendance")
+            .select("*")
+            .eq("user_id", current_user_id)
+            .lt("attendance_date", pakistan_today())
+            .order("attendance_date", desc=True)
+            .limit(90)
+            .execute()
+        ).data or []
+
+        return [
+            row for row in rows
+            if not row.get("check_in") or not row.get("check_out")
+        ]
+    except Exception:
+        return []
+
+
 def render_today_attendance():
     attendance = get_today_attendance()
     now_local = datetime.now(PK_TZ)
@@ -6329,6 +6426,112 @@ elif page == "Attendance":
             st.caption("No active break.")
 
     st.write("")
+    # --------------------------------------------------------
+    # COMPLETE PREVIOUS ATTENDANCE
+    # --------------------------------------------------------
+    missing_history = historical_missing_attendance_rows()
+
+    if missing_history:
+        st.subheader("Complete Previous Attendance")
+        st.caption(
+            "Add a missing check-in or check-out for a previous day. "
+            "Existing recorded times cannot be overwritten here."
+        )
+
+        for row in missing_history:
+            record_id = row.get("id")
+            record_date = str(row.get("attendance_date"))
+
+            try:
+                day_label = datetime.strptime(
+                    record_date, "%Y-%m-%d"
+                ).strftime("%A, %d %B %Y")
+            except Exception:
+                day_label = record_date
+
+            missing_parts = []
+            if not row.get("check_in"):
+                missing_parts.append("Check In")
+            if not row.get("check_out"):
+                missing_parts.append("Check Out")
+
+            with st.expander(
+                f"{day_label} • Missing: {', '.join(missing_parts)}"
+            ):
+                col_in, col_out = st.columns(2)
+
+                with col_in:
+                    if row.get("check_in"):
+                        st.metric("Check In", format_pk_time(row.get("check_in")))
+                    else:
+                        manual_previous_checkin = st.time_input(
+                            "Add missing check-in",
+                            value=time(hour=10, minute=0),
+                            step=60,
+                            key=f"previous_checkin_time_{record_id}"
+                        )
+
+                        if st.button(
+                            "Save Check In",
+                            type="primary",
+                            use_container_width=True,
+                            key=f"save_previous_checkin_{record_id}"
+                        ):
+                            if update_previous_attendance_time(
+                                record_id,
+                                record_date,
+                                "check_in",
+                                manual_previous_checkin
+                            ):
+                                st.success(
+                                    f"Check-in saved for {record_date} at "
+                                    f"{manual_previous_checkin.strftime('%I:%M %p')}."
+                                )
+                                st.rerun()
+
+                with col_out:
+                    if row.get("check_out"):
+                        st.metric("Check Out", format_pk_time(row.get("check_out")))
+                    else:
+                        default_out = time(hour=18, minute=0)
+
+                        if row.get("check_in"):
+                            checkin_dt = parse_timestamp(row.get("check_in"))
+                            if checkin_dt:
+                                local_ci = checkin_dt.astimezone(PK_TZ)
+                                if local_ci.time() > default_out:
+                                    default_out = local_ci.time().replace(
+                                        second=0,
+                                        microsecond=0
+                                    )
+
+                        manual_previous_checkout = st.time_input(
+                            "Add missing check-out",
+                            value=default_out,
+                            step=60,
+                            key=f"previous_checkout_time_{record_id}"
+                        )
+
+                        if st.button(
+                            "Save Check Out",
+                            type="primary",
+                            use_container_width=True,
+                            key=f"save_previous_checkout_{record_id}"
+                        ):
+                            if update_previous_attendance_time(
+                                record_id,
+                                record_date,
+                                "check_out",
+                                manual_previous_checkout
+                            ):
+                                st.success(
+                                    f"Check-out saved for {record_date} at "
+                                    f"{manual_previous_checkout.strftime('%I:%M %p')}."
+                                )
+                                st.rerun()
+
+        st.write("")
+
     st.subheader("Attendance History")
 
     try:
